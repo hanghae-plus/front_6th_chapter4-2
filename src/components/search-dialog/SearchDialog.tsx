@@ -87,7 +87,25 @@ export const SearchDialog = ({ searchInfo, onAddSchedule, onOverlayClick }: Prop
                 </Thead>
               </Table>
 
-              <Box overflowY="auto" maxH="500px" ref={infiniteLectures.wrapperRef}>
+              <Box
+                overflowY="auto"
+                maxH="500px"
+                ref={infiniteLectures.wrapperRef}
+                sx={{
+                  fontSize: "sm",
+                  "& td": { px: 4, py: 2 },
+                  "& button": {
+                    transition: "0.15s",
+                    fontSize: "sm",
+                    bg: "green.500",
+                    color: "white",
+                    px: 4,
+                    py: 2,
+                    borderRadius: "md",
+                    _hover: { bg: "green.600" },
+                  },
+                }}
+              >
                 <Table size="sm" variant="striped">
                   <Tbody>
                     {infiniteLectures.items.map((lecture, index) => (
