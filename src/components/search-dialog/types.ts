@@ -12,3 +12,8 @@ export interface SearchInfo {
   day?: string;
   time?: number;
 }
+
+export type SearchOptionProps<K extends keyof SearchOptions> = {
+  value: SearchOptions[K];
+  onChange: (newValue: SearchOptions[K]) => void;
+};

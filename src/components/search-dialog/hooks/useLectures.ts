@@ -44,7 +44,7 @@ export const useLectures = ({ searchOptions }: { searchOptions: SearchOptions })
       });
   }, [lectures, searchOptions]);
 
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+  const allMajors = useMemo(() => [...new Set(lectures.map((lecture) => lecture.major))], [lectures]);
 
   return { items, allMajors };
 };

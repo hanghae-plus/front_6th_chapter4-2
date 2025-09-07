@@ -3,11 +3,11 @@ import { useCallback, useRef } from "react";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => any;
 
-export const useAutoCallback = (callback: AnyFunction) => {
+export const useAutoCallback = <T extends AnyFunction>(callback: T): T => {
   const ref = useRef(callback);
   ref.current = callback;
 
-  return useCallback((...args: Parameters<typeof callback>) => {
-    return ref.current(...args);
-  }, []);
+  const fn = useCallback((...args: Parameters<T>) => ref.current(...args), []);
+
+  return fn as T;
 };
