@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import { HStack, VStack } from "@chakra-ui/react";
 import { debounce } from "lodash";
 import { SearchOption } from "../types";
@@ -53,4 +53,14 @@ const SearchFilter = ({ searchOptions, allMajors, onChangeSearchOption }: Props)
   );
 };
 
-export default SearchFilter;
+export default memo(SearchFilter, (prevProps, nextProps) => {
+  return (
+    prevProps.searchOptions.query === nextProps.searchOptions.query &&
+    prevProps.searchOptions.credits === nextProps.searchOptions.credits &&
+    prevProps.searchOptions.grades.toString() === nextProps.searchOptions.grades.toString() &&
+    prevProps.searchOptions.days.toString() === nextProps.searchOptions.days.toString() &&
+    prevProps.searchOptions.times.toString() === nextProps.searchOptions.times.toString() &&
+    prevProps.searchOptions.majors.toString() === nextProps.searchOptions.majors.toString() &&
+    prevProps.allMajors.toString() === nextProps.allMajors.toString()
+  );
+});
