@@ -4,12 +4,11 @@ import { ScheduleTables } from "./ScheduleTables";
 import ScheduleDndProvider from "./ScheduleDndProvider";
 
 function App() {
-
   return (
     <ChakraProvider>
       <ScheduleProvider>
         <ScheduleDndProvider>
-          <ScheduleTables/>
+          <ScheduleTables />
         </ScheduleDndProvider>
       </ScheduleProvider>
     </ChakraProvider>

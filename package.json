@@ -9,7 +9,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "build": "tsc -b && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "prettier:write": "prettier --write ./src"
   },
   "dependencies": {
     "@chakra-ui/icons": "2.2.4",
@@ -28,6 +29,7 @@
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^15.0.7",
     "@testing-library/user-event": "^14.5.2",
+    "@eslint/js": "^9.16.0",
     "@types/express": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
@@ -36,12 +38,16 @@
     "@vitejs/plugin-react-swc": "^3.5.0",
     "@vitest/coverage-v8": "^2.0.3",
     "@vitest/ui": "^1.6.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
+    "typescript-eslint": "^8.36.0",
     "tsx": "^4.17.0",
     "typescript": "^5.4.5",
     "vite": "npm:rolldown-vite@latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "prettier": "^3.4.2"
   }
 }
