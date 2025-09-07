@@ -25,7 +25,7 @@ interface CacheManager {
   getCacheStats: () => CacheStats;
 }
 
-export const createCacheManager = (): CacheManager => {
+const createCacheManager = (): CacheManager => {
   const globalCache = new Map<string, CacheEntry<any>>();
   const pendingRequests = new Map<string, Promise<any>>();
 
@@ -91,3 +91,5 @@ export const createCacheManager = (): CacheManager => {
     }),
   };
 };
+
+export const cacheManager = createCacheManager();
