@@ -19,17 +19,19 @@
     "@dnd-kit/utilities": "latest",
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
+    "@types/lodash": "^4.17.20",
     "axios": "latest",
     "framer-motion": "latest",
+    "lodash": "^4.17.21",
     "msw": "latest",
     "react": "latest",
     "react-dom": "latest"
   },
   "devDependencies": {
+    "@eslint/js": "^9.16.0",
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^15.0.7",
     "@testing-library/user-event": "^14.5.2",
-    "@eslint/js": "^9.16.0",
     "@types/express": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
@@ -43,11 +45,11 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
-    "typescript-eslint": "^8.36.0",
+    "prettier": "^3.4.2",
     "tsx": "^4.17.0",
     "typescript": "^5.4.5",
+    "typescript-eslint": "^8.36.0",
     "vite": "npm:rolldown-vite@latest",
-    "vitest": "latest",
-    "prettier": "^3.4.2"
+    "vitest": "latest"
   }
 }
