@@ -12,7 +12,7 @@ const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined
 export const useScheduleContext = () => {
   const context = useContext(ScheduleContext);
   if (context === undefined) {
-    throw new Error('useSchedule must be used within a ScheduleProvider');
+    throw new Error("useSchedule must be used within a ScheduleProvider");
   }
   return context;
 };
@@ -20,9 +20,5 @@ export const useScheduleContext = () => {
 export const ScheduleProvider = ({ children }: PropsWithChildren) => {
   const [schedulesMap, setSchedulesMap] = useState<Record<string, Schedule[]>>(dummyScheduleMap);
 
-  return (
-    <ScheduleContext.Provider value={{ schedulesMap, setSchedulesMap }}>
-      {children}
-    </ScheduleContext.Provider>
-  );
+  return <ScheduleContext.Provider value={{ schedulesMap, setSchedulesMap }}>{children}</ScheduleContext.Provider>;
 };
