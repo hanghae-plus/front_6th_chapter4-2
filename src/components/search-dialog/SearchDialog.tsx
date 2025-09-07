@@ -17,8 +17,8 @@ import {
 } from "@chakra-ui/react";
 import { useAddSchedule, useInfiniteLectures, useLectures, useSearchOption } from "./hooks";
 import { SearchItem } from "./SearchItem";
-import { SearchInfo } from "./types";
 import { SearchDialogControls } from "./SearchDialogControls.tsx";
+import { SearchInfo } from "../../types";
 
 interface Props {
   searchInfo: SearchInfo | null;

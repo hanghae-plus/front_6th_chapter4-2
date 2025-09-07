@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { SearchInfo, SearchOptions } from "../types";
+import { SearchOptions } from "../types";
 import { useAutoCallback } from "../../../hooks";
+import { SearchInfo } from "../../../types";
 
 interface Props {
   searchInfo: SearchInfo | null;

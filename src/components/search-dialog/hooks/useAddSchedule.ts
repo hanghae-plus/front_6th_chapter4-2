@@ -1,7 +1,7 @@
 import { useAutoCallback } from "../../../hooks";
 import { Lecture } from "../../../types.ts";
 import { parseSchedule } from "../../../utils.ts";
-import { useScheduleContext } from "../../../ScheduleContext.tsx";
+import { useScheduleCommandContext } from "../../schedule-tables";
 
 interface Props {
   tableId?: string;
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const useAddSchedule = ({ tableId, onAdd }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const setSchedulesMap = useScheduleCommandContext();
 
   return useAutoCallback((lecture: Lecture) => {
     if (!tableId) return;

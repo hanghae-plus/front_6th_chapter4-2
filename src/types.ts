@@ -14,5 +14,11 @@ export interface Schedule {
   room?: string;
 }
 
+export interface SearchInfo {
+  tableId: string;
+  day?: string;
+  time?: number;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyFunction = (...args: any[]) => any;
