@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { VStack } from "@chakra-ui/react";
+import { HStack, VStack } from "@chakra-ui/react";
 import { debounce } from "lodash";
 import { SearchOption } from "../types";
 import BasicFilter from "./filters/BasicFilter";
@@ -18,7 +18,7 @@ const SearchFilter = ({ searchOptions, allMajors, onChangeSearchOption }: Props)
     debounce((field: keyof SearchOption, value: any) => {
       onChangeSearchOption(field, value);
     }, 300),
-    [onChangeSearchOption]
+    [onChangeSearchOption],
   );
 
   const handleSearchOptionChange = useCallback(
@@ -29,7 +29,7 @@ const SearchFilter = ({ searchOptions, allMajors, onChangeSearchOption }: Props)
         onChangeSearchOption(field, value);
       }
     },
-    [debouncedSetSearchOptions, onChangeSearchOption]
+    [debouncedSetSearchOptions, onChangeSearchOption],
   );
 
   return (
@@ -39,14 +39,10 @@ const SearchFilter = ({ searchOptions, allMajors, onChangeSearchOption }: Props)
         credits={searchOptions.credits}
         onChangeSearchOption={handleSearchOptionChange}
       />
-      <DayFilter
-        days={searchOptions.days}
-        onChangeSearchOption={handleSearchOptionChange}
-      />
-      <GradeFilter
-        grades={searchOptions.grades}
-        onChangeSearchOption={handleSearchOptionChange}
-      />
+      <HStack>
+        <DayFilter days={searchOptions.days} onChangeSearchOption={handleSearchOptionChange} />
+        <GradeFilter grades={searchOptions.grades} onChangeSearchOption={handleSearchOptionChange} />
+      </HStack>
       <TimeAndMajorFilter
         times={searchOptions.times}
         majors={searchOptions.majors}

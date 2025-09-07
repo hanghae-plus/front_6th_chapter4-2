@@ -12,10 +12,7 @@ const DayFilter = ({ days, onChangeSearchOption }: Props) => {
   return (
     <FormControl>
       <FormLabel>요일</FormLabel>
-      <CheckboxGroup
-        value={days}
-        onChange={(value) => onChangeSearchOption("days", value as string[])}
-      >
+      <CheckboxGroup value={days} onChange={(value) => onChangeSearchOption("days", value as string[])}>
         <HStack spacing={4}>
           {DAY_LABELS.map((day) => (
             <Checkbox key={day} value={day}>

@@ -10,22 +10,13 @@ interface Props {
   loaderRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const SearchResultTableBody = ({ 
-  visibleLectures, 
-  onAddSchedule, 
-  loaderWrapperRef, 
-  loaderRef 
-}: Props) => {
+const SearchResultTableBody = ({ visibleLectures, onAddSchedule, loaderWrapperRef, loaderRef }: Props) => {
   return (
     <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
       <Table size="sm" variant="striped">
         <Tbody>
           {visibleLectures.map((lecture) => (
-            <SearchResultTableRow
-              key={lecture.id}
-              lecture={lecture}
-              onAddSchedule={onAddSchedule}
-            />
+            <SearchResultTableRow key={lecture.id} lecture={lecture} onAddSchedule={onAddSchedule} />
           ))}
         </Tbody>
       </Table>
@@ -35,8 +26,5 @@ const SearchResultTableBody = ({
 };
 
 export default memo(SearchResultTableBody, (prevProps, nextProps) => {
-  return (
-    prevProps.visibleLectures === nextProps.visibleLectures && 
-    prevProps.onAddSchedule === nextProps.onAddSchedule
-  );
+  return prevProps.visibleLectures === nextProps.visibleLectures && prevProps.onAddSchedule === nextProps.onAddSchedule;
 });

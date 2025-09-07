@@ -17,11 +17,7 @@ const SearchResultTableRow = ({ lecture, onAddSchedule }: Props) => {
       <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
       <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
       <Td width="80px">
-        <Button 
-          size="sm" 
-          colorScheme="green" 
-          onClick={() => onAddSchedule(lecture)}
-        >
+        <Button size="sm" colorScheme="green" onClick={() => onAddSchedule(lecture)}>
           추가
         </Button>
       </Td>
@@ -33,7 +29,7 @@ const SearchResultTableRow = ({ lecture, onAddSchedule }: Props) => {
 export default memo(SearchResultTableRow, (prevProps, nextProps) => {
   const prevLecture = prevProps.lecture;
   const nextLecture = nextProps.lecture;
-  
+
   return (
     prevLecture.id === nextLecture.id &&
     prevLecture.title === nextLecture.title &&

@@ -11,10 +11,7 @@ const GradeFilter = ({ grades, onChangeSearchOption }: Props) => {
   return (
     <FormControl>
       <FormLabel>학년</FormLabel>
-      <CheckboxGroup
-        value={grades}
-        onChange={(value) => onChangeSearchOption("grades", value.map(Number))}
-      >
+      <CheckboxGroup value={grades} onChange={(value) => onChangeSearchOption("grades", value.map(Number))}>
         <HStack spacing={4}>
           {[1, 2, 3, 4].map((grade) => (
             <Checkbox key={grade} value={grade}>
