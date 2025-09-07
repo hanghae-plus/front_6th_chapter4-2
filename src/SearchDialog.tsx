@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useDebounce } from "./hooks/useDebounce";
+import { useIntersectionObserver } from "./hooks/useIntersectionObserver";
 import {
   Modal,
   ModalBody,
@@ -58,8 +59,8 @@ const fetchAllLectures = async () => {
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
-  const loaderWrapperRef = useRef<HTMLDivElement>(null);
-  const loaderRef = useRef<HTMLDivElement>(null);
+  const loaderWrapperRef = useRef<HTMLDivElement | null>(null);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
   type SearchOptionAction =
@@ -167,27 +168,16 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     });
   }, []);
 
-  useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
-
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper },
-    );
-
-    observer.observe($loader);
-
-    return () => observer.unobserve($loader);
+  const handleIntersect = useCallback(() => {
+    setPage((prevPage) => Math.min(lastPage, prevPage + 1));
   }, [lastPage]);
+
+  useIntersectionObserver({
+    onIntersect: handleIntersect,
+    targetRef: loaderRef,
+    rootRef: loaderWrapperRef,
+    enabled: page < lastPage,
+  });
 
   useEffect(() => {
     dispatch({ type: "days", value: searchInfo?.day ? [searchInfo.day] : [] });
