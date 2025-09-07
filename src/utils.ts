@@ -33,9 +33,9 @@ export const parseSchedule = (schedule: string) => {
 export const requestWithCache = (() => {
   const cache = new Map();
   return async function <T>(...args: Parameters<typeof axios.get>) {
-    const response = await axios.get<T>(...args);
     const key = args[0];
     if (!cache.has(key)) {
+      const response = axios.get<T>(...args);
       cache.set(key, response);
     }
     return cache.get(key) as AxiosResponse<T>;
