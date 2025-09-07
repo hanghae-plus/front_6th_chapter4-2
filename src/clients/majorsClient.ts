@@ -1,8 +1,8 @@
 import { Lecture } from "../types";
 import { requestWithCache } from "../utils";
 
-export const fetchMajors = () => requestWithCache<Lecture[]>("/schedules-majors.json");
-export const fetchLiberalArts = () => requestWithCache<Lecture[]>("/schedules-liberal-arts.json");
+export const fetchMajors = () => requestWithCache<Lecture[]>("./schedules-majors.json");
+export const fetchLiberalArts = () => requestWithCache<Lecture[]>("./schedules-liberal-arts.json");
 
 export const fetchAllLectures = async () =>
   await Promise.all([
