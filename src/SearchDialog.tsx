@@ -86,13 +86,22 @@ const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
 const fetchLiberalArts = () =>
   axios.get<Lecture[]>("/schedules-liberal-arts.json");
 
-// 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요. (완료)
+const createCachedPromise = <T,>(fn: () => Promise<T>) => {
+  let cached: Promise<T> | null = null;
+  // 캐시가 없을때(최초 1회)만 fetch함수를 실행(api 요청)하고 할당
+  return () => (cached ??= fn());
+};
+
+const fetchMajorsCached = createCachedPromise(fetchMajors);
+const fetchLiberalArtsCached = createCachedPromise(fetchLiberalArts);
+
+// (완료) 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 const fetchAllLectures = async (): Promise<Lecture[]> => {
   console.log("API Call majors start", performance.now());
   console.log("API Call liberal-arts start", performance.now());
   const [majorsRes, liberalRes] = await Promise.all([
-    fetchMajors(),
-    fetchLiberalArts(),
+    fetchMajorsCached(),
+    fetchLiberalArtsCached(),
   ]);
   return [...majorsRes.data, ...liberalRes.data];
 };
