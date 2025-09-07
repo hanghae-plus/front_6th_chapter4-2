@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useDebounce } from "./hooks/useDebounce";
 import {
   Modal,
   ModalBody,
@@ -61,18 +62,15 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
-  type SearchOptionAction = 
-  | { type: 'query'; value: string }
-  | { type: 'grades'; value: number[] }
-  | { type: 'days'; value: string[] }
-  | { type: 'times'; value: number[] }
-  | { type: 'majors'; value: string[] }
-  | { type: 'credits'; value: number | undefined };
+  type SearchOptionAction =
+    | { type: "query"; value: string }
+    | { type: "grades"; value: number[] }
+    | { type: "days"; value: string[] }
+    | { type: "times"; value: number[] }
+    | { type: "majors"; value: string[] }
+    | { type: "credits"; value: number | undefined };
 
-const searchOptionsReducer = (
-    state: SearchOption,
-    action: SearchOptionAction,
-  ): SearchOption => {
+  const searchOptionsReducer = (state: SearchOption, action: SearchOptionAction): SearchOption => {
     return {
       ...state,
       [action.type]: action.value,
@@ -87,9 +85,11 @@ const searchOptionsReducer = (
     majors: [],
   });
 
+  const debouncedSearchOptions = useDebounce(searchOptions, 300);
+
   const filteredLectures = useMemo(() => {
     console.log("필터링 다시 계산");
-    const { query = "", credits, grades, days, times, majors } = searchOptions;
+    const { query = "", credits, grades, days, times, majors } = debouncedSearchOptions;
     const lowercaseQuery = query.toLowerCase();
 
     return lectures.filter((lecture) => {
@@ -190,8 +190,8 @@ const searchOptionsReducer = (
   }, [lastPage]);
 
   useEffect(() => {
-    dispatch({ type: 'days', value: searchInfo?.day ? [searchInfo.day] : [] });
-    dispatch({ type: 'times', value: searchInfo?.time ? [searchInfo.time] : [] });
+    dispatch({ type: "days", value: searchInfo?.day ? [searchInfo.day] : [] });
+    dispatch({ type: "times", value: searchInfo?.time ? [searchInfo.time] : [] });
     setPage(1);
   }, [searchInfo]);
 
