@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -113,7 +113,9 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  // 🔃 불필요한 연산 최적화
+  // useCallback으로 묶고, lectures, searchOptions가 변할때만 재연산되도록 함
+  const getFilteredLectures = useCallback(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
     return lectures
       .filter(
@@ -150,39 +152,69 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
           s.range.some((time) => times.includes(time))
         );
       });
-  };
+  }, [lectures, searchOptions]);
 
-  const filteredLectures = getFilteredLectures();
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+  // 🔃 불필요한 연산 최적화
+  // useMemo으로 묶고, getFilteredLectures가 변할때만 재연산되도록 함
+  const filteredLectures = useMemo(
+    () => getFilteredLectures(),
+    [getFilteredLectures]
+  );
 
-  const changeSearchOption = (
-    field: keyof SearchOption,
-    value: SearchOption[typeof field]
-  ) => {
-    setPage(1);
-    setSearchOptions({ ...searchOptions, [field]: value });
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  };
+  // 🔃 불필요한 연산 최적화
+  // useMemo으로 묶고, filteredLectures가 변할때만 재연산되도록 함
+  const lastPage = useMemo(
+    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
+    [filteredLectures]
+  );
 
-  const addSchedule = (lecture: Lecture) => {
-    if (!searchInfo) return;
+  // 🔃 불필요한 연산 최적화
+  // useMemo으로 묶고, filteredLectures가 변할때만 재연산되도록 함
+  const visibleLectures = useMemo(
+    () => filteredLectures.slice(0, page * PAGE_SIZE),
+    [filteredLectures, page]
+  );
 
-    const { tableId } = searchInfo;
+  // 🔃 불필요한 연산 최적화
+  // useMemo으로 묶고, lectures가 변할때만 재연산되도록 함
+  const allMajors = useMemo(
+    () => [...new Set(lectures.map((lecture) => lecture.major))],
+    [lectures]
+  );
 
-    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-      ...schedule,
-      lecture,
-    }));
+  // 🔃 불필요한 연산 최적화
+  // useCallback으로 묶고, searchOptions, setPage, setSearchOptions, loaderWrapperRef가 변할때만 재연산되도록 함
+  const changeSearchOption = useCallback(
+    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
+      setSearchOptions({ ...searchOptions, [field]: value });
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    },
+    [searchOptions, setPage, setSearchOptions, loaderWrapperRef]
+  );
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+  // 🔃 불필요한 연산 최적화
+  // useCallback으로 묶고, searchInfo, setSchedulesMap, onClose가 변할때만 재연산되도록 함
+  const addSchedule = useCallback(
+    (lecture: Lecture) => {
+      if (!searchInfo) return;
 
-    onClose();
-  };
+      const { tableId } = searchInfo;
+
+      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+        ...schedule,
+        lecture,
+      }));
+
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: [...prev[tableId], ...schedules],
+      }));
+
+      onClose();
+    },
+    [searchInfo, setSchedulesMap, onClose]
+  );
 
   useEffect(() => {
     const start = performance.now();
