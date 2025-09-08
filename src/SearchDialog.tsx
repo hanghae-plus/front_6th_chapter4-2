@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState, memo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   FormControl,
@@ -20,8 +19,6 @@ import {
   Tag,
   TagCloseButton,
   TagLabel,
-  Tbody,
-  Td,
   Text,
   Th,
   Thead,
@@ -36,39 +33,7 @@ import axios from "axios";
 import { DAY_LABELS } from "./constants.ts";
 import { useDebounce } from "./hooks/useDebounce.ts";
 import { useAutoCallback } from "./hooks/useAutoCallback.ts";
-
-const LectureRow = memo(
-  ({
-    lecture,
-    onAdd,
-  }: {
-    lecture: Lecture;
-    onAdd: (lecture: Lecture) => void;
-  }) => (
-    <Tr>
-      <Td width="100px">{lecture.id}</Td>
-      <Td width="50px">{lecture.grade}</Td>
-      <Td width="200px">{lecture.title}</Td>
-      <Td width="50px">{lecture.credits}</Td>
-      <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
-      <Td
-        width="150px"
-        dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-      />
-      <Td width="80px">
-        <Button size="sm" colorScheme="green" onClick={() => onAdd(lecture)}>
-          추가
-        </Button>
-      </Td>
-    </Tr>
-  ),
-  (prevProps, nextProps) => {
-    return (
-      prevProps.lecture.id === nextProps.lecture.id &&
-      prevProps.onAdd === nextProps.onAdd
-    );
-  }
-);
+import LectureTable from "./LectureTable.tsx";
 
 interface Props {
   searchInfo: {
@@ -115,7 +80,7 @@ const TIME_SLOTS = [
   { id: 24, label: "22:35~23:25" },
 ];
 
-const PAGE_SIZE = 100;
+// PAGE_SIZE는 LectureTable로 이동
 
 const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
 const fetchLiberalArts = () =>
@@ -147,10 +112,7 @@ const fetchAllLectures = async (): Promise<Lecture[]> => {
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
-  const loaderWrapperRef = useRef<HTMLDivElement>(null);
-  const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [page, setPage] = useState(1);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
     query: "",
     grades: [],
@@ -159,6 +121,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
+  // 스케줄 파싱 캐시 (필터링용)
   const scheduleCache = useRef(
     new Map<string, ReturnType<typeof parseSchedule>>()
   );
@@ -210,11 +173,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         );
       });
   }, [lectures, searchOptions, debouncedQuery]);
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = useMemo(
-    () => filteredLectures.slice(0, page * PAGE_SIZE),
-    [filteredLectures, page]
-  );
+
   const allMajors = useMemo(
     () => [...new Set(lectures.map((lecture) => lecture.major))],
     [lectures]
@@ -224,9 +183,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     field: keyof SearchOption,
     value: SearchOption[typeof field]
   ) => {
-    setPage(1);
     setSearchOptions({ ...searchOptions, [field]: value });
-    loaderWrapperRef.current?.scrollTo(0, 0);
   };
 
   const addSchedule = useAutoCallback((lecture: Lecture) => {
@@ -259,34 +216,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, []);
 
   useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
-
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
-
-    observer.observe($loader);
-
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
-
-  useEffect(() => {
     setSearchOptions((prev) => ({
       ...prev,
       days: searchInfo?.day ? [searchInfo.day] : [],
       times: searchInfo?.time ? [searchInfo.time] : [],
     }));
-    setPage(1);
   }, [searchInfo]);
 
   return (
@@ -478,20 +412,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 </Thead>
               </Table>
 
-              <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
-                <Table size="sm" variant="striped">
-                  <Tbody>
-                    {visibleLectures.map((lecture, index) => (
-                      <LectureRow
-                        key={`${lecture.id}-${index}`}
-                        lecture={lecture}
-                        onAdd={addSchedule}
-                      />
-                    ))}
-                  </Tbody>
-                </Table>
-                <Box ref={loaderRef} h="20px" />
-              </Box>
+              <LectureTable lectures={filteredLectures} onAdd={addSchedule} />
             </Box>
           </VStack>
         </ModalBody>
