@@ -125,11 +125,13 @@ const fetchLiberalArtsCached = createCachedPromise(fetchLiberalArts);
 
 // (완료) 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 const fetchAllLectures = async (): Promise<Lecture[]> => {
-  console.log("API Call majors start", performance.now());
-  console.log("API Call liberal-arts start", performance.now());
   const [majorsRes, liberalRes] = await Promise.all([
-    fetchMajorsCached(),
-    fetchLiberalArtsCached(),
+    (console.log("API Call 1", performance.now()), fetchMajorsCached()),
+    (console.log("API Call 2", performance.now()), fetchLiberalArtsCached()),
+    (console.log("API Call 3", performance.now()), fetchMajorsCached()),
+    (console.log("API Call 4", performance.now()), fetchLiberalArtsCached()),
+    (console.log("API Call 5", performance.now()), fetchMajorsCached()),
+    (console.log("API Call 6", performance.now()), fetchLiberalArtsCached()),
   ]);
   return [...majorsRes.data, ...liberalRes.data];
 };
