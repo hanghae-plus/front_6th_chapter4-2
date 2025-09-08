@@ -23,8 +23,9 @@ const SearchCheckBox = React.memo(
     );
   },
   (prevProps, nextProps) => {
-    // query 값만 비교
-    return prevProps.value === nextProps.value;
+    // 배열 내용 비교
+    if (prevProps.value.length !== nextProps.value.length) return false;
+    return prevProps.value.every((v, i) => v === nextProps.value[i]);
   },
 );
 
