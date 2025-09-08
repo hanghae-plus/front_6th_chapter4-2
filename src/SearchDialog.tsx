@@ -28,7 +28,7 @@ import {
 	VStack,
 	Wrap,
 } from "@chakra-ui/react";
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 import { useEffect, useRef, useState } from "react";
 import { DAY_LABELS } from "./constants.ts";
 import { useScheduleContext } from "./ScheduleContext.tsx";
@@ -82,9 +82,24 @@ const TIME_SLOTS = [
 
 const PAGE_SIZE = 100;
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
-const fetchLiberalArts = () =>
-	axios.get<Lecture[]>("/schedules-liberal-arts.json");
+const createApiCache = () => {
+	const cache = new Map<string, Promise<AxiosResponse<Lecture[], unknown>>>();
+
+	return (url: string) => {
+		if (cache.has(url)) {
+			return cache.get(url);
+		}
+
+		const result = axios.get<Lecture[]>(url);
+		cache.set(url, result);
+		return result;
+	};
+};
+
+const apiCahce = createApiCache();
+
+const fetchMajors = () => apiCahce("/schedules-majors.json");
+const fetchLiberalArts = () => apiCahce("/schedules-liberal-arts.json");
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 const fetchAllLectures = async () =>
