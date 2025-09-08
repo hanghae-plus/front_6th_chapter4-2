@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	Box,
 	Button,
@@ -121,8 +121,9 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 	});
 
 	// 강의 필터링
-	const getFilteredLectures = () => {
+	const filteredLectures = useMemo(() => {
 		const { query = '', credits, grades, days, times, majors } = searchOptions;
+
 		return lectures
 			.filter(
 				(lecture) =>
@@ -146,37 +147,39 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 				const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
 				return schedules.some((s) => s.range.some((time) => times.includes(time)));
 			});
-	};
+	}, [lectures, searchOptions]);
 
-	const filteredLectures = getFilteredLectures();
-	const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-	const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-	const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+	const lastPage = useMemo(() => Math.ceil(filteredLectures.length / PAGE_SIZE), [filteredLectures]);
+	const visibleLectures = useMemo(() => filteredLectures.slice(0, page * PAGE_SIZE), [filteredLectures]);
+	const allMajors = useMemo(() => [...new Set(lectures.map((lecture) => lecture.major))], [lectures]);
 
-	const changeSearchOption = (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+	const changeSearchOption = useCallback((field: keyof SearchOption, value: SearchOption[typeof field]) => {
 		setPage(1);
-		setSearchOptions({ ...searchOptions, [field]: value });
+		setSearchOptions((prev) => ({ ...prev, [field]: value }));
 		loaderWrapperRef.current?.scrollTo(0, 0); // 스크롤 위치를 맨 위로 이동
-	};
+	}, []);
 
 	// 강의 추가 함수
-	const addSchedule = (lecture: Lecture) => {
-		if (!searchInfo) return;
+	const addSchedule = useCallback(
+		(lecture: Lecture) => {
+			if (!searchInfo) return;
 
-		const { tableId } = searchInfo;
+			const { tableId } = searchInfo;
 
-		const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-			...schedule,
-			lecture,
-		}));
+			const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+				...schedule,
+				lecture,
+			}));
 
-		setSchedulesMap((prev) => ({
-			...prev,
-			[tableId]: [...prev[tableId], ...schedules],
-		}));
+			setSchedulesMap((prev) => ({
+				...prev,
+				[tableId]: [...prev[tableId], ...schedules],
+			}));
 
-		onClose();
-	};
+			onClose();
+		},
+		[searchInfo, setSchedulesMap, onClose]
+	);
 
 	useEffect(() => {
 		const start = performance.now();
