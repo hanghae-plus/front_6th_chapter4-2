@@ -9,48 +9,52 @@ import { memo } from "react";
 import { DAY_LABELS } from "../constants.ts";
 import type { SearchOption } from "./SearchDialog";
 
-interface Props {
-	searchOptions: SearchOption;
+interface Props extends Pick<SearchOption, "grades" | "days"> {
 	onChange: (
 		field: keyof SearchOption,
 		value: SearchOption[typeof field],
 	) => void;
 }
 
-export const GradeDayFilters = memo(({ searchOptions, onChange }: Props) => {
-	return (
-		<HStack spacing={4}>
-			<FormControl>
-				<FormLabel>학년</FormLabel>
-				<CheckboxGroup
-					value={searchOptions.grades}
-					onChange={(value) => onChange("grades", value.map(Number))}
-				>
-					<HStack spacing={4}>
-						{[1, 2, 3, 4].map((grade) => (
-							<Checkbox key={grade} value={grade}>
-								{grade}학년
-							</Checkbox>
-						))}
-					</HStack>
-				</CheckboxGroup>
-			</FormControl>
+export const GradeDayFilters = memo(
+	({ grades, days, onChange }: Props) => {
+		return (
+			<HStack spacing={4}>
+				<FormControl>
+					<FormLabel>학년</FormLabel>
+					<CheckboxGroup
+						value={grades}
+						onChange={(value) => onChange("grades", value.map(Number))}
+					>
+						<HStack spacing={4}>
+							{[1, 2, 3, 4].map((grade) => (
+								<Checkbox key={grade} value={grade}>
+									{grade}학년
+								</Checkbox>
+							))}
+						</HStack>
+					</CheckboxGroup>
+				</FormControl>
 
-			<FormControl>
-				<FormLabel>요일</FormLabel>
-				<CheckboxGroup
-					value={searchOptions.days}
-					onChange={(value) => onChange("days", value as string[])}
-				>
-					<HStack spacing={4}>
-						{DAY_LABELS.map((day) => (
-							<Checkbox key={day} value={day}>
-								{day}
-							</Checkbox>
-						))}
-					</HStack>
-				</CheckboxGroup>
-			</FormControl>
-		</HStack>
-	);
-});
+				<FormControl>
+					<FormLabel>요일</FormLabel>
+					<CheckboxGroup
+						value={days}
+						onChange={(value) => onChange("days", value as string[])}
+					>
+						<HStack spacing={4}>
+							{DAY_LABELS.map((day) => (
+								<Checkbox key={day} value={day}>
+									{day}
+								</Checkbox>
+							))}
+						</HStack>
+					</CheckboxGroup>
+				</FormControl>
+			</HStack>
+		);
+	},
+	(prev, next) => {
+		return JSON.stringify(prev) === JSON.stringify(next);
+	},
+);

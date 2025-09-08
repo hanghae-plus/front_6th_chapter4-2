@@ -217,17 +217,20 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 				<ModalBody>
 					<VStack spacing={4} align="stretch">
 						<SearchInputFilters
-							searchOptions={searchOptions}
+							query={searchOptions.query}
+							credits={searchOptions.credits}
 							onChange={changeSearchOption}
 						/>
 
 						<GradeDayFilters
-							searchOptions={searchOptions}
+							grades={searchOptions.grades}
+							days={searchOptions.days}
 							onChange={changeSearchOption}
 						/>
 
 						<TimeMajorFilters
-							searchOptions={searchOptions}
+							times={searchOptions.times}
+							majors={searchOptions.majors}
 							allMajors={allMajors}
 							onChange={changeSearchOption}
 						/>

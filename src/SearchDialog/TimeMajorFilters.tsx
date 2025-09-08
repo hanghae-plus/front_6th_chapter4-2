@@ -14,8 +14,7 @@ import {
 import { memo } from "react";
 import type { SearchOption } from "./SearchDialog";
 
-interface Props {
-	searchOptions: SearchOption;
+interface Props extends Pick<SearchOption, "times" | "majors"> {
 	allMajors: string[];
 	onChange: (
 		field: keyof SearchOption,
@@ -51,18 +50,18 @@ const TIME_SLOTS = [
 ];
 
 export const TimeMajorFilters = memo(
-	({ searchOptions, allMajors, onChange }: Props) => {
+	({ times, majors, allMajors, onChange }: Props) => {
 		return (
 			<HStack spacing={4}>
 				<FormControl>
 					<FormLabel>시간</FormLabel>
 					<CheckboxGroup
 						colorScheme="green"
-						value={searchOptions.times}
+						value={times}
 						onChange={(values) => onChange("times", values.map(Number))}
 					>
 						<Wrap spacing={1} mb={2}>
-							{searchOptions.times
+							{times
 								.sort((a, b) => a - b)
 								.map((time) => (
 									<Tag
@@ -76,7 +75,7 @@ export const TimeMajorFilters = memo(
 											onClick={() =>
 												onChange(
 													"times",
-													searchOptions.times.filter((v) => v !== time),
+													times.filter((v) => v !== time),
 												)
 											}
 										/>
@@ -107,18 +106,18 @@ export const TimeMajorFilters = memo(
 					<FormLabel>전공</FormLabel>
 					<CheckboxGroup
 						colorScheme="green"
-						value={searchOptions.majors}
+						value={majors}
 						onChange={(values) => onChange("majors", values as string[])}
 					>
 						<Wrap spacing={1} mb={2}>
-							{searchOptions.majors.map((major) => (
+							{majors.map((major) => (
 								<Tag key={major} size="sm" variant="outline" colorScheme="blue">
 									<TagLabel>{major.split("<p>").pop()}</TagLabel>
 									<TagCloseButton
 										onClick={() =>
 											onChange(
 												"majors",
-												searchOptions.majors.filter((v) => v !== major),
+												majors.filter((v) => v !== major),
 											)
 										}
 									/>
@@ -146,5 +145,8 @@ export const TimeMajorFilters = memo(
 				</FormControl>
 			</HStack>
 		);
+	},
+	(prev, next) => {
+		return JSON.stringify(prev) === JSON.stringify(next);
 	},
 );
