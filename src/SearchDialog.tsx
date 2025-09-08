@@ -86,8 +86,9 @@ const createApiCache = () => {
 	const cache = new Map<string, Promise<AxiosResponse<Lecture[], unknown>>>();
 
 	return (url: string) => {
-		if (cache.has(url)) {
-			return cache.get(url);
+		const cached = cache.get(url);
+		if (cached) {
+			return cached;
 		}
 
 		const result = axios.get<Lecture[]>(url);
