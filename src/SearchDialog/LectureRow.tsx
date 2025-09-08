@@ -9,8 +9,9 @@ interface Props extends Lecture {
 
 export const LectureRow = memo(({ index, addSchedule, ...lecture }: Props) => {
 	const { id, grade, title, credits, major, schedule } = lecture;
+
 	return (
-		<Tr key={`${id}-${index}`}>
+		<Tr>
 			<Td width="100px">{id}</Td>
 			<Td width="50px">{grade}</Td>
 			<Td width="200px">{title}</Td>
