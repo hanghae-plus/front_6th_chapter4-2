@@ -18,6 +18,7 @@ import axios from "axios";
 import { cacheManager } from "./libs/cache";
 import SearchFilter from "./components/SearchFilter";
 import SearchResultTable from "./components/SearchResultTable";
+import { withBase } from "./libs/base";
 
 interface Props {
   searchInfo: {
@@ -30,13 +31,16 @@ interface Props {
 
 const PAGE_SIZE = 100;
 
-const cachedFetchMajors = cacheManager.createCachedFunction(() => axios.get<Lecture[]>("/schedules-majors.json"), {
-  ttl: 5000,
-  prefix: "schedules-majors",
-});
+const cachedFetchMajors = cacheManager.createCachedFunction(
+  () => axios.get<Lecture[]>(withBase("/schedules-majors.json")),
+  {
+    ttl: 5000,
+    prefix: "schedules-majors",
+  },
+);
 
 const cachedFetchLiberalArts = cacheManager.createCachedFunction(
-  () => axios.get<Lecture[]>("/schedules-liberal-arts.json"),
+  () => axios.get<Lecture[]>(withBase("/schedules-liberal-arts.json")),
   {
     ttl: 5000,
     prefix: "schedules-liberal-arts",

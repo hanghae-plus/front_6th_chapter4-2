@@ -11,7 +11,7 @@ const DndContextWrapper = memo(({ tableId, children }: Props) => {
   const dndContext = useDndContext();
   const activeTableId = useMemo(
     () => (dndContext.active?.id ? String(dndContext.active.id).split(":")[0] : null),
-    [dndContext.active?.id]
+    [dndContext.active?.id],
   );
 
   return (

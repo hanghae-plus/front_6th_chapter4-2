@@ -25,23 +25,28 @@ const TIMES = [
     .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
 ] as const;
 
-const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick: onScheduleTimeClickProp, onDeleteButtonClick: onDeleteButtonClickProp }: Props) => {
+const ScheduleTable = ({
+  tableId,
+  schedules,
+  onScheduleTimeClick: onScheduleTimeClickProp,
+  onDeleteButtonClick: onDeleteButtonClickProp,
+}: Props) => {
   const onScheduleTimeClick = useCallback(
     (day: string, timeIndex: number) => {
       onScheduleTimeClickProp?.({ day, time: timeIndex + 1 });
     },
-    [onScheduleTimeClickProp]
+    [onScheduleTimeClickProp],
   );
 
   const onDeleteButtonClick = useCallback(
     (day: string, time: number) => {
       onDeleteButtonClickProp?.({ day, time });
     },
-    [onDeleteButtonClickProp]
+    [onDeleteButtonClickProp],
   );
   const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
   const lectureIds = useMemo(() => [...new Set(schedules.map(({ lecture }) => lecture.id))], [schedules]);
-  
+
   const getColor = (lectureId: string): string => {
     return colors[lectureIds.indexOf(lectureId) % colors.length];
   };
@@ -57,7 +62,7 @@ const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick: onScheduleTime
           onDelete={() => onDeleteButtonClick(schedule.day, schedule.range[0])}
         />
       )),
-    [schedules, tableId, getColor, onDeleteButtonClick]
+    [schedules, tableId, getColor, onDeleteButtonClick],
   );
 
   return (
