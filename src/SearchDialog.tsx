@@ -122,6 +122,21 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
+  const scheduleCache = useRef(
+    new Map<string, ReturnType<typeof parseSchedule>>()
+  );
+
+  const getParsedSchedule = (lecture: Lecture) => {
+    if (!lecture.schedule) return [];
+
+    if (scheduleCache.current.has(lecture.id))
+      return scheduleCache.current.get(lecture.id)!;
+
+    const parsed = parseSchedule(lecture.schedule);
+    scheduleCache.current.set(lecture.id, parsed);
+    return parsed;
+  };
+
   const filteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
     return lectures
@@ -143,18 +158,14 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         if (days.length === 0) {
           return true;
         }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
+        const schedules = getParsedSchedule(lecture);
         return schedules.some((s) => days.includes(s.day));
       })
       .filter((lecture) => {
         if (times.length === 0) {
           return true;
         }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
+        const schedules = getParsedSchedule(lecture);
         return schedules.some((s) =>
           s.range.some((time) => times.includes(time))
         );
