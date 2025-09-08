@@ -102,7 +102,7 @@ const SearchDialog = ({searchInfo, onClose}: Props) => {
 		const {query = '', credits, grades, days, times, majors} = searchOptions
 		return lectures
 			.filter((lecture) => lecture && lecture.title && lecture.id) // undefined 체크 추가
-			.filter((lecture) => lecture.title.toLowerCase().includes(query.toLowerCase()) || lecture.id.toLowerCase().includes(query.toLowerCase()))
+			.filter((lecture) => lecture.title.toLowerCase().includes(query.toLowerCase()) || lecture.id.toLowerCase().includes(query.toLowerCase())) // 매번 toLowerCase 호출
 			.filter((lecture) => grades.length === 0 || grades.includes(lecture.grade))
 			.filter((lecture) => majors.length === 0 || majors.includes(lecture.major))
 			.filter((lecture) => !credits || lecture.credits.startsWith(String(credits)))
@@ -110,22 +110,22 @@ const SearchDialog = ({searchInfo, onClose}: Props) => {
 				if (days.length === 0) {
 					return true
 				}
-				const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : []
+				const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [] // 중복 호출 1
 				return schedules.some((s) => days.includes(s.day))
 			})
 			.filter((lecture) => {
 				if (times.length === 0) {
 					return true
 				}
-				const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : []
+				const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [] // 중복 호출 2
 				return schedules.some((s) => s.range.some((time) => times.includes(time)))
 			})
 	}
 
-	const filteredLectures = getFilteredLectures()
+	const filteredLectures = getFilteredLectures() // 매 렌더링마다 실행됨 -> 렌더링될 때마다 전체 데이터 필터링
 	const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE)
 	const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE)
-	const allMajors = [...new Set(lectures.filter((lecture) => lecture && lecture.major).map((lecture) => lecture.major))]
+	const allMajors = [...new Set(lectures.filter((lecture) => lecture && lecture.major).map((lecture) => lecture.major))] // 전공이 바뀌지 않았는데도 매번 전공 목록을 재계산 -> 불필요한 연산
 
 	const changeSearchOption = (field: keyof SearchOption, value: SearchOption[typeof field]) => {
 		setPage(1)
@@ -158,7 +158,7 @@ const SearchDialog = ({searchInfo, onClose}: Props) => {
 			const end = performance.now()
 			console.log('모든 API 호출 완료 ', end)
 			console.log('API 호출에 걸린 시간(ms): ', end - start)
-			setLectures(results.flatMap((result) => result.data))
+			setLectures(results.flatMap((result) => result?.data))
 		})
 	}, [])
 
