@@ -20,7 +20,9 @@
     "@emotion/styled": "latest",
     "axios": "latest",
     "framer-motion": "latest",
+    "fxjs": "^0.21.3",
     "msw": "latest",
+    "prettier": "^3.6.2",
     "react": "latest",
     "react-dom": "latest"
   },

@@ -1,15 +1,8 @@
-import { memo } from "react";
-import {
-  Box,
-  Button,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-} from "@chakra-ui/react";
-import { Lecture } from "../types.ts";
+import { Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react/table';
+import { Box } from '@chakra-ui/react/box';
+import { Button } from '@chakra-ui/react/button';
+
+import { Lecture } from '../types.ts';
 
 interface Props {
   visibleLectures: Lecture[];
@@ -18,7 +11,11 @@ interface Props {
 }
 
 // 강의 테이블 컴포넌트
-const LectureTable = memo(({ visibleLectures, filteredLectures, onAddSchedule }: Props) => {
+const LectureTable = ({
+  visibleLectures,
+
+  onAddSchedule,
+}: Props) => {
   return (
     <Box>
       <Table>
@@ -44,10 +41,22 @@ const LectureTable = memo(({ visibleLectures, filteredLectures, onAddSchedule }:
                 <Td width="50px">{lecture.grade}</Td>
                 <Td width="200px">{lecture.title}</Td>
                 <Td width="50px">{lecture.credits}</Td>
-                <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }}/>
-                <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }}/>
+                <Td
+                  width="150px"
+                  dangerouslySetInnerHTML={{ __html: lecture.major }}
+                />
+                <Td
+                  width="150px"
+                  dangerouslySetInnerHTML={{ __html: lecture.schedule }}
+                />
                 <Td width="80px">
-                  <Button size="sm" colorScheme="green" onClick={() => onAddSchedule(lecture)}>추가</Button>
+                  <Button
+                    size="sm"
+                    colorScheme="green"
+                    onClick={() => onAddSchedule(lecture)}
+                  >
+                    추가
+                  </Button>
                 </Td>
               </Tr>
             ))}
@@ -56,7 +65,7 @@ const LectureTable = memo(({ visibleLectures, filteredLectures, onAddSchedule }:
       </Box>
     </Box>
   );
-});
+};
 
 LectureTable.displayName = 'LectureTable';
 
