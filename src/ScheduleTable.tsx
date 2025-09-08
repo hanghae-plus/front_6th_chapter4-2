@@ -65,9 +65,9 @@ const TimeRow = memo(
           bg={isEvening ? 'gray.200' : 'gray.100'}
         >
           <Flex justifyContent="center" alignItems="center" h="full">
-            <Text fontSize="xs">
+            <span style={{ fontSize: '12px' }}>
               {fill2(timeNumber)} ({time})
-            </Text>
+            </span>
           </Flex>
         </GridItem>
         {DAY_LABELS.map(day => (

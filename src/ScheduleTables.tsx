@@ -3,9 +3,22 @@ import { Stack } from '@chakra-ui/react/stack';
 import { Heading } from '@chakra-ui/react/typography';
 import { Button, ButtonGroup } from '@chakra-ui/react/button';
 import { useScheduleContext } from './ScheduleContext.tsx';
-import { useState, useCallback, useMemo, lazy, memo } from 'react';
-const SearchDialog = lazy(() => import('./SearchDialog.tsx'));
+import React, { useState, useCallback, useMemo, lazy, memo } from 'react';
 const ScheduleTable = lazy(() => import('./ScheduleTable'));
+
+interface LazyComponentWithPreload
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  extends React.LazyExoticComponent<React.ComponentType<any>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  preload: () => Promise<any>;
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function lazyWithPreloading(importFn: () => Promise<any>) {
+  const Component = React.lazy(importFn) as LazyComponentWithPreload;
+  Component.preload = importFn;
+  return Component;
+}
+const SearchDialog = lazyWithPreloading(() => import('./SearchDialog'));
 
 const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
