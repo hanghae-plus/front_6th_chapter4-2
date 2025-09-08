@@ -29,7 +29,6 @@ import {
 	VStack,
 	Wrap,
 } from '@chakra-ui/react';
-import { useScheduleContext } from './ScheduleContext.tsx';
 import { Lecture } from './types.ts';
 import { parseSchedule } from './utils.ts';
 import axios from 'axios';
@@ -43,6 +42,7 @@ interface Props {
 		time?: number;
 	} | null;
 	onClose: () => void;
+	addLecture: (lecture: Lecture) => void;
 }
 
 interface SearchOption {
@@ -106,9 +106,7 @@ const fetchAllLectures = () => {
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 // (스크롤을 할 때마다 검색을 시도하지 않도록)
-const SearchDialog = ({ searchInfo, onClose }: Props) => {
-	const { setSchedulesMap } = useScheduleContext();
-
+const SearchDialog = ({ searchInfo, onClose, addLecture }: Props) => {
 	const loaderWrapperRef = useRef<HTMLDivElement>(null);
 	const loaderRef = useRef<HTMLDivElement>(null);
 	const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -159,28 +157,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 		setSearchOptions((prev) => ({ ...prev, [field]: value }));
 		loaderWrapperRef.current?.scrollTo(0, 0); // 스크롤 위치를 맨 위로 이동
 	}, []);
-
-	// 강의 추가 함수
-	const addSchedule = useCallback(
-		(lecture: Lecture) => {
-			if (!searchInfo) return;
-
-			const { tableId } = searchInfo;
-
-			const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-				...schedule,
-				lecture,
-			}));
-
-			setSchedulesMap((prev) => ({
-				...prev,
-				[tableId]: [...prev[tableId], ...schedules],
-			}));
-
-			onClose();
-		},
-		[searchInfo, setSchedulesMap, onClose]
-	);
 
 	useEffect(() => {
 		const start = performance.now();
@@ -394,7 +370,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 												<Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
 												<Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
 												<Td width="80px">
-													<Button size="sm" colorScheme="green" onClick={() => addSchedule(lecture)}>
+													<Button size="sm" colorScheme="green" onClick={() => addLecture(lecture)}>
 														추가
 													</Button>
 												</Td>
