@@ -1,6 +1,6 @@
 import React, { createContext, PropsWithChildren, useContext, useState } from "react";
-import { Schedule } from "./types.ts";
-import dummyScheduleMap from "./dummyScheduleMap.ts";
+import { Schedule } from "../types";
+import dummyScheduleMap from "../data/dummySchedules.ts";
 
 interface ScheduleContextType {
   schedulesMap: Record<string, Schedule[]>;
@@ -12,7 +12,7 @@ const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined
 export const useScheduleContext = () => {
   const context = useContext(ScheduleContext);
   if (context === undefined) {
-    throw new Error('useSchedule must be used within a ScheduleProvider');
+    throw new Error("useSchedule must be used within a ScheduleProvider");
   }
   return context;
 };
