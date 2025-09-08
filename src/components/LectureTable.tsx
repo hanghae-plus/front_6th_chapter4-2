@@ -3,6 +3,7 @@ import { Box } from '@chakra-ui/react/box';
 import { Button } from '@chakra-ui/react/button';
 
 import { Lecture } from '../types.ts';
+import { memo } from 'react';
 
 interface Props {
   visibleLectures: Lecture[];
@@ -10,12 +11,42 @@ interface Props {
   onAddSchedule: (lecture: Lecture) => void;
 }
 
-// 강의 테이블 컴포넌트
-const LectureTable = ({
-  visibleLectures,
+const SearchItem = memo(
+  ({
+    onAddSchedule,
+    ...lecture
+  }: Lecture & {
+    onAddSchedule: (lecture: Lecture) => void;
+  }) => {
+    const stripHtml = (html: string) => {
+      return html?.replace(/<[^>]*>/g, '').trim();
+    };
+    const { id, grade, title, credits, major, schedule } = lecture;
 
-  onAddSchedule,
-}: Props) => {
+    return (
+      <Tr>
+        <Td width="100px">{id}</Td>
+        <Td width="50px">{grade}</Td>
+        <Td width="200px">{title}</Td>
+        <Td width="50px">{credits}</Td>
+        <Td width="150px">{stripHtml(major)}</Td>
+        <Td width="150px">{stripHtml(schedule)}</Td>
+        <Td width="80px">
+          <Button
+            size="sm"
+            colorScheme="green"
+            onClick={() => onAddSchedule(lecture)}
+          >
+            추가
+          </Button>
+        </Td>
+      </Tr>
+    );
+  }
+);
+
+// 강의 테이블 컴포넌트
+const LectureTable = ({ visibleLectures, onAddSchedule }: Props) => {
   return (
     <Box>
       <Table>
@@ -36,29 +67,11 @@ const LectureTable = ({
         <Table size="sm" variant="striped">
           <Tbody>
             {visibleLectures.map((lecture, index) => (
-              <Tr key={`${lecture.id}-${index}`}>
-                <Td width="100px">{lecture.id}</Td>
-                <Td width="50px">{lecture.grade}</Td>
-                <Td width="200px">{lecture.title}</Td>
-                <Td width="50px">{lecture.credits}</Td>
-                <Td
-                  width="150px"
-                  dangerouslySetInnerHTML={{ __html: lecture.major }}
-                />
-                <Td
-                  width="150px"
-                  dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-                />
-                <Td width="80px">
-                  <Button
-                    size="sm"
-                    colorScheme="green"
-                    onClick={() => onAddSchedule(lecture)}
-                  >
-                    추가
-                  </Button>
-                </Td>
-              </Tr>
+              <SearchItem
+                key={`${lecture.id}-${index}`}
+                {...lecture}
+                onAddSchedule={onAddSchedule}
+              />
             ))}
           </Tbody>
         </Table>

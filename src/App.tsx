@@ -1,14 +1,18 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import { ScheduleProvider } from './ScheduleContext.tsx';
-import { ScheduleTables } from './ScheduleTables.tsx';
+
 import ScheduleDndProvider from './ScheduleDndProvider.tsx';
+import { lazy, Suspense } from 'react';
+const ScheduleTables = lazy(() => import('./ScheduleTables.tsx'));
 
 function App() {
   return (
     <ChakraProvider>
       <ScheduleProvider>
         <ScheduleDndProvider>
-          <ScheduleTables />
+          <Suspense fallback={<div>잠시만요</div>}>
+            <ScheduleTables />
+          </Suspense>
         </ScheduleDndProvider>
       </ScheduleProvider>
     </ChakraProvider>

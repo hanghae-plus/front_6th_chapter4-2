@@ -1,18 +1,12 @@
 import { useCallback, useMemo } from 'react';
-import {
-  Box,
-  Checkbox,
-  CheckboxGroup,
-  FormControl,
-  FormLabel,
-  HStack,
-  Stack,
-  Tag,
-  TagCloseButton,
-  TagLabel,
-  Wrap,
-} from '@chakra-ui/react';
+import { FormControl, FormLabel } from '@chakra-ui/react/form-control';
+import { Wrap } from '@chakra-ui/react/wrap';
+import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react/tag';
+import { Box } from '@chakra-ui/react/box';
+import { Checkbox, CheckboxGroup } from '@chakra-ui/react/checkbox';
+import { HStack, Stack } from '@chakra-ui/react/stack';
 import { DAY_LABELS } from '../constants.ts';
+import { useAutoCallback } from '../hooks/useAutoCallback.ts';
 
 interface SearchOption {
   query?: string;
@@ -60,36 +54,36 @@ const TIME_SLOTS = [
 // 필터 옵션 컴포넌트
 const FilterOptions = ({ searchOptions, allMajors, onChange }: Props) => {
   // 핸들러 함수들 메모이제이션
-  const handleGradesChange = (value: (string | number)[]) =>
-    onChange('grades', value.map(Number));
-
-  const handleDaysChange = (value: (string | number)[]) =>
-    onChange('days', value as string[]);
-
-  const handleTimesChange = (values: (string | number)[]) =>
-    onChange('times', values.map(Number));
-
-  const handleMajorsChange = (values: (string | number)[]) =>
-    onChange('majors', values as string[]);
-
+  const handleGradesChange = useCallback(
+    (value: (string | number)[]) => onChange('grades', value.map(Number)),
+    [onChange]
+  );
+  const handleDaysChange = useCallback(
+    (value: (string | number)[]) => onChange('days', value as string[]),
+    [onChange]
+  );
+  const handleTimesChange = useCallback(
+    (values: (string | number)[]) => onChange('times', values.map(Number)),
+    [onChange]
+  );
+  const handleMajorsChange = useCallback(
+    (values: (string | number)[]) => onChange('majors', values as string[]),
+    [onChange]
+  );
   // 시간 태그 제거 핸들러
-  const handleTimeRemove = useCallback(
-    (timeToRemove: number) =>
-      onChange(
-        'times',
-        searchOptions.times.filter(v => v !== timeToRemove)
-      ),
-    [onChange, searchOptions.times]
+  const handleTimeRemove = useAutoCallback((timeToRemove: number) =>
+    onChange(
+      'times',
+      searchOptions.times.filter(v => v !== timeToRemove)
+    )
   );
 
   // 전공 태그 제거 핸들러
-  const handleMajorRemove = useCallback(
-    (majorToRemove: string) =>
-      onChange(
-        'majors',
-        searchOptions.majors.filter(v => v !== majorToRemove)
-      ),
-    [onChange, searchOptions.majors]
+  const handleMajorRemove = useAutoCallback((majorToRemove: string) =>
+    onChange(
+      'majors',
+      searchOptions.majors.filter(v => v !== majorToRemove)
+    )
   );
 
   // 정렬된 시간 목록
@@ -98,7 +92,6 @@ const FilterOptions = ({ searchOptions, allMajors, onChange }: Props) => {
     [searchOptions.times]
   );
 
-  // 처리된 전공 목록 (문자열 처리)
   const processedMajors = useMemo(
     () =>
       allMajors.map(major => ({
@@ -107,6 +100,7 @@ const FilterOptions = ({ searchOptions, allMajors, onChange }: Props) => {
       })),
     [allMajors]
   );
+
   return (
     <>
       <HStack spacing={4}>
@@ -214,7 +208,6 @@ const FilterOptions = ({ searchOptions, allMajors, onChange }: Props) => {
     </>
   );
 };
-
 FilterOptions.displayName = 'FilterOptions';
 
 export default FilterOptions;

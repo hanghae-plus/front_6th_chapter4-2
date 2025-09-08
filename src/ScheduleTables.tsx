@@ -3,11 +3,11 @@ import { Stack } from '@chakra-ui/react/stack';
 import { Heading } from '@chakra-ui/react/typography';
 import { Button, ButtonGroup } from '@chakra-ui/react/button';
 import { useScheduleContext } from './ScheduleContext.tsx';
-import { useState, memo, useCallback, useMemo, lazy } from 'react';
+import { useState, useCallback, useMemo, lazy, memo } from 'react';
 const SearchDialog = lazy(() => import('./SearchDialog.tsx'));
 const ScheduleTable = lazy(() => import('./ScheduleTable'));
 
-export const ScheduleTables = () => {
+const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
@@ -71,31 +71,31 @@ export const ScheduleTables = () => {
     [setSchedulesMap]
   );
 
-  const MemoiezedButtonGroup = ({
-    tableId,
-    disabled,
-  }: {
-    tableId: string;
-    disabled: boolean;
-  }) => {
-    return (
-      <ButtonGroup size="sm" isAttached>
-        <Button colorScheme="green" onClick={() => handleSearchOpen(tableId)}>
-          시간표 추가
-        </Button>
-        <Button colorScheme="green" mx="1px" onClick={() => duplicate(tableId)}>
-          복제
-        </Button>
-        <Button
-          colorScheme="green"
-          isDisabled={disabled}
-          onClick={() => remove(tableId)}
-        >
-          삭제
-        </Button>
-      </ButtonGroup>
-    );
-  };
+  const MemoizedButtonGroup = memo(
+    ({ tableId, disabled }: { tableId: string; disabled: boolean }) => {
+      return (
+        <ButtonGroup size="sm" isAttached>
+          <Button colorScheme="green" onClick={() => handleSearchOpen(tableId)}>
+            시간표 추가
+          </Button>
+          <Button
+            colorScheme="green"
+            mx="1px"
+            onClick={() => duplicate(tableId)}
+          >
+            복제
+          </Button>
+          <Button
+            colorScheme="green"
+            isDisabled={disabled}
+            onClick={() => remove(tableId)}
+          >
+            삭제
+          </Button>
+        </ButtonGroup>
+      );
+    }
+  );
 
   const handleSearchClose = useCallback(() => {
     setSearchInfo(null);
@@ -110,13 +110,12 @@ export const ScheduleTables = () => {
               <Heading as="h3" fontSize="lg">
                 시간표 {index + 1}
               </Heading>
-              <MemoiezedButtonGroup
+              <MemoizedButtonGroup
                 tableId={tableId}
                 disabled={disabledRemoveButton}
               />
             </Flex>
             <ScheduleTable
-              key={`schedule-table-${index}`}
               schedules={schedules}
               tableId={tableId}
               onScheduleTimeClick={handleScheduleTimeClick(tableId)}
@@ -129,3 +128,4 @@ export const ScheduleTables = () => {
     </>
   );
 };
+export default ScheduleTables;
