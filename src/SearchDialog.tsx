@@ -86,17 +86,25 @@ const fetchMajors = () => axios.get<Lecture[]>('/schedules-majors.json'); // 전
 const fetchLiberalArts = () => axios.get<Lecture[]>('/schedules-liberal-arts.json'); // 교양 불러오기
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
-const fetchAllLectures = async () =>
-	await Promise.all([
-		(console.log('API Call 1', performance.now()), await fetchMajors()),
-		(console.log('API Call 2', performance.now()), await fetchLiberalArts()),
-		(console.log('API Call 3', performance.now()), await fetchMajors()),
-		(console.log('API Call 4', performance.now()), await fetchLiberalArts()),
-		(console.log('API Call 5', performance.now()), await fetchMajors()),
-		(console.log('API Call 6', performance.now()), await fetchLiberalArts()),
-	]);
+// (이미 호출한 api는 다시 호출하지 않도록 - 클로저를 이용하여 캐시 구성)
+const fetchAllLectures = () => {
+	let lectureCache: Lecture[] | null = null;
+
+	return async () => {
+		if (lectureCache) return lectureCache;
+
+		const res = await Promise.all([
+			(console.log('API Call 1', performance.now()), fetchMajors()),
+			(console.log('API Call 2', performance.now()), fetchLiberalArts()),
+		]);
+
+		lectureCache = res.flatMap((r) => r.data);
+		return lectureCache;
+	};
+};
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
+// (스크롤을 할 때마다 검색을 시도하지 않도록)
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
 	const { setSchedulesMap } = useScheduleContext();
 
@@ -151,7 +159,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 		loaderWrapperRef.current?.scrollTo(0, 0); // 스크롤 위치를 맨 위로 이동
 	};
 
-  // 강의 추가 함수
+	// 강의 추가 함수
 	const addSchedule = (lecture: Lecture) => {
 		if (!searchInfo) return;
 
@@ -173,11 +181,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 	useEffect(() => {
 		const start = performance.now();
 		console.log('API 호출 시작: ', start);
-		fetchAllLectures().then((results) => {
+
+		fetchAllLectures()().then((results) => {
 			const end = performance.now();
 			console.log('모든 API 호출 완료 ', end);
 			console.log('API 호출에 걸린 시간(ms): ', end - start);
-			setLectures(results.flatMap((result) => result.data));
+
+			setLectures(results); // 전공과 교양을 평탄화하여 하나의 배열로 처리
 		});
 	}, []);
 
