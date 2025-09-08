@@ -34,6 +34,7 @@ import { Lecture } from './types.ts';
 import { parseSchedule } from './utils.ts';
 import axios from 'axios';
 import { DAY_LABELS } from './constants.ts';
+import { useIntersectionObserver } from './hooks/useIntersectionObserver.ts';
 
 interface Props {
 	searchInfo: {
@@ -150,7 +151,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 	}, [lectures, searchOptions]);
 
 	const lastPage = useMemo(() => Math.ceil(filteredLectures.length / PAGE_SIZE), [filteredLectures]);
-	const visibleLectures = useMemo(() => filteredLectures.slice(0, page * PAGE_SIZE), [filteredLectures]);
+	const visibleLectures = useMemo(() => filteredLectures.slice(0, page * PAGE_SIZE), [filteredLectures, page]);
 	const allMajors = useMemo(() => [...new Set(lectures.map((lecture) => lecture.major))], [lectures]);
 
 	const changeSearchOption = useCallback((field: keyof SearchOption, value: SearchOption[typeof field]) => {
@@ -195,33 +196,15 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 	}, []);
 
 	// 무한 스크롤 IntersectionObserver 설정
-	useEffect(() => {
-		const $loader = loaderRef.current; // 마지막에 나타나는 로딩 표시 요소
-		const $loaderWrapper = loaderWrapperRef.current; // 스크롤 가능 영역 - 관찰 기준 요소
-
-		// 요소가 존재하지 않으면 종료
-		if (!$loader || !$loaderWrapper) {
-			return;
-		}
-
-		const observer = new IntersectionObserver(
-			// entries - 관찰 중인 요소 배열
-			(entries) => {
-				if (entries[0].isIntersecting) {
-					// loader 요소가 화면과 교차하면 페이지 증가
-					setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-				}
-			},
-			{
-				threshold: 0, // 요소가 보이면 콜백 실행
-				root: $loaderWrapper, // 관찰 기준 요소 지정
-			}
-		);
-
-		observer.observe($loader); // 요소 관찰 시작
-
-		return () => observer.unobserve($loader); // 컴포넌트 언마운트 시 해제
+	const handleNextPageScroll = useCallback(() => {
+		setPage((prev) => Math.min(lastPage, prev + 1));
 	}, [lastPage]);
+
+	useIntersectionObserver({
+		onIntersect: handleNextPageScroll,
+		loaderRef: loaderRef,
+		loaderWrapperRef: loaderWrapperRef,
+	});
 
 	// searchInfo 변경 시 검색 옵션 업데이트
 	useEffect(() => {
