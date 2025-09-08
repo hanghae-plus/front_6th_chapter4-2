@@ -1,3 +1,7 @@
+/**
+ * 강의 검색 및 선택 다이얼로그 컴포넌트
+ * 다양한 필터 옵션을 제공하여 강의를 검색하고 시간표에 추가할 수 있습니다.
+ */
 import { memo, useEffect, useRef, useState } from "react";
 import {
   Box,
@@ -53,6 +57,7 @@ interface SearchOption {
   credits?: number;
 }
 
+// 시간 슬롯 라벨 정의 (1~24교시)
 const TIME_SLOTS = [
   { id: 1, label: "09:00~09:30" },
   { id: 2, label: "09:30~10:00" },
@@ -82,10 +87,13 @@ const TIME_SLOTS = [
 
 const PAGE_SIZE = 100;
 
+// 전공 과목 데이터 가져오기
 const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
+// 교양 과목 데이터 가져오기
 const fetchLiberalArts = () =>
   axios.get<Lecture[]>("/schedules-liberal-arts.json");
 
+// 모든 강의 데이터를 가져오는 함수 (성능 테스트를 위한 중복 호출 포함)
 const fetchAllLectures = async () => {
   let major: AxiosResponse<Lecture[]> | null = null;
   let liberalArts: AxiosResponse<Lecture[]> | null = null;
@@ -106,6 +114,10 @@ const fetchAllLectures = async () => {
   ]);
 };
 
+/**
+ * 검색 결과에서 개별 강의 정보를 표시하는 컴포넌트
+ * 메모이제이션을 통해 리렌더링 최적화를 적용했습니다.
+ */
 const SearchItem = memo(
   ({
     addSchedule,
@@ -137,6 +149,10 @@ const SearchItem = memo(
 SearchItem.displayName = "SearchItem";
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
+/**
+ * 강의 검색 다이얼로그 메인 컴포넌트
+ * 검색 필터, 무한 스크롤, 강의 추가 기능을 제공합니다.
+ */
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
@@ -152,6 +168,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
+  // 검색 옵션에 따라 강의 목록을 필터링하는 함수
   const getFilteredLectures = () => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
     return lectures
@@ -196,6 +213,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
   const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
 
+  // 검색 옵션 변경 및 페이지 초기화 함수
   const changeSearchOption = (
     field: keyof SearchOption,
     value: SearchOption[typeof field]
@@ -205,6 +223,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     loaderWrapperRef.current?.scrollTo(0, 0);
   };
 
+  // 선택한 강의를 시간표에 추가하는 함수
   const addSchedule = (lecture: Lecture) => {
     if (!searchInfo) return;
 
