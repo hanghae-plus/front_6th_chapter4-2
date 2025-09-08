@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -34,6 +34,7 @@ import { Lecture } from './types.ts';
 import { parseSchedule } from './utils.ts';
 import axios from 'axios';
 import { DAY_LABELS } from './constants.ts';
+import { useAutoCallback } from './hooks/useAutoCallback.ts';
 
 interface Props {
   searchInfo: {
@@ -88,22 +89,42 @@ const fetchLiberalArts = () =>
 
 const createLectureCache = () => {
   let cache: Lecture[] | null = null;
+  let isLoading = false;
+  let pendingPromise: Promise<Lecture[]> | null = null;
 
   return async (): Promise<Lecture[]> => {
+    // 캐시에서 반환
     if (cache) {
       console.log('캐시에서 데이터 반환', performance.now());
       return cache;
     }
 
-    console.log('API 호출 시작', performance.now());
-    const [majorsResponse, liberalArtsResponse] = await Promise.all([
-      fetchMajors(),
-      fetchLiberalArts(),
-    ]);
+    // 이미 로딩 중인 경우 같은 Promise 반환
+    if (isLoading && pendingPromise) {
+      console.log('진행 중인 API 호출 대기 중', performance.now());
+      return pendingPromise;
+    }
 
-    cache = [...majorsResponse.data, ...liberalArtsResponse.data];
-    console.log('API 호출 완료 및 캐시 저장', performance.now());
-    return cache;
+    // 새로운 API 호출 시작
+    isLoading = true;
+    console.log('API 호출 시작', performance.now());
+
+    pendingPromise = Promise.all([fetchMajors(), fetchLiberalArts()])
+      .then(([majorsResponse, liberalArtsResponse]) => {
+        cache = [...majorsResponse.data, ...liberalArtsResponse.data];
+        isLoading = false;
+        pendingPromise = null;
+        console.log('API 호출 완료 및 캐시 저장', performance.now());
+        return cache;
+      })
+      .catch((error) => {
+        isLoading = false;
+        pendingPromise = null;
+        console.error('API 호출 실패:', error);
+        throw error;
+      });
+
+    return pendingPromise;
   };
 };
 
@@ -125,7 +146,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  const filteredLectures = useMemo(() => {
     const { query = '', credits, grades, days, times, majors } = searchOptions;
     return lectures
       .filter(
@@ -162,23 +183,27 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
           s.range.some((time) => times.includes(time))
         );
       });
-  };
+  }, [lectures, searchOptions]);
 
-  const filteredLectures = getFilteredLectures();
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+  const visibleLectures = useMemo(
+    () => filteredLectures.slice(0, page * PAGE_SIZE),
+    [filteredLectures, page]
+  );
+  const allMajors = useMemo(
+    () => [...new Set(lectures.map((lecture) => lecture.major))],
+    [lectures]
+  );
 
-  const changeSearchOption = (
-    field: keyof SearchOption,
-    value: SearchOption[typeof field]
-  ) => {
-    setPage(1);
-    setSearchOptions({ ...searchOptions, [field]: value });
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  };
+  const changeSearchOption = useAutoCallback(
+    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
+      setSearchOptions({ ...searchOptions, [field]: value });
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    }
+  );
 
-  const addSchedule = (lecture: Lecture) => {
+  const addSchedule = useAutoCallback((lecture: Lecture) => {
     if (!searchInfo) return;
 
     const { tableId } = searchInfo;
@@ -194,7 +219,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     }));
 
     onClose();
-  };
+  });
 
   useEffect(() => {
     const start = performance.now();
