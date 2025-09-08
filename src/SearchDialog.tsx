@@ -1,10 +1,11 @@
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {Box, Button, Checkbox, CheckboxGroup, FormControl, FormLabel, HStack, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Select, Stack, Table, Tag, TagCloseButton, TagLabel, Tbody, Td, Text, Th, Thead, Tr, VStack, Wrap} from '@chakra-ui/react'
 import {useScheduleContext} from './ScheduleContext.tsx'
 import {Lecture} from './types.ts'
 import {parseSchedule} from './utils.ts'
 import axios from 'axios'
 import {DAY_LABELS} from './constants.ts'
+import {useAutoCallback} from './hooks/useAutoCallback.ts'
 
 interface Props {
 	searchInfo: {
@@ -98,42 +99,70 @@ const SearchDialog = ({searchInfo, onClose}: Props) => {
 		times: [],
 		majors: []
 	})
-	const getFilteredLectures = () => {
-		const {query = '', credits, grades, days, times, majors} = searchOptions
-		return lectures
-			.filter((lecture) => lecture && lecture.title && lecture.id) // undefined 체크 추가
-			.filter((lecture) => lecture.title.toLowerCase().includes(query.toLowerCase()) || lecture.id.toLowerCase().includes(query.toLowerCase())) // 매번 toLowerCase 호출
-			.filter((lecture) => grades.length === 0 || grades.includes(lecture.grade))
-			.filter((lecture) => majors.length === 0 || majors.includes(lecture.major))
-			.filter((lecture) => !credits || lecture.credits.startsWith(String(credits)))
-			.filter((lecture) => {
-				if (days.length === 0) {
-					return true
-				}
-				const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [] // 중복 호출 1
-				return schedules.some((s) => days.includes(s.day))
-			})
-			.filter((lecture) => {
-				if (times.length === 0) {
-					return true
-				}
-				const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [] // 중복 호출 2
-				return schedules.some((s) => s.range.some((time) => times.includes(time)))
-			})
-	}
+	// const getFilteredLectures = () => {
+	// 	const {query = '', credits, grades, days, times, majors} = searchOptions
+	// 	return lectures
+	// 		.filter((lecture) => lecture && lecture.title && lecture.id) // undefined 체크 추가
+	// 		.filter((lecture) => lecture.title.toLowerCase().includes(query.toLowerCase()) || lecture.id.toLowerCase().includes(query.toLowerCase())) // 매번 toLowerCase 호출
+	// 		.filter((lecture) => grades.length === 0 || grades.includes(lecture.grade))
+	// 		.filter((lecture) => majors.length === 0 || majors.includes(lecture.major))
+	// 		.filter((lecture) => !credits || lecture.credits.startsWith(String(credits)))
+	// 		.filter((lecture) => {
+	// 			if (days.length === 0) {
+	// 				return true
+	// 			}
+	// 			const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [] // 중복 호출 1
+	// 			return schedules.some((s) => days.includes(s.day))
+	// 		})
+	// 		.filter((lecture) => {
+	// 			if (times.length === 0) {
+	// 				return true
+	// 			}
+	// 			const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [] // 중복 호출 2
+	// 			return schedules.some((s) => s.range.some((time) => times.includes(time)))
+	// 		})
+	// }
 
-	const filteredLectures = getFilteredLectures() // 매 렌더링마다 실행됨 -> 렌더링될 때마다 전체 데이터 필터링
+	// const filteredLectures = getFilteredLectures() // 매 렌더링마다 실행됨 -> 렌더링될 때마다 전체 데이터 필터링
+
+	const filteredLectures = useMemo(() => {
+		const {query = '', credits, grades, days, times, majors} = searchOptions
+		const lowerQuery = query.toLowerCase()
+
+		return lectures.filter((lecture) => {
+			if (!lecture?.title || !lecture?.id) return false
+
+			// 검색어 필터
+			const lowerTitle = lecture.title.toLowerCase()
+			if (query && !lowerTitle.includes(lowerQuery) && !lecture.id.toLowerCase().includes(lowerQuery)) {
+				return false
+			}
+
+			// 학년, 전공, 학점 필터
+			if (grades.length > 0 && !grades.includes(lecture.grade)) return false
+			if (majors.length > 0 && !majors.includes(lecture.major)) return false
+			if (credits && !lecture.credits.startsWith(String(credits))) return false
+
+			const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : []
+
+			if (days.length > 0 && !schedules.some((s) => days.includes(s.day))) return false
+			if (times.length > 0 && !schedules.some((s) => s.range.some((time) => times.includes(time)))) return false
+
+			return true
+		})
+	}, [lectures, searchOptions])
+
 	const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE)
 	const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE)
 	const allMajors = [...new Set(lectures.filter((lecture) => lecture && lecture.major).map((lecture) => lecture.major))] // 전공이 바뀌지 않았는데도 매번 전공 목록을 재계산 -> 불필요한 연산
 
-	const changeSearchOption = (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+	const changeSearchOption = useAutoCallback((field: keyof SearchOption, value: SearchOption[typeof field]) => {
 		setPage(1)
 		setSearchOptions({...searchOptions, [field]: value})
 		loaderWrapperRef.current?.scrollTo(0, 0)
-	}
+	})
 
-	const addSchedule = (lecture: Lecture) => {
+	const addSchedule = useAutoCallback((lecture: Lecture) => {
 		if (!searchInfo) return
 
 		const {tableId} = searchInfo
@@ -149,7 +178,7 @@ const SearchDialog = ({searchInfo, onClose}: Props) => {
 		}))
 
 		onClose()
-	}
+	})
 
 	useEffect(() => {
 		const start = performance.now()
