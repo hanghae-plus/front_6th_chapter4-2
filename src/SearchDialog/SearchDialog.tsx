@@ -1,6 +1,5 @@
 import {
 	Box,
-	Button,
 	Checkbox,
 	CheckboxGroup,
 	FormControl,
@@ -20,7 +19,6 @@ import {
 	TagCloseButton,
 	TagLabel,
 	Tbody,
-	Td,
 	Text,
 	Th,
 	Thead,
@@ -29,11 +27,13 @@ import {
 	Wrap,
 } from "@chakra-ui/react";
 import axios, { type AxiosResponse } from "axios";
-import { useEffect, useRef, useState } from "react";
-import { DAY_LABELS } from "./constants.ts";
-import { useScheduleContext } from "./ScheduleContext.tsx";
-import type { Lecture } from "./types.ts";
-import { parseSchedule } from "./utils.ts";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { DAY_LABELS } from "../constants.ts";
+import { useAutoCallback } from "../hook/useAutoCallback.ts";
+import { useScheduleContext } from "../ScheduleContext.tsx";
+import type { Lecture } from "../types.ts";
+import { parseSchedule } from "../utils.ts";
+import { LectureRow } from "./LectureRow.tsx";
 
 interface Props {
 	searchInfo: {
@@ -129,9 +129,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 		majors: [],
 	});
 
-	const getFilteredLectures = () => {
+	const { filteredLectures, lastPage, allMajors } = useMemo(() => {
+		console.log("filteredLectures");
 		const { query = "", credits, grades, days, times, majors } = searchOptions;
-		return lectures
+		const filteredLectures = lectures
 			.filter(
 				(lecture) =>
 					lecture.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -166,12 +167,17 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 					s.range.some((time) => times.includes(time)),
 				);
 			});
-	};
 
-	const filteredLectures = getFilteredLectures();
-	const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
+		const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
+		const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+
+		return {
+			filteredLectures,
+			lastPage,
+			allMajors,
+		};
+	}, [lectures, searchOptions]);
 	const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-	const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
 
 	const changeSearchOption = (
 		field: keyof SearchOption,
@@ -182,7 +188,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 		loaderWrapperRef.current?.scrollTo(0, 0);
 	};
 
-	const addSchedule = (lecture: Lecture) => {
+	const addSchedule = useAutoCallback((lecture: Lecture) => {
 		if (!searchInfo) return;
 
 		const { tableId } = searchInfo;
@@ -198,7 +204,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 		}));
 
 		onClose();
-	};
+	});
 
 	useEffect(() => {
 		const start = performance.now();
@@ -435,31 +441,12 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 								<Table size="sm" variant="striped">
 									<Tbody>
 										{visibleLectures.map((lecture, index) => (
-											<Tr key={`${lecture.id}-${index}`}>
-												<Td width="100px">{lecture.id}</Td>
-												<Td width="50px">{lecture.grade}</Td>
-												<Td width="200px">{lecture.title}</Td>
-												<Td width="50px">{lecture.credits}</Td>
-												<Td
-													width="150px"
-													// biome-ignore lint/security/noDangerouslySetInnerHtml: dangerouslySetInnerHTML 쓰는 이유 확인 하기
-													dangerouslySetInnerHTML={{ __html: lecture.major }}
-												/>
-												<Td
-													width="150px"
-													// biome-ignore lint/security/noDangerouslySetInnerHtml: dangerouslySetInnerHTML 쓰는 이유 확인 하기
-													dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-												/>
-												<Td width="80px">
-													<Button
-														size="sm"
-														colorScheme="green"
-														onClick={() => addSchedule(lecture)}
-													>
-														추가
-													</Button>
-												</Td>
-											</Tr>
+											<LectureRow
+												key={`${lecture.id}-${index}`}
+												index={index}
+												addSchedule={addSchedule}
+												{...lecture}
+											/>
 										))}
 									</Tbody>
 								</Table>
