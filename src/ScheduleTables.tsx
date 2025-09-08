@@ -38,6 +38,18 @@ export const ScheduleTables = () => {
     [setSchedulesMap]
   );
 
+  // 🔃 프롭스 최적화
+  const handleDelete = useCallback(
+    (tableId: string, day: string, time: number) => {
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: prev[tableId].filter(
+          (schedule) => schedule.day !== day || !schedule.range.includes(time)
+        ),
+      }));
+    },
+    [setSchedulesMap]
+  );
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
@@ -78,13 +90,7 @@ export const ScheduleTables = () => {
                 setSearchInfo({ tableId, ...timeInfo })
               }
               onDeleteButtonClick={({ day, time }) =>
-                setSchedulesMap((prev) => ({
-                  ...prev,
-                  [tableId]: prev[tableId].filter(
-                    (schedule) =>
-                      schedule.day !== day || !schedule.range.includes(time)
-                  ),
-                }))
+                handleDelete(tableId, day, time)
               }
             />
           </Stack>
