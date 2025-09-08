@@ -29,7 +29,7 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DAY_LABELS } from "./constants";
 import { useScheduleContext } from "./ScheduleContext";
 import { Lecture } from "./types.ts";
@@ -106,7 +106,13 @@ const fetchAllLectures = async () =>
     (console.log("API Call 6", performance.now()), fetchLiberalArts()),
   ]);
 
-// TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
+/**
+ * TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
+ *
+ * * 1. useMemo, useCallback 적용
+ * * 3. IntersectionObserver 의존성 배열 제거
+ * * 3. 필터 순회 1번으로 변경
+ */
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
@@ -122,76 +128,109 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  const lecturesWithSchedules = useMemo(
+    () =>
+      lectures.map((lecture) => ({
+        ...lecture,
+        parsedSchedule: lecture.schedule ? parseSchedule(lecture.schedule) : [],
+      })),
+    [lectures],
+  );
+
+  const filteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
-    return lectures
-      .filter(
-        (lecture) =>
-          lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-          lecture.id.toLowerCase().includes(query.toLowerCase()),
-      )
-      .filter(
-        (lecture) => grades.length === 0 || grades.includes(lecture.grade),
-      )
-      .filter(
-        (lecture) => majors.length === 0 || majors.includes(lecture.major),
-      )
-      .filter(
-        (lecture) => !credits || lecture.credits.startsWith(String(credits)),
-      )
-      .filter((lecture) => {
-        if (days.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) => days.includes(s.day));
-      })
-      .filter((lecture) => {
-        if (times.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) =>
+    return lecturesWithSchedules.filter((lecture) => {
+      // 1. 검색어 필터 (제목 또는 과목코드)
+      if (
+        query &&
+        !lecture.title.toLowerCase().includes(query.toLowerCase()) &&
+        !lecture.id.toLowerCase().includes(query.toLowerCase())
+      ) {
+        return false;
+      }
+
+      // 2. 학년 필터
+      if (grades.length > 0 && !grades.includes(lecture.grade)) {
+        return false;
+      }
+
+      // 3. 전공 필터
+      if (majors.length > 0 && !majors.includes(lecture.major)) {
+        return false;
+      }
+
+      // 4. 학점 필터
+      if (credits && !lecture.credits.startsWith(String(credits))) {
+        return false;
+      }
+
+      // 5. 요일 필터
+      if (
+        days.length > 0 &&
+        !lecture.parsedSchedule.some((s) => days.includes(s.day))
+      ) {
+        return false;
+      }
+
+      // 6. 시간 필터
+      if (
+        times.length > 0 &&
+        !lecture.parsedSchedule.some((s) =>
           s.range.some((time) => times.includes(time)),
-        );
-      });
-  };
+        )
+      ) {
+        return false;
+      }
 
-  const filteredLectures = getFilteredLectures();
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+      return true;
+    });
+  }, [lecturesWithSchedules, searchOptions]);
 
-  const changeSearchOption = (
-    field: keyof SearchOption,
-    value: SearchOption[typeof field],
-  ) => {
-    setPage(1);
-    setSearchOptions({ ...searchOptions, [field]: value });
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  };
+  const lastPage = useMemo(
+    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
+    [filteredLectures],
+  );
+  const lastPageRef = useRef(lastPage);
+  lastPageRef.current = lastPage;
 
-  const addSchedule = (lecture: Lecture) => {
-    if (!searchInfo) return;
+  const visibleLectures = useMemo(
+    () => filteredLectures.slice(0, page * PAGE_SIZE),
+    [filteredLectures, page],
+  );
+  const allMajors = useMemo(
+    () => [...new Set(lectures.map((lecture) => lecture.major))],
+    [lectures],
+  );
 
-    const { tableId } = searchInfo;
+  const changeSearchOption = useCallback(
+    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
+      setSearchOptions({ ...searchOptions, [field]: value });
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    },
+    [searchOptions],
+  );
 
-    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-      ...schedule,
-      lecture,
-    }));
+  const addSchedule = useCallback(
+    (lecture: Lecture) => {
+      if (!searchInfo) return;
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+      const { tableId } = searchInfo;
 
-    onClose();
-  };
+      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+        ...schedule,
+        lecture,
+      }));
+
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: [...prev[tableId], ...schedules],
+      }));
+
+      onClose();
+    },
+    [searchInfo, onClose, setSchedulesMap],
+  );
 
   useEffect(() => {
     const start = performance.now();
@@ -215,7 +254,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
+          setPage((prevPage) => Math.min(lastPageRef.current, prevPage + 1));
         }
       },
       { threshold: 0, root: $loaderWrapper },
@@ -224,7 +263,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     observer.observe($loader);
 
     return () => observer.unobserve($loader);
-  }, [lastPage]);
+  }, []);
 
   useEffect(() => {
     setSearchOptions((prev) => ({
