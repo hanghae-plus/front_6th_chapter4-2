@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, memo, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, memo } from "react";
 import {
   Box,
   Button,
@@ -35,6 +35,7 @@ import { parseSchedule } from "./utils.ts";
 import axios from "axios";
 import { DAY_LABELS } from "./constants.ts";
 import { useDebounce } from "./hooks/useDebounce.ts";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
 const LectureRow = memo(
   ({
@@ -60,7 +61,13 @@ const LectureRow = memo(
         </Button>
       </Td>
     </Tr>
-  )
+  ),
+  (prevProps, nextProps) => {
+    return (
+      prevProps.lecture.id === nextProps.lecture.id &&
+      prevProps.onAdd === nextProps.onAdd
+    );
+  }
 );
 
 interface Props {
@@ -204,7 +211,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       });
   }, [lectures, searchOptions, debouncedQuery]);
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
+  const visibleLectures = useMemo(
+    () => filteredLectures.slice(0, page * PAGE_SIZE),
+    [filteredLectures, page]
+  );
   const allMajors = useMemo(
     () => [...new Set(lectures.map((lecture) => lecture.major))],
     [lectures]
@@ -219,26 +229,23 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     loaderWrapperRef.current?.scrollTo(0, 0);
   };
 
-  const addSchedule = useCallback(
-    (lecture: Lecture) => {
-      if (!searchInfo) return;
+  const addSchedule = useAutoCallback((lecture: Lecture) => {
+    if (!searchInfo) return;
 
-      const { tableId } = searchInfo;
+    const { tableId } = searchInfo;
 
-      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-        ...schedule,
-        lecture,
-      }));
+    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+      ...schedule,
+      lecture,
+    }));
 
-      setSchedulesMap((prev) => ({
-        ...prev,
-        [tableId]: [...prev[tableId], ...schedules],
-      }));
+    setSchedulesMap((prev) => ({
+      ...prev,
+      [tableId]: [...prev[tableId], ...schedules],
+    }));
 
-      onClose();
-    },
-    [onClose, searchInfo, setSchedulesMap]
-  );
+    onClose();
+  });
 
   useEffect(() => {
     const start = performance.now();
@@ -474,9 +481,9 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>
-                    {visibleLectures.map((lecture) => (
+                    {visibleLectures.map((lecture, index) => (
                       <LectureRow
-                        key={lecture.id}
+                        key={`${lecture.id}-${index}`}
                         lecture={lecture}
                         onAdd={addSchedule}
                       />
