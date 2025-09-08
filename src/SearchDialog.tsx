@@ -34,6 +34,7 @@ import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import axios from "axios";
 import { DAY_LABELS } from "./constants.ts";
+import { useDebounce } from "./hooks/useDebounce.ts";
 
 interface Props {
   searchInfo: {
@@ -137,8 +138,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     return parsed;
   };
 
+  const debouncedQuery = useDebounce(searchOptions.query);
   const filteredLectures = useMemo(() => {
-    const { query = "", credits, grades, days, times, majors } = searchOptions;
+    const { credits, grades, days, times, majors } = searchOptions;
+    const query = debouncedQuery ?? "";
     return lectures
       .filter(
         (lecture) =>
@@ -170,7 +173,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
           s.range.some((time) => times.includes(time))
         );
       });
-  }, [lectures, searchOptions]);
+  }, [lectures, searchOptions, debouncedQuery]);
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
   const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
   const allMajors = useMemo(
