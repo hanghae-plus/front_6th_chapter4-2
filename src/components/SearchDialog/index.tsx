@@ -1,7 +1,6 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   FormControl,
@@ -15,26 +14,23 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
-  Stack,
   Table,
-  Tag,
-  TagCloseButton,
-  TagLabel,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
   Tr,
   VStack,
-  Wrap,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "../context/ScheduleContext.tsx";
-import { Lecture, SearchOption } from "../types";
-import { parseSchedule } from "../lib/utils";
-import axios from "axios";
-import { DAY_LABELS, TIME_SLOTS, BASE_URL, PAGE_SIZE } from "../constants";
-import { useAutoCallback } from "../hooks/useAutoCallback.ts";
+import { useScheduleContext } from "../../context/ScheduleContext.tsx";
+import { Lecture, SearchOption } from "../../types";
+import { parseSchedule } from "../../lib/utils";
+import { DAY_LABELS, PAGE_SIZE } from "../../constants";
+import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
+import { fetchAllLectures } from "../../lib/api.ts";
+import { TimeFilter } from "./TimeFilter.tsx";
+import { MajorFilter } from "./MajorFilter.tsx";
+import { SearchItem } from "./SearchItem.tsx";
 
 interface Props {
   searchInfo: {
@@ -44,168 +40,6 @@ interface Props {
   } | null;
   onClose: () => void;
 }
-
-const fetchMajors = () => axios.get<Lecture[]>(`${BASE_URL}/schedules-majors.json`);
-const fetchLiberalArts = () => axios.get<Lecture[]>(`${BASE_URL}/schedules-liberal-arts.json`);
-
-const apiCache = new Map<string, Promise<any>>();
-
-const fetchWithCache = (key: string, fetcher: () => Promise<any>) => {
-  if (!apiCache.has(key)) {
-    console.log(`${key} API CALL`);
-    apiCache.set(
-      key,
-      fetcher().catch((error) => {
-        apiCache.delete(key);
-        throw error;
-      })
-    );
-  }
-  return apiCache.get(key);
-};
-
-const fetchAllLectures = () => {
-  const majorsUrl = `${BASE_URL}/schedules-majors.json`;
-  const liberalArtsUrl = `${BASE_URL}/schedules-liberal-arts.json`;
-
-  return Promise.all([
-    fetchWithCache(majorsUrl, fetchMajors),
-    fetchWithCache(liberalArtsUrl, fetchLiberalArts),
-    fetchWithCache(majorsUrl, fetchMajors),
-    fetchWithCache(liberalArtsUrl, fetchLiberalArts),
-    fetchWithCache(majorsUrl, fetchMajors),
-    fetchWithCache(liberalArtsUrl, fetchLiberalArts),
-  ]);
-};
-
-const SearchItem = memo(
-  ({ addSchedule, ...lecture }: Lecture & { addSchedule: (lecture: Lecture) => void }) => {
-    const { id, grade, title, credits, major, schedule } = lecture;
-
-    return (
-      <Tr>
-        <Td width="100px">{id}</Td>
-        <Td width="50px">{grade}</Td>
-        <Td width="200px">{title}</Td>
-        <Td width="50px">{credits}</Td>
-        <Td width="150px" dangerouslySetInnerHTML={{ __html: major }} />
-        <Td width="150px" dangerouslySetInnerHTML={{ __html: schedule }} />
-        <Td width="80px">
-          <Button size="sm" colorScheme="green" onClick={() => addSchedule(lecture)}>
-            추가
-          </Button>
-        </Td>
-      </Tr>
-    );
-  }
-);
-SearchItem.displayName = "SearchItem";
-
-const TimeFilter = memo(
-  ({ selectedTimes, onChange }: { selectedTimes: (string | number)[]; onChange: Function }) => {
-    return (
-      <FormControl>
-        <FormLabel>시간</FormLabel>
-        <CheckboxGroup
-          value={selectedTimes}
-          onChange={(values: (string | number)[]) => onChange("times", values.map(Number))}
-        >
-          <Wrap spacing={1} mb={2}>
-            {selectedTimes
-              .sort((a, b) => Number(a) - Number(b))
-              .map((time) => (
-                <Tag key={time} size="sm" variant="outline" colorScheme="blue">
-                  <TagLabel>{time}교시</TagLabel>
-                  <TagCloseButton
-                    onClick={() =>
-                      onChange(
-                        "times",
-                        selectedTimes.filter((v) => v !== time)
-                      )
-                    }
-                  />
-                </Tag>
-              ))}
-          </Wrap>
-          <Stack
-            spacing={2}
-            overflowY="auto"
-            h="100px"
-            border="1px solid"
-            borderColor="gray.200"
-            borderRadius={5}
-            p={2}
-          >
-            {TIME_SLOTS.map(({ id, label }) => (
-              <Box key={id}>
-                <Checkbox key={id} size="sm" value={id}>
-                  {id}교시({label})
-                </Checkbox>
-              </Box>
-            ))}
-          </Stack>
-        </CheckboxGroup>
-      </FormControl>
-    );
-  }
-);
-TimeFilter.displayName = "TimeFilter";
-
-const MajorFilter = memo(
-  ({
-    allMajors,
-    selectedMajors,
-    onChange,
-  }: {
-    allMajors: string[];
-    selectedMajors: string[];
-    onChange: Function;
-  }) => {
-    return (
-      <FormControl>
-        <FormLabel>전공</FormLabel>
-        <CheckboxGroup
-          value={selectedMajors}
-          onChange={(values) => onChange("majors", values as string[])}
-        >
-          <Wrap spacing={1} mb={2}>
-            {selectedMajors.map((major) => (
-              <Tag key={major} size="sm" variant="outline" colorScheme="blue">
-                <TagLabel>{major.split("<p>").pop()}</TagLabel>
-                <TagCloseButton
-                  onClick={() =>
-                    onChange(
-                      "majors",
-                      selectedMajors.filter((v) => v !== major)
-                    )
-                  }
-                />
-              </Tag>
-            ))}
-          </Wrap>
-          <Stack
-            spacing={2}
-            overflowY="auto"
-            h="100px"
-            border="1px solid"
-            borderColor="gray.200"
-            borderRadius={5}
-            p={2}
-          >
-            {allMajors.map((major) => (
-              <Box key={major}>
-                <Checkbox key={major} size="sm" value={major}>
-                  {major.replace(/<p>/gi, " ")}
-                </Checkbox>
-              </Box>
-            ))}
-          </Stack>
-        </CheckboxGroup>
-      </FormControl>
-    );
-  }
-);
-MajorFilter.displayName = "MajorFilter";
 
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
