@@ -7,6 +7,10 @@ export interface Lecture {
   grade: number;
 }
 
+export interface ProcessedLecture extends Lecture {
+  parsedSchedule: { day: string; range: number[] }[];
+}
+
 export interface Schedule {
   lecture: Lecture;
   day: string;
