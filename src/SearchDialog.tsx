@@ -29,7 +29,7 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { DAY_LABELS } from "./constants";
 import { useScheduleContext } from "./ScheduleContext";
 import { Lecture } from "./types.ts";
@@ -45,12 +45,11 @@ interface Props {
 }
 
 interface SearchOption {
-  query?: string;
   grades: number[];
   days: string[];
   times: number[];
   majors: string[];
-  credits?: number;
+  credits?: string;
 }
 
 const TIME_SLOTS = [
@@ -120,8 +119,9 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
-    query: "",
     grades: [],
     days: [],
     times: [],
@@ -138,13 +138,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   );
 
   const filteredLectures = useMemo(() => {
-    const { query = "", credits, grades, days, times, majors } = searchOptions;
+    const { credits, grades, days, times, majors } = searchOptions;
     return lecturesWithSchedules.filter((lecture) => {
       // 1. 검색어 필터 (제목 또는 과목코드)
       if (
-        query &&
-        !lecture.title.toLowerCase().includes(query.toLowerCase()) &&
-        !lecture.id.toLowerCase().includes(query.toLowerCase())
+        deferredSearchQuery &&
+        !lecture.title.toLowerCase().includes(deferredSearchQuery.toLowerCase()) &&
+        !lecture.id.toLowerCase().includes(deferredSearchQuery.toLowerCase())
       ) {
         return false;
       }
@@ -184,7 +184,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 
       return true;
     });
-  }, [lecturesWithSchedules, searchOptions]);
+  }, [lecturesWithSchedules, deferredSearchQuery, searchOptions]);
 
   const lastPage = useMemo(
     () => Math.ceil(filteredLectures.length / PAGE_SIZE),
@@ -287,8 +287,8 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <FormLabel>검색어</FormLabel>
                 <Input
                   placeholder="과목명 또는 과목코드"
-                  value={searchOptions.query}
-                  onChange={(e) => changeSearchOption("query", e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </FormControl>
 
