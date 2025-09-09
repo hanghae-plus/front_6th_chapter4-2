@@ -1,14 +1,16 @@
 import {
   DndContext,
+  DragStartEvent,
   Modifier,
   PointerSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useCallback } from 'react';
 import { CellSize, DAY_LABELS } from './constants.ts';
 import { useScheduleContext } from './ScheduleContext.tsx';
 import { useAutoCallback } from './hooks/useAutoCallback.ts';
+import { useDragState } from './SchedulesDragStateProvider.tsx';
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -48,6 +50,7 @@ const modifiers = [createSnapModifier()];
 
 export default function ScheduleDndProvider({ children }: PropsWithChildren) {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const { setActiveTableId, setIsDragging } = useDragState();
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -56,6 +59,14 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
     })
   );
 
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const [tableId] = String(event.active.id).split(':');
+      setActiveTableId(tableId);
+      setIsDragging(true);
+    },
+    [setActiveTableId, setIsDragging]
+  );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragEnd = useAutoCallback((event: any) => {
     const { active, delta } = event;
@@ -72,7 +83,7 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
       ...schedulesMap,
       [tableId]: schedulesMap[tableId].map((targetSchedule, targetIndex) => {
         if (targetIndex !== Number(index)) {
-          return { ...targetSchedule };
+          return targetSchedule;
         }
         return {
           ...targetSchedule,
@@ -81,11 +92,14 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
         };
       }),
     });
+    setActiveTableId(null);
+    setIsDragging(false);
   });
 
   return (
     <DndContext
       sensors={sensors}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       modifiers={modifiers}
     >

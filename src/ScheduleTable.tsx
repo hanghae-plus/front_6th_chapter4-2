@@ -15,9 +15,10 @@ import { Text } from '@chakra-ui/react/typography';
 import { CellSize, DAY_LABELS, TIMES } from './constants.ts';
 import { Schedule } from './types.ts';
 import { fill2 } from './utils.ts';
-import { useDndContext, useDraggable } from '@dnd-kit/core';
+import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { ComponentProps, Fragment, useMemo, useCallback, memo } from 'react';
+import { useDragState } from './SchedulesDragStateProvider.tsx';
 
 interface Props {
   tableId: string;
@@ -108,16 +109,17 @@ const ScheduleTable = memo(
       [lectureColorMap]
     );
 
-    const dndContext = useDndContext();
+    // const dndContext = useDndContext();
+    const { activeTableId } = useDragState();
 
     // 활성 테이블 ID 메모이제이션
-    const activeTableId = useMemo(() => {
-      const activeId = dndContext.active?.id;
-      if (activeId) {
-        return String(activeId).split(':')[0];
-      }
-      return null;
-    }, [dndContext.active?.id]);
+    // const activeTableId = useMemo(() => {
+    //   const activeId = dndContext.active?.id;
+    //   if (activeId) {
+    //     return String(activeId).split(':')[0];
+    //   }
+    //   return null;
+    // }, [dndContext.active?.id]);
 
     // 핸들러 함수들 메모이제이션 - 고차함수로 최적화
     const createTimeClickHandler = useCallback(

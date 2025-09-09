@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Text } from '@chakra-ui/react/typography';
 import { FormControl, FormLabel } from '@chakra-ui/react/form-control';
 import { HStack, VStack } from '@chakra-ui/react/stack';
@@ -10,23 +10,27 @@ import {
   ModalContent,
   ModalHeader,
 } from '@chakra-ui/react/modal';
-import { Button } from '@chakra-ui/react/button';
 import { Input } from '@chakra-ui/react/input';
-import { Checkbox, CheckboxGroup } from '@chakra-ui/react/checkbox';
 import { Box } from '@chakra-ui/react/box';
-import { Select } from '@chakra-ui/react/select';
 import { useScheduleContext } from './ScheduleContext.tsx';
 import { Lecture } from './types.ts';
 import { parseSchedule } from './utils.ts';
 import axios from 'axios';
 
 import { createCachedApi } from './lib/createCachedApi.ts';
-import { Wrap } from '@chakra-ui/react/wrap';
-import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react/tag';
-import { Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react/table';
-import { Stack } from '@chakra-ui/react/stack';
+
+import { Table, Tbody, Thead } from '@chakra-ui/react/table';
+
 import { useAutoCallback } from './hooks/useAutoCallback.ts';
-import { DAY_LABELS, PAGE_SIZE, TIME_SLOTS } from './constants.ts';
+import { PAGE_SIZE } from './constants.ts';
+import {
+  CheckMajor,
+  CheckTime,
+  LectureItem,
+  GradeSelect,
+  CheckDays,
+} from './components/schedules/SearchDialog/components';
+import CheckGrade from './components/schedules/SearchDialog/components/CheckGrade.tsx';
 
 interface Props {
   searchInfo: {
@@ -37,7 +41,7 @@ interface Props {
   onClose: () => void;
 }
 
-interface SearchOption {
+export interface SearchOption {
   query?: string;
   grades: number[];
   days: string[];
@@ -72,45 +76,21 @@ interface Props {
   onClose: () => void;
 }
 
-interface SearchOption {
-  query?: string;
-  grades: number[];
-  days: string[];
-  times: number[];
-  majors: string[];
-  credits?: number;
-}
-
-const SearchItem = memo(
-  ({
-    onAddSchedule,
-    ...lecture
-  }: Lecture & {
-    onAddSchedule: (lecture: Lecture) => void;
-  }) => {
-    const { id, grade, title, credits, major, schedule } = lecture;
-
-    return (
-      <Tr>
-        <Td style={{ width: '100px' }}>{id}</Td>
-        <Td style={{ width: '50px' }}>{grade}</Td>
-        <Td style={{ width: '200px' }}>{title}</Td>
-        <Td style={{ width: '50px' }}>{credits}</Td>
-        <Td style={{ width: '150px' }}>{major}</Td>
-        <Td style={{ width: '150px' }}>{schedule}</Td>
-        <Td style={{ width: '80px' }}>
-          <Button
-            size="sm"
-            colorScheme="green"
-            onClick={() => onAddSchedule(lecture)}
-          >
-            추가
-          </Button>
-        </Td>
-      </Tr>
-    );
-  }
-);
+const LectureTableHead = memo(() => {
+  return (
+    <Thead>
+      <tr>
+        <th style={{ width: '100px' }}>과목코드</th>
+        <th style={{ width: '50px' }}>학년</th>
+        <th style={{ width: '200px' }}>과목명</th>
+        <th style={{ width: '50px' }}>학점</th>
+        <th style={{ width: '150px' }}>전공</th>
+        <th style={{ width: '150px' }}>시간</th>
+        <th style={{ width: '80px' }}></th>
+      </tr>
+    </Thead>
+  );
+});
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
@@ -169,12 +149,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     [lectures]
   );
 
-  const changeSearchOption = useAutoCallback(
+  const changeSearchOption = useCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
       setPage(1);
       setSearchOptions({ ...searchOptions, [field]: value });
       loaderWrapperRef.current?.scrollTo(0, 0);
-    }
+    },
+    []
   );
 
   const addSchedule = useAutoCallback((lecture: Lecture) => {
@@ -239,121 +220,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     setPage(1);
   }, [searchInfo]);
 
-  const MajorTag = memo(({ major }: { major: string }) => {
-    return (
-      <Tag size="sm" variant="outline" colorScheme="blue">
-        <TagLabel>{major.split('<p>').pop()}</TagLabel>
-        <TagCloseButton
-          onClick={() =>
-            changeSearchOption(
-              'majors',
-              searchOptions.majors.filter(v => v !== major)
-            )
-          }
-        />
-      </Tag>
-    );
-  });
-
-  const TimeTag = memo(({ time }: { time: number }) => {
-    return (
-      <Tag key={time} size="sm" variant="outline" colorScheme="blue">
-        <TagLabel>{time}교시</TagLabel>
-        <TagCloseButton
-          onClick={() =>
-            changeSearchOption(
-              'times',
-              searchOptions.times.filter(v => v !== time)
-            )
-          }
-        />
-      </Tag>
-    );
-  });
-
-  const LectureTableHead = memo(() => {
-    return (
-      <Thead>
-        <Tr>
-          <Th width="100px">과목코드</Th>
-          <Th width="50px">학년</Th>
-          <Th width="200px">과목명</Th>
-          <Th width="50px">학점</Th>
-          <Th width="150px">전공</Th>
-          <Th width="150px">시간</Th>
-          <Th width="80px"></Th>
-        </Tr>
-      </Thead>
-    );
-  });
-
-  const CheckMajor = memo(() => {
-    return (
-      <CheckboxGroup
-        colorScheme="green"
-        value={searchOptions.majors}
-        onChange={values => changeSearchOption('majors', values as string[])}
-      >
-        <Wrap spacing={1} mb={2}>
-          {searchOptions.majors.map(major => (
-            <MajorTag major={major} key={major} />
-          ))}
-        </Wrap>
-        <Stack
-          spacing={2}
-          overflowY="auto"
-          h="100px"
-          border="1px solid"
-          borderColor="gray.200"
-          borderRadius={5}
-          p={2}
-        >
-          {allMajors.map(major => (
-            <Box key={major}>
-              <Checkbox key={major} size="sm" value={major}>
-                {major}
-              </Checkbox>
-            </Box>
-          ))}
-        </Stack>
-      </CheckboxGroup>
-    );
-  });
-
-  const TimeCheck = memo(() => {
-    return (
-      <CheckboxGroup
-        colorScheme="green"
-        value={searchOptions.times}
-        onChange={values => changeSearchOption('times', values.map(Number))}
-      >
-        <Wrap spacing={1} mb={2}>
-          {searchOptions.times
-            .sort((a, b) => a - b)
-            .map(time => (
-              <TimeTag time={time} key={time} />
-            ))}
-        </Wrap>
-        <Stack
-          spacing={2}
-          overflowY="auto"
-          h="100px"
-          border="1px solid"
-          borderColor="gray.200"
-          borderRadius={5}
-          p={2}
-        >
-          {TIME_SLOTS.map(({ id, label }) => (
-            <Box key={id}>
-              <Checkbox key={id} size="sm" value={id}>
-                {id}교시({label})
-              </Checkbox>
-            </Box>
-          ))}
-        </Stack>
-      </CheckboxGroup>
-    );
-  });
   return (
     <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
       <ModalOverlay />
@@ -372,80 +238,68 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 />
               </FormControl>
 
-              <FormControl>
-                <FormLabel>학점</FormLabel>
-                <Select
-                  value={searchOptions.credits}
-                  onChange={e => changeSearchOption('credits', e.target.value)}
-                >
-                  <option value="">전체</option>
-                  <option value="1">1학점</option>
-                  <option value="2">2학점</option>
-                  <option value="3">3학점</option>
-                </Select>
-              </FormControl>
+              <GradeSelect
+                searchOptions={searchOptions}
+                changeSearchOption={changeSearchOption}
+              />
             </HStack>
 
             <HStack spacing={4}>
-              <FormControl>
-                <FormLabel>학년</FormLabel>
-                <CheckboxGroup
-                  value={searchOptions.grades}
-                  onChange={value =>
-                    changeSearchOption('grades', value.map(Number))
-                  }
-                >
-                  <HStack spacing={4}>
-                    {[1, 2, 3, 4].map(grade => (
-                      <Checkbox key={grade} value={grade}>
-                        {grade}학년
-                      </Checkbox>
-                    ))}
-                  </HStack>
-                </CheckboxGroup>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>요일</FormLabel>
-                <CheckboxGroup
-                  value={searchOptions.days}
-                  onChange={value =>
-                    changeSearchOption('days', value as string[])
-                  }
-                >
-                  <HStack spacing={4}>
-                    {DAY_LABELS.map(day => (
-                      <Checkbox key={day} value={day}>
-                        {day}
-                      </Checkbox>
-                    ))}
-                  </HStack>
-                </CheckboxGroup>
-              </FormControl>
+              <CheckGrade
+                searchOptions={searchOptions}
+                onChange={changeSearchOption}
+              />
+              <CheckDays
+                onChange={changeSearchOption}
+                searchOptions={searchOptions}
+              />
             </HStack>
 
             <HStack spacing={4}>
-              <FormControl>
-                <FormLabel>시간</FormLabel>
-                <TimeCheck />
-              </FormControl>
+              <CheckTime
+                searchOptions={searchOptions}
+                changeSearchOption={changeSearchOption}
+              />
 
-              <FormControl>
-                <FormLabel>전공</FormLabel>
-                <CheckMajor />
-              </FormControl>
+              <CheckMajor
+                allMajors={allMajors}
+                searchOptions={searchOptions}
+                changeSearchOption={changeSearchOption}
+              />
             </HStack>
             <Text align="right">검색결과: {filteredLectures.length}개</Text>
             <Box>
-              <Table>
+              <Table
+                sx={{
+                  '& th': {
+                    fontSize: 14,
+                  },
+                }}
+              >
                 <LectureTableHead />
               </Table>
 
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
-                <Table size="sm" variant="striped">
+                <Table
+                  size="sm"
+                  variant="striped"
+                  sx={{
+                    '& td': {
+                      fontSize: 12,
+                      padding: 4,
+                    },
+                    button: {
+                      bgColor: '#38A169',
+                      paddingInline: '0.75rem',
+                      paddingBlock: '0.4rem',
+                      borderRadius: 4,
+                      color: 'white',
+                    },
+                  }}
+                >
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
-                      <SearchItem
+                      <LectureItem
                         key={`${lecture.id}-${index}`}
                         {...lecture}
                         onAddSchedule={addSchedule}
