@@ -1,17 +1,19 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useScheduleSetter, useScheduleValue } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { useCallback, useState } from "react";
+import useCustomDnd from "./hooks/useCustomDnd.tsx";
 
 export const ScheduleTables = () => {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const schedulesMap = useScheduleValue();
+  const setSchedulesMap = useScheduleSetter();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
     time?: number;
   } | null>(null);
-
+  const { activeId } = useCustomDnd();
   const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
 
   // 🔃 불필요한 연산 최적화
@@ -86,6 +88,7 @@ export const ScheduleTables = () => {
               key={`schedule-table-${index}`}
               schedules={schedules}
               tableId={tableId}
+              active={activeId === tableId}
               onScheduleTimeClick={(timeInfo) =>
                 setSearchInfo({ tableId, ...timeInfo })
               }
