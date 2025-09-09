@@ -82,6 +82,7 @@ const ScheduleTableItem = memo(
     onRemove,
     onScheduleTimeClick,
     onDeleteButtonClick,
+    onScheduleUpdate,
   }: {
     tableId: string;
     schedules: Schedule[];
@@ -96,10 +97,15 @@ const ScheduleTableItem = memo(
     onDeleteButtonClick: (
       tableId: string
     ) => ({ day, time }: { day: string; time: number }) => void;
+    onScheduleUpdate: (tableId: string, schedules: Schedule[]) => void;
   }) => {
     return (
       <DragStateProvider>
-        <ScheduleDndProvider>
+        <ScheduleDndProvider 
+          tableId={tableId}
+          schedules={schedules}
+          onScheduleUpdate={onScheduleUpdate}
+        >
           <Stack width="600px">
             <Flex justifyContent="space-between" alignItems="center">
               <Heading as="h3" fontSize="lg">
@@ -189,6 +195,16 @@ const ScheduleTables = () => {
     [setSchedulesMap]
   );
 
+  const handleScheduleUpdate = useCallback(
+    (tableId: string, updatedSchedules: Schedule[]) => {
+      setSchedulesMap(prev => ({
+        ...prev,
+        [tableId]: updatedSchedules,
+      }));
+    },
+    [setSchedulesMap]
+  );
+
   const handleSearchClose = useCallback(() => {
     setSearchInfo(null);
   }, []);
@@ -208,6 +224,7 @@ const ScheduleTables = () => {
             onRemove={remove}
             onScheduleTimeClick={handleScheduleTimeClick}
             onDeleteButtonClick={handleDeleteButtonClick}
+            onScheduleUpdate={handleScheduleUpdate}
           />
         ))}
       </Flex>

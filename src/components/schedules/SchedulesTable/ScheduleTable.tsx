@@ -183,6 +183,15 @@ const DraggableSchedule = memo(
         </PopoverContent>
       </Popover>
     );
+  },
+  (prevProps, nextProps) => {
+    // 실제로 변경된 스케줄만 리렌더링
+    return (
+      prevProps.data.day === nextProps.data.day &&
+      prevProps.data.range[0] === nextProps.data.range[0] &&
+      prevProps.data.range.length === nextProps.data.range.length &&
+      prevProps.bg === nextProps.bg
+    );
   }
 );
 
