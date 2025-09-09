@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { SearchOption } from '../../../../SearchDialog.tsx';
+import { memo, useMemo } from 'react';
+import { SearchOption } from '../SearchDialog.tsx';
 import { Checkbox, CheckboxGroup } from '@chakra-ui/react/checkbox';
 import { Wrap } from '@chakra-ui/react/wrap';
 import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react/tag';
@@ -11,15 +11,20 @@ import { FormControl } from '@chakra-ui/react';
 
 export const CheckTime = memo(
   ({
-    searchOptions,
+    selectedTimes,
     changeSearchOption,
   }: {
-    searchOptions: SearchOption;
+    selectedTimes: number[];
     changeSearchOption: (
       field: keyof SearchOption,
       value: SearchOption[typeof field]
     ) => void;
   }) => {
+    console.log('CheckTime 리렌더링!'); // 이게 출력되는지 확인
+    const sortedTimes = useMemo(
+      () => [...selectedTimes].sort((a, b) => a - b),
+      [selectedTimes]
+    );
     return (
       <FormControl>
         <label
@@ -35,11 +40,11 @@ export const CheckTime = memo(
         </label>
         <CheckboxGroup
           colorScheme="green"
-          value={searchOptions.times}
+          value={selectedTimes}
           onChange={values => changeSearchOption('times', values.map(Number))}
         >
           <Wrap spacing={1} mb={2}>
-            {searchOptions.times
+            {sortedTimes
               .sort((a, b) => a - b)
               .map(time => (
                 <Tag key={time} size="sm" variant="outline" colorScheme="blue">
@@ -48,7 +53,7 @@ export const CheckTime = memo(
                     onClick={() =>
                       changeSearchOption(
                         'times',
-                        searchOptions.times.filter(v => v !== time)
+                        selectedTimes.filter(v => v !== time)
                       )
                     }
                   />

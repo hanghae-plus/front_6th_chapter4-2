@@ -12,25 +12,25 @@ import {
 } from '@chakra-ui/react/modal';
 import { Input } from '@chakra-ui/react/input';
 import { Box } from '@chakra-ui/react/box';
-import { useScheduleContext } from './ScheduleContext.tsx';
-import { Lecture } from './types.ts';
-import { parseSchedule } from './utils.ts';
+import { useScheduleContext } from '../../../ScheduleContext.tsx';
+import { Lecture } from '../../../types.ts';
+import { parseSchedule } from '../../../utils.ts';
 import axios from 'axios';
 
-import { createCachedApi } from './lib/createCachedApi.ts';
+import { createCachedApi } from '../../../lib/createCachedApi.ts';
 
 import { Table, Tbody, Thead } from '@chakra-ui/react/table';
 
-import { useAutoCallback } from './hooks/useAutoCallback.ts';
-import { PAGE_SIZE } from './constants.ts';
+import { useAutoCallback } from '../../../hooks/useAutoCallback.ts';
+import { PAGE_SIZE } from '../../../constants.ts';
 import {
   CheckMajor,
   CheckTime,
   LectureItem,
   GradeSelect,
   CheckDays,
-} from './components/schedules/SearchDialog/components';
-import CheckGrade from './components/schedules/SearchDialog/components/CheckGrade.tsx';
+} from './components';
+import CheckGrade from './components/CheckGrade.tsx';
 
 interface Props {
   searchInfo: {
@@ -91,6 +91,14 @@ const LectureTableHead = memo(() => {
     </Thead>
   );
 });
+const SearchDialogHeader = () => {
+  return (
+    <>
+      <ModalHeader>수업 검색</ModalHeader>
+      <ModalCloseButton />
+    </>
+  );
+};
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
@@ -151,8 +159,8 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 
   const changeSearchOption = useCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
-      setPage(1);
-      setSearchOptions({ ...searchOptions, [field]: value });
+      // setPage(1);
+      setSearchOptions(prev => ({ ...prev, [field]: value })); // 함수형 업데이트!
       loaderWrapperRef.current?.scrollTo(0, 0);
     },
     []
@@ -224,8 +232,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
       <ModalOverlay />
       <ModalContent maxW="90vw" w="1000px">
-        <ModalHeader>수업 검색</ModalHeader>
-        <ModalCloseButton />
+        <SearchDialogHeader />
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <HStack spacing={4}>
@@ -239,31 +246,31 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
               </FormControl>
 
               <GradeSelect
-                searchOptions={searchOptions}
+                selectedCredits={searchOptions.credits}
                 changeSearchOption={changeSearchOption}
               />
             </HStack>
 
             <HStack spacing={4}>
               <CheckGrade
-                searchOptions={searchOptions}
+                selectedGrades={searchOptions.grades}
                 onChange={changeSearchOption}
               />
               <CheckDays
+                selectedDays={searchOptions.days}
                 onChange={changeSearchOption}
-                searchOptions={searchOptions}
               />
             </HStack>
 
             <HStack spacing={4}>
               <CheckTime
-                searchOptions={searchOptions}
+                selectedTimes={searchOptions.times}
                 changeSearchOption={changeSearchOption}
               />
 
               <CheckMajor
                 allMajors={allMajors}
-                searchOptions={searchOptions}
+                selectedMajors={searchOptions.majors}
                 changeSearchOption={changeSearchOption}
               />
             </HStack>

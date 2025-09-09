@@ -1,16 +1,42 @@
 import { Wrap } from '@chakra-ui/react/wrap';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { Checkbox, CheckboxGroup } from '@chakra-ui/react/checkbox';
 import { Stack } from '@chakra-ui/react/stack';
 import { Box } from '@chakra-ui/react/box';
-import { SearchOption } from '../../../../SearchDialog.tsx';
+import { SearchOption } from '../SearchDialog.tsx';
 import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react/tag';
 import { FormControl } from '@chakra-ui/react/form-control';
 
+const MajorCheckboxItem = memo(
+  ({
+    major,
+    isChecked,
+    onChange,
+  }: {
+    major: string;
+    isChecked: boolean;
+    onChange: (major: string) => void;
+  }) => {
+    // // 이 로그로 어떤 체크박스가 리렌더링되는지 확인 가능
+    // console.log(`Rendering checkbox for: ${major}`);
+
+    return (
+      <Box>
+        <Checkbox
+          size="sm"
+          isChecked={isChecked}
+          onChange={() => onChange(major)}
+        >
+          {major}
+        </Checkbox>
+      </Box>
+    );
+  }
+);
 export const CheckMajor = memo(
   ({
     allMajors,
-    searchOptions,
+    selectedMajors,
     changeSearchOption,
   }: {
     changeSearchOption: (
@@ -18,8 +44,24 @@ export const CheckMajor = memo(
       value: SearchOption[typeof field]
     ) => void;
     allMajors: string[];
-    searchOptions: SearchOption;
+    selectedMajors: string[];
   }) => {
+    const handleCheckboxToggle = useCallback(
+      (major: string) => {
+        const isCurrentlySelected = selectedMajors.includes(major);
+
+        if (isCurrentlySelected) {
+          changeSearchOption(
+            'majors',
+            selectedMajors.filter(m => m !== major)
+          );
+        } else {
+          changeSearchOption('majors', [...selectedMajors, major]);
+        }
+      },
+      [selectedMajors, changeSearchOption]
+    );
+
     return (
       <FormControl>
         <label
@@ -35,18 +77,18 @@ export const CheckMajor = memo(
         </label>
         <CheckboxGroup
           colorScheme="green"
-          value={searchOptions.majors}
+          value={selectedMajors}
           onChange={values => changeSearchOption('majors', values as string[])}
         >
           <Wrap spacing={1} mb={2}>
-            {searchOptions.majors.map(major => (
-              <Tag size="sm" variant="outline" colorScheme="blue">
+            {selectedMajors.map(major => (
+              <Tag key={major} size="sm" variant="outline" colorScheme="blue">
                 <TagLabel>{major.split('<p>').pop()}</TagLabel>
                 <TagCloseButton
                   onClick={() => {
                     changeSearchOption(
                       'majors',
-                      searchOptions.majors.filter(v => v !== major)
+                      selectedMajors.filter(v => v !== major)
                     );
                   }}
                 />
@@ -63,11 +105,12 @@ export const CheckMajor = memo(
             p={2}
           >
             {allMajors.map(major => (
-              <Box key={major}>
-                <Checkbox key={major} size="sm" value={major}>
-                  {major}
-                </Checkbox>
-              </Box>
+              <MajorCheckboxItem
+                key={major}
+                major={major}
+                isChecked={selectedMajors.includes(major)}
+                onChange={handleCheckboxToggle}
+              />
             ))}
           </Stack>
         </CheckboxGroup>

@@ -2,13 +2,13 @@ import { Flex } from '@chakra-ui/react/flex';
 import { Stack } from '@chakra-ui/react/stack';
 import { Heading } from '@chakra-ui/react/typography';
 import { Button, ButtonGroup } from '@chakra-ui/react/button';
-import { useScheduleContext } from './ScheduleContext.tsx';
+import { useScheduleContext } from '../../../ScheduleContext.tsx';
 import React, { useState, useCallback, useMemo, lazy, memo } from 'react';
 
-import ScheduleDndProvider from './ScheduleDndProvider.tsx';
-import { DragStateProvider } from './SchedulesDragStateProvider.tsx';
-import { Schedule } from './types.ts';
-const ScheduleTable = lazy(() => import('./ScheduleTable'));
+import ScheduleDndProvider from '../../../ScheduleDndProvider.tsx';
+import { DragStateProvider } from '../../../SchedulesDragStateProvider.tsx';
+import { Schedule } from '../../../types.ts';
+const ScheduleTable = lazy(() => import('./ScheduleTable.tsx'));
 
 interface LazyComponentWithPreload
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,7 +22,9 @@ function lazyWithPreloading(importFn: () => Promise<any>) {
   Component.preload = importFn;
   return Component;
 }
-const SearchDialog = lazyWithPreloading(() => import('./SearchDialog'));
+const SearchDialog = lazyWithPreloading(
+  () => import('../SearchDialog/SearchDialog.tsx')
+);
 
 const TableButtonGroup = memo(
   ({

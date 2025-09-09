@@ -1,7 +1,6 @@
 import { memo } from 'react';
 import { Lecture } from '../../../../types.ts';
-import { Td, Tr } from '@chakra-ui/react/table';
-import { Button } from '@chakra-ui/react/button';
+import { Tr } from '@chakra-ui/react/table';
 
 export const LectureItem = memo(
   ({

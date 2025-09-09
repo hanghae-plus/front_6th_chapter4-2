@@ -7,18 +7,17 @@ import {
   PopoverTrigger,
 } from '@chakra-ui/react/popover';
 
-import { Grid, GridItem } from '@chakra-ui/react/grid';
+import { Grid } from '@chakra-ui/react/grid';
 import { Button } from '@chakra-ui/react/button';
 import { Box } from '@chakra-ui/react/box';
-import { Flex } from '@chakra-ui/react/flex';
 import { Text } from '@chakra-ui/react/typography';
-import { CellSize, DAY_LABELS, TIMES } from './constants.ts';
-import { Schedule } from './types.ts';
-import { fill2 } from './utils.ts';
+import { CellSize, DAY_LABELS, TIMES } from '../../../constants.ts';
+import { Schedule } from '../../../types.ts';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { ComponentProps, Fragment, useMemo, useCallback, memo } from 'react';
-import { useDragState } from './SchedulesDragStateProvider.tsx';
+import { ComponentProps, useMemo, useCallback, memo } from 'react';
+import { useDragState } from '../../../SchedulesDragStateProvider.tsx';
+import { TimeRow } from './components';
 
 interface Props {
   tableId: string;
@@ -27,65 +26,9 @@ interface Props {
   onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
 }
 
-const ScheduleHeader = memo(() => (
-  <>
-    <GridItem key="교시" borderColor="gray.300" bg="gray.100">
-      <Flex justifyContent="center" alignItems="center" h="full" w="full">
-        <Text fontWeight="bold">교시</Text>
-      </Flex>
-    </GridItem>
-    {DAY_LABELS.map(day => (
-      <GridItem key={day} borderLeft="1px" borderColor="gray.300" bg="gray.100">
-        <Flex justifyContent="center" alignItems="center" h="full">
-          <Text fontWeight="bold">{day}</Text>
-        </Flex>
-      </GridItem>
-    ))}
-  </>
-));
-
-const TimeRow = memo(
-  ({
-    time,
-    timeIndex,
-    timeNumber,
-    onTimeClick,
-  }: {
-    time: string;
-    timeIndex: number;
-    timeNumber: number;
-    onTimeClick: (day: string, timeNumber: number) => void;
-  }) => {
-    const isEvening = timeIndex > 17;
-
-    return (
-      <Fragment key={`시간-${timeNumber}`}>
-        <GridItem
-          borderTop="1px solid"
-          borderColor="gray.300"
-          bg={isEvening ? 'gray.200' : 'gray.100'}
-        >
-          <Flex justifyContent="center" alignItems="center" h="full">
-            <span style={{ fontSize: '12px' }}>
-              {fill2(timeNumber)} ({time})
-            </span>
-          </Flex>
-        </GridItem>
-        {DAY_LABELS.map(day => (
-          <GridItem
-            key={`${day}-${timeNumber + 1}`}
-            borderWidth="1px 0 0 1px"
-            borderColor="gray.300"
-            bg={isEvening ? 'gray.100' : 'white'}
-            cursor="pointer"
-            _hover={{ bg: 'yellow.100' }}
-            onClick={() => onTimeClick(day, timeNumber)}
-          />
-        ))}
-      </Fragment>
-    );
-  }
-);
+function ScheduleHeader() {
+  return null;
+}
 
 const ScheduleTable = memo(
   ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
@@ -111,15 +54,6 @@ const ScheduleTable = memo(
 
     // const dndContext = useDndContext();
     const { activeTableId } = useDragState();
-
-    // 활성 테이블 ID 메모이제이션
-    // const activeTableId = useMemo(() => {
-    //   const activeId = dndContext.active?.id;
-    //   if (activeId) {
-    //     return String(activeId).split(':')[0];
-    //   }
-    //   return null;
-    // }, [dndContext.active?.id]);
 
     // 핸들러 함수들 메모이제이션 - 고차함수로 최적화
     const createTimeClickHandler = useCallback(
