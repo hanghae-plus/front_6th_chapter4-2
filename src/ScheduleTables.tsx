@@ -2,7 +2,8 @@ import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
 import { useSchedulesDispatch, useSchedulesState } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
+import { Schedule } from "./types.ts";
 
 export const ScheduleTables = () => {
   const schedulesMap = useSchedulesState();
@@ -24,10 +25,14 @@ export const ScheduleTables = () => {
 
   const remove = (targetId: string) => {
     setSchedulesMap(prev => {
-      delete prev[targetId];
-      return { ...prev };
+      const entries = Object.entries(prev).filter(([key]) => key !== targetId);
+      return Object.fromEntries(entries);
     })
   };
+
+  const openSearch = useCallback((tableId: string, timeInfo?: { day: string; time: number }) => {
+    setSearchInfo(timeInfo ? { tableId, ...timeInfo } : { tableId });
+  }, []);
 
   return (
     <>
@@ -37,21 +42,17 @@ export const ScheduleTables = () => {
             <Flex justifyContent="space-between" alignItems="center">
               <Heading as="h3" fontSize="lg">시간표 {index + 1}</Heading>
               <ButtonGroup size="sm" isAttached>
-                <Button colorScheme="green" onClick={() => setSearchInfo({ tableId })}>시간표 추가</Button>
+                <Button colorScheme="green" onClick={() => openSearch(tableId)}>시간표 추가</Button>
                 <Button colorScheme="green" mx="1px" onClick={() => duplicate(tableId)}>복제</Button>
                 <Button colorScheme="green" isDisabled={disabledRemoveButton}
                         onClick={() => remove(tableId)}>삭제</Button>
               </ButtonGroup>
             </Flex>
-            <ScheduleTable
-              key={`schedule-table-${index}`}
-              schedules={schedules}
+            <ScheduleTableContainer
+              key={tableId}
               tableId={tableId}
-              onScheduleTimeClick={(timeInfo) => setSearchInfo({ tableId, ...timeInfo })}
-              onDeleteButtonClick={({ day, time }) => setSchedulesMap((prev) => ({
-                ...prev,
-                [tableId]: prev[tableId].filter(schedule => schedule.day !== day || !schedule.range.includes(time))
-              }))}
+              schedules={schedules}
+              openSearch={openSearch}
             />
           </Stack>
         ))}
@@ -60,3 +61,35 @@ export const ScheduleTables = () => {
     </>
   );
 }
+
+interface ScheduleTableContainerProps {
+  tableId: string;
+  schedules: Schedule[];
+  openSearch: (tableId: string, timeInfo?: { day: string; time: number }) => void;
+}
+
+const ScheduleTableContainer = memo(({ tableId, schedules, openSearch }: ScheduleTableContainerProps) => {
+  const setSchedulesMap = useSchedulesDispatch();
+
+  const handleScheduleTimeClick = useCallback((timeInfo: { day: string; time: number }) => {
+    openSearch(tableId, timeInfo);
+  }, [openSearch, tableId]);
+
+  const handleDeleteButtonClick = useCallback(({ day, time }: { day: string; time: number }) => {
+    setSchedulesMap(prev => ({
+      ...prev,
+      [tableId]: prev[tableId].filter(schedule => schedule.day !== day || !schedule.range.includes(time))
+    }));
+  }, [setSchedulesMap, tableId]);
+
+  return (
+    <ScheduleTable
+      tableId={tableId}
+      schedules={schedules}
+      onScheduleTimeClick={handleScheduleTimeClick}
+      onDeleteButtonClick={handleDeleteButtonClick}
+    />
+  );
+});
+
+ScheduleTableContainer.displayName = "ScheduleTableContainer";
