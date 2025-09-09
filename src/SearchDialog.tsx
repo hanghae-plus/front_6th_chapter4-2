@@ -33,7 +33,8 @@ import { useEffect, useRef, useState } from "react";
 import { useScheduleContext } from "./ScheduleContext.tsx";
 import { DAY_LABELS } from "./constants.ts";
 import { Lecture } from "./types.ts";
-import { parseSchedule } from "./utils.ts";
+import { createApiCache } from "./utils/apiCache.ts";
+import { parseSchedule } from "./utils/utils.ts";
 
 interface Props {
   searchInfo: {
@@ -82,18 +83,34 @@ const TIME_SLOTS = [
 
 const PAGE_SIZE = 100;
 
-const fetchMajors = () => axios.get<Lecture[]>('/schedules-majors.json');
-const fetchLiberalArts = () => axios.get<Lecture[]>('/schedules-liberal-arts.json');
 
-// TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
-const fetchAllLectures = async () => await Promise.all([
-  (console.log('API Call 1', performance.now()), fetchMajors()),
-  (console.log('API Call 2', performance.now()), fetchLiberalArts()),
-  (console.log('API Call 3', performance.now()), fetchMajors()),
-  (console.log('API Call 4', performance.now()), fetchLiberalArts()),
-  (console.log('API Call 5', performance.now()), fetchMajors()),
-  (console.log('API Call 6', performance.now()), fetchLiberalArts()),
-]);
+// 캐시 인스턴스 생성
+const apiCache = createApiCache();
+
+// 캐시된 API 호출 함수들
+const fetchMajors = () => apiCache('majors', () => 
+  axios.get<Lecture[]>('/schedules-majors.json')
+);
+
+const fetchLiberalArts = () => apiCache('liberal-arts', () => 
+  axios.get<Lecture[]>('/schedules-liberal-arts.json')
+);
+
+// 최적화된 fetchAllLectures - Promise.all을 올바르게 사용하고 중복 호출 제거
+const fetchAllLectures = async () => {
+  
+  // Promise.all로 병렬 실행, 중복 호출은 자동으로 캐시에서 처리됨
+  const results = await Promise.all([
+    fetchMajors(),        // 새 Promise 생성
+    fetchLiberalArts(),   // 새 Promise 생성
+    fetchMajors(),        // 캐시된 Promise 재사용
+    fetchLiberalArts(),   // 캐시된 Promise 재사용
+    fetchMajors(),        // 캐시된 Promise 재사용
+    fetchLiberalArts(),   // 캐시된 Promise 재사용
+  ]);
+  
+  return results;
+};
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
