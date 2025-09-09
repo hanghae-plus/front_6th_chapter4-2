@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -83,8 +83,10 @@ const TIME_SLOTS = [
 
 const PAGE_SIZE = 100;
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
-const fetchLiberalArts = () => axios.get<Lecture[]>("/schedules-liberal-arts.json");
+const BASE_URL = "/front_6th_chapter4-2";
+
+const fetchMajors = () => axios.get<Lecture[]>(`${BASE_URL}/schedules-majors.json`);
+const fetchLiberalArts = () => axios.get<Lecture[]>(`${BASE_URL}/schedules-liberal-arts.json`);
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 const fetchAllLectures = async () =>
@@ -124,8 +126,9 @@ SearchItem.displayName = "SearchItem";
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
+  const observerRef = useRef<IntersectionObserver>(null);
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
-  const loaderRef = useRef<HTMLDivElement>(null);
+
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
@@ -168,11 +171,26 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
   const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
 
+  const hasMore = page < lastPage;
+
   const changeSearchOption = (field: keyof SearchOption, value: SearchOption[typeof field]) => {
     setPage(1);
     setSearchOptions({ ...searchOptions, [field]: value });
     loaderWrapperRef.current?.scrollTo(0, 0);
   };
+
+  const loaderRef = useCallback(
+    (node: HTMLDivElement) => {
+      const observer = observerRef.current;
+      if (observer) {
+        observer.disconnect();
+        if (node) {
+          observer.observe(node);
+        }
+      }
+    },
+    [observerRef.current]
+  );
 
   const addSchedule = useAutoCallback((lecture: Lecture) => {
     if (!searchInfo) return;
@@ -203,36 +221,40 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     });
   }, []);
 
-  useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
-
-    if (!$loader || !$loaderWrapper) {
-      return;
+  const handleLoadMore = useCallback(() => {
+    if (hasMore) {
+      setPage((prevPage) => prevPage + 1);
     }
+  }, [hasMore]);
 
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
+          handleLoadMore();
         }
       },
-      { threshold: 0, root: $loaderWrapper }
+      { threshold: 0.1 }
     );
-
-    observer.observe($loader);
-
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
+    observerRef.current = observer;
+  }, [handleLoadMore]);
 
   useEffect(() => {
-    setSearchOptions((prev) => ({
-      ...prev,
-      days: searchInfo?.day ? [searchInfo.day] : [],
-      times: searchInfo?.time ? [searchInfo.time] : [],
-    }));
-    setPage(1);
+    if (searchInfo) {
+      setSearchOptions((prev) => ({
+        ...prev,
+        days: searchInfo?.day ? [searchInfo.day] : [],
+        times: searchInfo?.time ? [searchInfo.time] : [],
+      }));
+      setPage(1);
+    }
   }, [searchInfo]);
+
+  useEffect(() => {
+    if (page === 1) {
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    }
+  }, [page, filteredLectures.length]);
 
   return (
     <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
@@ -415,7 +437,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                     ))}
                   </Tbody>
                 </Table>
-                <Box ref={loaderRef} h="20px" />
+                {hasMore && <Box ref={loaderRef} h="20px" />}
               </Box>
             </Box>
           </VStack>
