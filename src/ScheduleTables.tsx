@@ -8,9 +8,10 @@ export const ScheduleTables = () => {
 	// 시간표 배열 - 전역 상태
 	const { schedulesMap, setSchedulesMap } = useScheduleContext();
 
-	// schedulesMap의 길이가 1일 때 삭제 불가능 처리 - 최소 시간표가 하나는 있어야 한다?
+	// schedulesMap의 길이가 1일 때 삭제 불가능 처리 - 최소 시간표가 하나는 있어야 함
 	const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
 
+	// 시간표 복제
 	const duplicate = useCallback(
 		(tableId: string, currentSchedules: Schedule[]) => {
 			// 복제 전에 context 동기화
@@ -23,6 +24,7 @@ export const ScheduleTables = () => {
 		[setSchedulesMap]
 	);
 
+	// 시간표 삭제
 	const remove = useCallback(
 		(tableId: string) => {
 			setSchedulesMap((prev) => {
