@@ -1,10 +1,9 @@
 import { Stack } from "@chakra-ui/react";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { ScheduleTableHeader } from "./ScheduleTableHeader";
 import ScheduleTable from "./ScheduleTable";
 
 import { useSchedule } from "./store/useSchedules";
-import useCustomDnd from "./hooks/useCustomDnd";
 
 interface ScheduleTableContainerProps {
   index: number;
@@ -30,6 +29,13 @@ export const ScheduleTableContainer = memo(
   }: ScheduleTableContainerProps) => {
     const schedules = useSchedule(tableId);
 
+    const handleScheduleTimeClick = useCallback(
+      ({ day, time }: { day: string; time: number }) => {
+        setSearchInfo({ tableId, day, time });
+      },
+      [setSearchInfo, tableId]
+    );
+
     return (
       <Stack>
         <ScheduleTableHeader
@@ -42,9 +48,7 @@ export const ScheduleTableContainer = memo(
           tableId={tableId}
           schedules={schedules}
           active={isActive}
-          onScheduleTimeClick={({ day, time }) =>
-            setSearchInfo({ tableId, day, time })
-          }
+          onScheduleTimeClick={handleScheduleTimeClick}
         />
       </Stack>
     );

@@ -59,16 +59,11 @@ class ScheduleStore {
     next: Schedule[] | ((prev: Schedule[]) => Schedule[])
   ) => {
     const prevTable = this.schedulesMap[tableId] ?? [];
+    const newTable = typeof next === "function" ? next(prevTable) : next;
 
-    this.schedulesMap = {
-      ...this.schedulesMap,
-      [tableId]:
-        typeof next === "function"
-          ? (next as (prev: Schedule[]) => Schedule[])(prevTable)
-          : next,
-    };
-
-    this.emit(tableId); // 해당 tableId만 알림
+    // 전체 객체 새로 만들지 말고, 해당 테이블만 교체
+    this.schedulesMap[tableId] = newTable;
+    this.emit(tableId);
   };
 
   /**
