@@ -91,7 +91,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 	});
 
 	const { filteredLectures, lastPage, allMajors } = useMemo(() => {
-		console.log("filteredLectures");
 		const { query = "", credits, grades, days, times, majors } = searchOptions;
 		const filteredLectures = lectures
 			.filter(
@@ -143,7 +142,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 	const changeSearchOption = useAutoCallback(
 		(field: keyof SearchOption, value: SearchOption[typeof field]) => {
 			setPage(1);
-			setSearchOptions({ ...searchOptions, [field]: value });
+			setSearchOptions((prev) => ({ ...prev, [field]: value }));
 			loaderWrapperRef.current?.scrollTo(0, 0);
 		},
 	);
