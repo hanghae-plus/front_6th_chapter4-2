@@ -48,24 +48,35 @@ interface Props {
 const fetchMajors = () => axios.get<Lecture[]>(`${BASE_URL}/schedules-majors.json`);
 const fetchLiberalArts = () => axios.get<Lecture[]>(`${BASE_URL}/schedules-liberal-arts.json`);
 
-let lecturesPromise: Promise<Lecture[]> | null = null;
+const apiCache = new Map<string, Promise<any>>();
 
-const fetchAllLectures = () => {
-  if (!lecturesPromise) {
-    lecturesPromise = Promise.all([fetchMajors(), fetchLiberalArts()])
-      .then(([majorsResponse, liberalArtsResponse]) => {
-        return [...majorsResponse.data, ...liberalArtsResponse.data];
+const fetchWithCache = (key: string, fetcher: () => Promise<any>) => {
+  if (!apiCache.has(key)) {
+    console.log(`${key} API CALL`);
+    apiCache.set(
+      key,
+      fetcher().catch((error) => {
+        apiCache.delete(key);
+        throw error;
       })
-      .catch((error) => {
-        console.error("API CALL ERROR:", error);
-        lecturesPromise = null;
-        return [];
-      });
+    );
   }
-
-  return lecturesPromise;
+  return apiCache.get(key);
 };
 
+const fetchAllLectures = () => {
+  const majorsUrl = `${BASE_URL}/schedules-majors.json`;
+  const liberalArtsUrl = `${BASE_URL}/schedules-liberal-arts.json`;
+
+  return Promise.all([
+    fetchWithCache(majorsUrl, fetchMajors),
+    fetchWithCache(liberalArtsUrl, fetchLiberalArts),
+    fetchWithCache(majorsUrl, fetchMajors),
+    fetchWithCache(liberalArtsUrl, fetchLiberalArts),
+    fetchWithCache(majorsUrl, fetchMajors),
+    fetchWithCache(liberalArtsUrl, fetchLiberalArts),
+  ]);
+};
 const SearchItem = memo(
   ({ addSchedule, ...lecture }: Lecture & { addSchedule: (lecture: Lecture) => void }) => {
     const { id, grade, title, credits, major, schedule } = lecture;
@@ -181,7 +192,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       const end = performance.now();
       console.log("모든 API 호출 완료 ", end);
       console.log("API 호출에 걸린 시간(ms): ", end - start);
-      setLectures(results);
+      setLectures(results.flatMap((result) => result.data));
     });
   }, []);
 
