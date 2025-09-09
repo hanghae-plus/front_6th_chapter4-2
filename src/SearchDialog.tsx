@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	Box,
-	Button,
 	Modal,
 	ModalBody,
 	ModalCloseButton,
@@ -10,18 +9,17 @@ import {
 	ModalOverlay,
 	Table,
 	Tbody,
-	Td,
 	Text,
-	Th,
-	Thead,
-	Tr,
 	VStack,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { Lecture, SearchOption } from './types.ts';
+import { PAGE_SIZE } from './constants.ts';
 import { parseSchedule } from './utils.ts';
 import { useIntersectionObserver } from './hooks/useIntersectionObserver.ts';
 import SearchOptionFilter from './SearchOptionFilter.tsx';
+import LectureHeadItem from './LectureHeadItem.tsx';
+import LectureItem from './LectureItem.tsx';
 
 interface Props {
 	searchInfo: {
@@ -32,8 +30,6 @@ interface Props {
 	onClose: () => void;
 	addLecture: (lecture: Lecture) => void;
 }
-
-const PAGE_SIZE = 100;
 
 const fetchMajors = () => axios.get<Lecture[]>('/schedules-majors.json'); // 전공 불러오기
 const fetchLiberalArts = () => axios.get<Lecture[]>('/schedules-liberal-arts.json'); // 교양 불러오기
@@ -165,38 +161,19 @@ const SearchDialog = ({ searchInfo, onClose, addLecture }: Props) => {
 
 						<Text align="right">검색결과: {filteredLectures.length}개</Text>
 						<Box>
-							<Table>
-								<Thead>
-									<Tr>
-										<Th width="100px">과목코드</Th>
-										<Th width="50px">학년</Th>
-										<Th width="200px">과목명</Th>
-										<Th width="50px">학점</Th>
-										<Th width="150px">전공</Th>
-										<Th width="150px">시간</Th>
-										<Th width="80px"></Th>
-									</Tr>
-								</Thead>
-							</Table>
+							<LectureHeadItem />
 
 							<Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
 								<Table size="sm" variant="striped">
 									{/* 필터링된 강의 목록 */}
 									<Tbody>
 										{visibleLectures.map((lecture, index) => (
-											<Tr key={`${lecture.id}-${index}`}>
-												<Td width="100px">{lecture.id}</Td>
-												<Td width="50px">{lecture.grade}</Td>
-												<Td width="200px">{lecture.title}</Td>
-												<Td width="50px">{lecture.credits}</Td>
-												<Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
-												<Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
-												<Td width="80px">
-													<Button size="sm" colorScheme="green" onClick={() => addLecture(lecture)}>
-														추가
-													</Button>
-												</Td>
-											</Tr>
+											<LectureItem
+												key={`${lecture.id}-${index}`}
+												index={index}
+												lecture={lecture}
+												addLecture={addLecture}
+											/>
 										))}
 									</Tbody>
 								</Table>

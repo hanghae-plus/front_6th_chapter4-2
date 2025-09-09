@@ -7,3 +7,5 @@ export const CellSize = {
 
 export const 초 = 1000;
 export const 분 = 60 * 초;
+
+export const PAGE_SIZE = 100;
