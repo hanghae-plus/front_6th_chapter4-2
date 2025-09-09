@@ -4,6 +4,7 @@ import { ScheduleTableHeader } from "./ScheduleTableHeader";
 import ScheduleTable from "./ScheduleTable";
 
 import { useSchedule } from "./store/useSchedules";
+import useCustomDnd from "./hooks/useCustomDnd";
 
 interface ScheduleTableContainerProps {
   index: number;
@@ -28,6 +29,7 @@ export const ScheduleTableContainer = memo(
     isActive,
   }: ScheduleTableContainerProps) => {
     const schedules = useSchedule(tableId);
+
     return (
       <Stack>
         <ScheduleTableHeader

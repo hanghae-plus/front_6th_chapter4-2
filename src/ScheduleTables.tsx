@@ -9,13 +9,14 @@ import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
 
 export const ScheduleTables = () => {
   const schedulesMap = useScheduleValue();
+  const { activeId } = useCustomDnd();
 
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
     time?: number;
   } | null>(null);
-  const { activeId } = useCustomDnd();
+
   const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
 
   return (

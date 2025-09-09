@@ -8,7 +8,7 @@ export default function useCustomDnd() {
     return dndContext.active?.id
       ? String(dndContext.active.id).split(":")[0]
       : null;
-  }, []);
+  }, [dndContext.active]);
 
   return { activeId };
 }
