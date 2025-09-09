@@ -1,6 +1,7 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import { useState } from "react";
 import { useScheduleContext } from "./ScheduleContext.tsx";
+import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
 import ScheduleTable from "./ScheduleTable.tsx";
 import SearchDialog from "./SearchDialog/SearchDialog.tsx";
 
@@ -60,24 +61,26 @@ export const ScheduleTables = () => {
 								</Button>
 							</ButtonGroup>
 						</Flex>
-						<ScheduleTable
-							// biome-ignore lint/suspicious/noArrayIndexKey: 다른 값 사용가능한지 확인하기
-							key={`schedule-table-${index}`}
-							schedules={schedules}
-							tableId={tableId}
-							onScheduleTimeClick={(timeInfo) =>
-								setSearchInfo({ tableId, ...timeInfo })
-							}
-							onDeleteButtonClick={({ day, time }) =>
-								setSchedulesMap((prev) => ({
-									...prev,
-									[tableId]: prev[tableId].filter(
-										(schedule) =>
-											schedule.day !== day || !schedule.range.includes(time),
-									),
-								}))
-							}
-						/>
+						<ScheduleDndProvider>
+							<ScheduleTable
+								// biome-ignore lint/suspicious/noArrayIndexKey: 다른 값 사용가능한지 확인하기
+								key={`schedule-table-${index}`}
+								schedules={schedules}
+								tableId={tableId}
+								onScheduleTimeClick={(timeInfo) =>
+									setSearchInfo({ tableId, ...timeInfo })
+								}
+								onDeleteButtonClick={({ day, time }) =>
+									setSchedulesMap((prev) => ({
+										...prev,
+										[tableId]: prev[tableId].filter(
+											(schedule) =>
+												schedule.day !== day || !schedule.range.includes(time),
+										),
+									}))
+								}
+							/>
+						</ScheduleDndProvider>
 					</Stack>
 				))}
 			</Flex>
