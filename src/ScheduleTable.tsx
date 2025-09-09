@@ -15,15 +15,10 @@ import {
 import { CellSize, DAY_LABELS, 분 } from "./constants.ts";
 import { Schedule } from "./types.ts";
 import { fill2, parseHnM } from "./utils.ts";
-import { useDndContext, useDraggable } from "@dnd-kit/core";
+import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import React, {
-  ComponentProps,
-  Fragment,
-  memo,
-  useCallback,
-  useMemo,
-} from "react";
+import { ComponentProps, Fragment, memo, useCallback } from "react";
+import { useScheduleSetter } from "./ScheduleContext.tsx";
 
 const TIMES = [
   ...Array(18)
@@ -42,20 +37,13 @@ interface ScheduleTableProps {
   schedules: Schedule[];
   active: boolean;
   onScheduleTimeClick?: (timeInfo: { day: string; time: number }) => void;
-  onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
 }
 /**
  * ScheduleTable
  * props가 변경되지 않았을 때 불필요한 리렌더링 방지를 위해 memo로 감싸줌
  */
 const ScheduleTable = memo(
-  ({
-    tableId,
-    schedules,
-    active,
-    onScheduleTimeClick,
-    onDeleteButtonClick,
-  }: ScheduleTableProps) => {
+  ({ tableId, schedules, active, onScheduleTimeClick }: ScheduleTableProps) => {
     console.log("ScheduleTable rerender!");
     // 🔃 불필요한 연산 최적화
     // useCallback으로 묶고, schedules가 변할때만 재연산되도록 함
@@ -134,16 +122,17 @@ const ScheduleTable = memo(
 
         {schedules.map((schedule, index) => (
           <DraggableSchedule
+            tableId={tableId}
             key={`${schedule.lecture.title}-${index}`}
             id={`${tableId}:${index}`}
             data={schedule}
             bg={getColor(schedule.lecture.id)}
-            onDeleteButtonClick={() =>
-              onDeleteButtonClick?.({
-                day: schedule.day,
-                time: schedule.range[0],
-              })
-            }
+            // onDeleteButtonClick={() =>
+            //   onDeleteButtonClick?.({
+            //     day: schedule.day,
+            //     time: schedule.range[0],
+            //   })
+            // }
           />
         ))}
       </Box>
@@ -153,17 +142,29 @@ const ScheduleTable = memo(
 
 const DraggableSchedule = memo(
   ({
+    tableId,
     id,
     data,
     bg,
-    onDeleteButtonClick,
-  }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
-      onDeleteButtonClick: () => void;
-    }) => {
+  }: { tableId: string; id: string; data: Schedule } & ComponentProps<
+    typeof Box
+  >) => {
     const { day, range, room, lecture } = data;
     const { attributes, setNodeRef, listeners, transform } = useDraggable({
       id,
     });
+    const setSchedulesMap = useScheduleSetter();
+
+    const handleDeleteButtonClick = () => {
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: prev[tableId].filter(
+          (prevSchedule) =>
+            prevSchedule.day !== data.day ||
+            !prevSchedule.range.includes(data.range[0])
+        ),
+      }));
+    };
 
     const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
     const topIndex = range[0] - 1;
@@ -198,7 +199,11 @@ const DraggableSchedule = memo(
           <PopoverCloseButton />
           <PopoverBody>
             <Text>강의를 삭제하시겠습니까?</Text>
-            <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
+            <Button
+              colorScheme="red"
+              size="xs"
+              onClick={handleDeleteButtonClick}
+            >
               삭제
             </Button>
           </PopoverBody>
