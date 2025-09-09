@@ -1,7 +1,7 @@
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import { Button, ButtonGroup, Flex, Heading } from "@chakra-ui/react";
 import { useScheduleSetter } from "./ScheduleContext.tsx";
-import { scheduleStore } from "./store/schedule.store.ts";
+
 interface ScheduleTableHeaderProps {
   index: number;
   setSearchInfo: (searchInfo: { tableId: string }) => void;
