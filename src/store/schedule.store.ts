@@ -3,7 +3,8 @@ import { Schedule } from "../types";
 
 type ScheduleMap = Record<string, Schedule[]>;
 
-type Listener = () => void;
+// emit할 때 어떤 테이블이 바뀌었는지 알려주기
+type Listener = (changedId: string) => void;
 
 /**
  * ScheduleStore
@@ -46,15 +47,69 @@ class ScheduleStore {
     } else {
       this.schedulesMap = next;
     }
-    this.emit();
+    this.emit("*");
+  };
+
+  /**
+   * setTable
+   * 특정 tableId만 업데이트
+   */
+  setTable = (
+    tableId: string,
+    next: Schedule[] | ((prev: Schedule[]) => Schedule[])
+  ) => {
+    const prevTable = this.schedulesMap[tableId] ?? [];
+
+    this.schedulesMap = {
+      ...this.schedulesMap,
+      [tableId]:
+        typeof next === "function"
+          ? (next as (prev: Schedule[]) => Schedule[])(prevTable)
+          : next,
+    };
+
+    this.emit(tableId); // 해당 tableId만 알림
+  };
+
+  /**
+   * deleteTable
+   * 특정 tableId만 삭제
+   */
+  deleteTable = (tableId: string) => {
+    const copy = { ...this.schedulesMap };
+    delete copy[tableId];
+    this.schedulesMap = copy;
+    this.emit(tableId);
+  };
+
+  /**
+   * duplicateTable
+   * 특정 tableId만 복제
+   */
+  duplicateTable = (tableId: string) => {
+    const copy = { ...this.schedulesMap };
+    copy[`${tableId}-${Date.now()}`] = [...copy[tableId]];
+    this.schedulesMap = copy;
+    this.emit(tableId);
+  };
+
+  /**
+   * deleteScheduleItem
+   */
+  deleteScheduleItem = (tableId: string, data: Schedule) => {
+    this.schedulesMap[tableId] = this.schedulesMap[tableId].filter(
+      (schedule) =>
+        schedule.day !== data.day || !schedule.range.includes(data.range[0])
+    );
+    this.emit(tableId);
   };
 
   /**
    * emit
-   * 시간표 데이터 변경 시 호출되는 리스너를 실행
+   * 시간표 데이터 변경 시 호출되는 리스너 실행
    */
-  private emit = () => {
-    this.listeners.forEach((listener) => listener());
+  private emit = (changedId: string) => {
+    this.listeners.forEach((listener) => listener(changedId));
   };
 }
 // 싱글톤 인스턴스 생성

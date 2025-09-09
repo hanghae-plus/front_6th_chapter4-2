@@ -153,18 +153,7 @@ const DraggableSchedule = memo(
     const { attributes, setNodeRef, listeners, transform } = useDraggable({
       id,
     });
-    const setSchedulesMap = useScheduleSetter();
-
-    const handleDeleteButtonClick = () => {
-      setSchedulesMap((prev) => ({
-        ...prev,
-        [tableId]: prev[tableId].filter(
-          (prevSchedule) =>
-            prevSchedule.day !== data.day ||
-            !prevSchedule.range.includes(data.range[0])
-        ),
-      }));
-    };
+    const { deleteScheduleItem } = useScheduleSetter();
 
     const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
     const topIndex = range[0] - 1;
@@ -202,7 +191,7 @@ const DraggableSchedule = memo(
             <Button
               colorScheme="red"
               size="xs"
-              onClick={handleDeleteButtonClick}
+              onClick={() => deleteScheduleItem(tableId, data)}
             >
               삭제
             </Button>

@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { Button, ButtonGroup, Flex, Heading } from "@chakra-ui/react";
 import { useScheduleSetter } from "./ScheduleContext.tsx";
-
+import { scheduleStore } from "./store/schedule.store.ts";
 interface ScheduleTableHeaderProps {
   index: number;
   setSearchInfo: (searchInfo: { tableId: string }) => void;
@@ -16,31 +16,7 @@ export const ScheduleTableHeader = memo(
     disabledRemoveButton,
     tableId,
   }: ScheduleTableHeaderProps) => {
-    const setSchedulesMap = useScheduleSetter();
-
-    // 🔃 불필요한 연산 최적화
-    // useCallback으로 묶고, setSchedulesMap가 변할때만 재연산되도록 함
-    const duplicate = useCallback(
-      (targetId: string) => {
-        setSchedulesMap((prev) => ({
-          ...prev,
-          [`schedule-${Date.now()}`]: [...prev[targetId]],
-        }));
-      },
-      [setSchedulesMap]
-    );
-
-    // 🔃 불필요한 연산 최적화
-    // useCallback으로 묶고, setSchedulesMap가 변할때만 재연산되도록 함
-    const remove = useCallback(
-      (targetId: string) => {
-        setSchedulesMap((prev) => {
-          delete prev[targetId];
-          return { ...prev };
-        });
-      },
-      [setSchedulesMap]
-    );
+    const { duplicateTable, deleteTable } = useScheduleSetter();
 
     return (
       <Flex justifyContent="space-between" alignItems="center">
@@ -57,14 +33,14 @@ export const ScheduleTableHeader = memo(
           <Button
             colorScheme="green"
             mx="1px"
-            onClick={() => duplicate(tableId)}
+            onClick={() => duplicateTable(tableId)}
           >
             복제
           </Button>
           <Button
             colorScheme="green"
             isDisabled={disabledRemoveButton}
-            onClick={() => remove(tableId)}
+            onClick={() => deleteTable(tableId)}
           >
             삭제
           </Button>
