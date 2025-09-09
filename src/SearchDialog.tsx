@@ -238,8 +238,12 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>
-                    {visibleLectures.map((lecture) => (
-                      <SearchItem key={lecture.id} addSchedule={addSchedule} lecture={lecture} />
+                    {visibleLectures.map((lecture, index) => (
+                      <SearchItem
+                        key={`${lecture.id}-${index}`}
+                        addSchedule={addSchedule}
+                        lecture={lecture}
+                      />
                     ))}
                   </Tbody>
                 </Table>
