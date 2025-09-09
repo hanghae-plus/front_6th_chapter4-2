@@ -101,8 +101,11 @@ const fetchAllLectures = async () =>
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setTable } = useScheduleSetter();
 
+  // 무한스크롤 관련 참조
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
@@ -212,6 +215,35 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     [searchInfo, onClose, setTable]
   );
 
+  /**
+   * 무한스크롤 관련 참조
+   */
+  const setLoaderWrapperRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!node) return; // unmount 시 null 들어옴
+
+      const $loader = loaderRef.current;
+      if (!$loader) return;
+
+      // 기존 옵저버 제거
+      observerRef.current?.unobserve($loader);
+
+      // 새 옵저버 등록
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setPage((prev) => Math.min(lastPage, prev + 1));
+          }
+        },
+        { root: node }
+      );
+
+      observer.observe($loader);
+      observerRef.current = observer;
+    },
+    [lastPage]
+  );
+
   useEffect(() => {
     const start = performance.now();
     console.log("API 호출 시작: ", start);
@@ -222,28 +254,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       setLectures(results.flatMap((result) => result.data));
     });
   }, []);
-
-  useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
-
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
-
-    observer.observe($loader);
-
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
 
   useEffect(() => {
     setSearchOptions((prev) => ({
@@ -443,7 +453,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 </Thead>
               </Table>
 
-              <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
+              <Box overflowY="auto" maxH="500px" ref={setLoaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
@@ -473,7 +483,8 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                     ))}
                   </Tbody>
                 </Table>
-                <Box ref={loaderRef} h="20px" />
+                {/* FIXME: 여기 bg는 테스트용 */}
+                <Box ref={loaderRef} h="20px" bg="yellow.800" />
               </Box>
             </Box>
           </VStack>
