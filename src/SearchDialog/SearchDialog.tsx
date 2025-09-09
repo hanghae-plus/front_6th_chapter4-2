@@ -84,9 +84,9 @@ export const SearchDialog = ({ searchInfo, onClose }: SearchDialogProps) => {
               onSearchOptionChange={handleSearchOptionChange}
             />
             <SearchResultTable
-              lectures={visibleLectures}
+              visibleLectures={visibleLectures}
               totalCount={filteredLectures.length}
-              addSchedule={addSchedule}
+              onAddSchedule={addSchedule}
               loaderWrapperRef={loaderWrapperRef}
               loaderRef={loaderRef}
             />
