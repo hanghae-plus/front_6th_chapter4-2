@@ -17,13 +17,13 @@ import { Schedule } from "./types.ts";
 import { fill2, parseHnM } from "./utils.ts";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { ComponentProps, Fragment } from "react";
+import React, { ComponentProps, Fragment, useCallback, useMemo } from "react";
+import { useSchedulesDispatch } from "./ScheduleContext.tsx";
 
 interface Props {
   tableId: string;
   schedules: Schedule[];
-  onScheduleTimeClick?: (timeInfo: { day: string; time: number }) => void;
-  onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
+  openSearch: (tableId: string, timeInfo?: { day: string; time: number }) => void;
 }
 
 const TIMES = [
@@ -38,17 +38,35 @@ const TIMES = [
     .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
 ] as const;
 
-const ScheduleTable = ({
-  tableId,
-  schedules,
-  onScheduleTimeClick,
-  onDeleteButtonClick,
-}: Props) => {
-  const getColor = (lectureId: string): string => {
-    const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
-    const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
-    return colors[lectures.indexOf(lectureId) % colors.length];
-  };
+const ScheduleTable = ({ tableId, schedules, openSearch }: Props) => {
+  const setSchedulesMap = useSchedulesDispatch();
+
+  const lectureIds = useMemo(
+    () => [...new Set(schedules.map(({ lecture }) => lecture.id))],
+    [schedules]
+  );
+  const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"] as const;
+  const getColor = (lectureId: string): string =>
+    colors[lectureIds.indexOf(lectureId) % colors.length];
+
+  const handleScheduleTimeClick = useCallback(
+    (day: string, time: number) => {
+      openSearch(tableId, { day, time });
+    },
+    [openSearch, tableId]
+  );
+
+  const handleDeleteButtonClick = useCallback(
+    (day: string, time: number) => {
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: prev[tableId].filter(
+          (schedule) => schedule.day !== day || !schedule.range.includes(time)
+        ),
+      }));
+    },
+    [setSchedulesMap, tableId]
+  );
 
   return (
     <Box position="relative">
@@ -100,9 +118,7 @@ const ScheduleTable = ({
                 bg={timeIndex > 17 ? "gray.100" : "white"}
                 cursor="pointer"
                 _hover={{ bg: "yellow.100" }}
-                onClick={() =>
-                  onScheduleTimeClick?.({ day, time: timeIndex + 1 })
-                }
+                onClick={() => handleScheduleTimeClick(day, timeIndex + 1)}
               />
             ))}
           </Fragment>
@@ -116,10 +132,7 @@ const ScheduleTable = ({
           data={schedule}
           bg={getColor(schedule.lecture.id)}
           onDeleteButtonClick={() =>
-            onDeleteButtonClick?.({
-              day: schedule.day,
-              time: schedule.range[0],
-            })
+            handleDeleteButtonClick(schedule.day, schedule.range[0])
           }
         />
       ))}
@@ -179,7 +192,7 @@ const DraggableSchedule = ({
   );
 };
 
-export default ScheduleTable;
+export default React.memo(ScheduleTable);
 
 // '이 테이블에 Dnd를 활성화 할거야'를 나타내는 오버레이를 분리하여 전체 리렌더 방지
 const ActiveOutlineOverlay = ({ tableId }: { tableId: string }) => {

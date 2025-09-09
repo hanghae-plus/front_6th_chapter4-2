@@ -33,7 +33,7 @@
 
 ---
 
-## 3단계 — 불변 업데이트 + 핸들러/키 안정화(리스트 렌더 최적화): 컨테이너 계층을 하나 더만들어서 핸들러의 참조 안정화를 진행했다.
+## 3단계 — 불변 업데이트 + 핸들러/키 안정화(리스트 렌더 최적화): 계층마다 함수 참조 안정화.
 
 - 문제: (1) 삭제 시 원본 변형(`delete prev[key]`)으로 참조가 흔들림, (2) 부모에서 인라인 핸들러 생성으로 자식이 매번 다른 props로 인식, (3) index 기반 key로 리마운트 발생.
 - 왜:
@@ -43,9 +43,13 @@
 - 어떻게:
   - 불변 삭제: `Object.fromEntries(Object.entries(prev).filter(([k]) => k !== targetId))`
     - 적용: `src/ScheduleTables.tsx`의 `remove()`
-  - 핸들러 안정화: `useCallback`으로 고정하고 인라인 콜백 제거
-    - 필요 시 작은 컨테이너를 두어(리스트 항목 단위) 훅 경계를 제공하거나, 자식 컴포넌트 내부로 핸들러를 이동
-    - 적용: `src/ScheduleTables.tsx` (예: `openSearch` 안정화, 항목 핸들러 안정화)
+  - 핸들러 안정화: 부모는 참조 안정화된 함수를 내려주고, 자식은 이를 래핑해 자체 핸들러를 `useCallback`으로 고정
+    - 부모(ScheduleTables): `openSearch`를 `useCallback`으로 안정화해 `ScheduleTable`에 전달
+    - 자식(ScheduleTable): 전달받은 `openSearch`를 래핑
+      - `handleScheduleTimeClick(day,time)` → `openSearch(tableId, { day, time })`
+      - `handleDeleteButtonClick(day,time)` → `setSchedulesMap(prev => ({ ...prev, [tableId]: prev[tableId].filter(...) }))`
+    - 컨테이너 없이도 참조 안정성 유지(필요 시에만 소형 컨테이너 고려)
+    - 적용: 부모 `src/ScheduleTables.tsx`(openSearch 안정화), 자식 `src/ScheduleTable.tsx`(핸들러 이관)
   - 키 안정화: 리스트 key는 `tableId` 같은 고유값 사용
     - 적용: `src/ScheduleTables.tsx`의 테이블 매핑
   - 비용 축소: 색상 계산/리스트 항목 렌더를 `useMemo`/`React.memo`로 경량화
