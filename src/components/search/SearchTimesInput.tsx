@@ -22,7 +22,6 @@ export const SearchTimeInput = memo(
     onChangeCheckbox: (value: Array<string | number>) => void;
     onCloseTag: (major: number) => void;
   }) => {
-    console.log(selectedTimes);
     return (
       <FormControl>
         <FormLabel>시간</FormLabel>
@@ -52,7 +51,7 @@ export const SearchTimeInput = memo(
           >
             {TIME_SLOTS.map(({ id, label }) => (
               <Box key={id}>
-                <Checkbox key={id} size="sm" value={id}>
+                <Checkbox key={id} size="sm" value={String(id)}>
                   {id}교시({label})
                 </Checkbox>
               </Box>

@@ -57,7 +57,7 @@ export const useSearchDialog = () => {
       handleDaysChange: (value: Array<string | number>) =>
         updateSearchOptions("days", value),
       handleTimesChange: (value: Array<string | number>) =>
-        updateSearchOptions("times", value),
+        updateSearchOptions("times", value.map(Number)),
       handleMajorsChange: (value: Array<string | number>) =>
         updateSearchOptions("majors", value),
       handleTimeTagClose: (value: number | string) =>
