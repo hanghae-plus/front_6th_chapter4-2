@@ -54,6 +54,9 @@ const createApiCache = () => {
 
 		const result = axios.get<Lecture[]>(url);
 		cache.set(url, result);
+		result.finally(() => {
+			cache.delete(url);
+		});
 		return result;
 	};
 };
