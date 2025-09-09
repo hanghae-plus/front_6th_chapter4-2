@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Lecture } from "../../types.ts";
 import { parseSchedule } from "../../utils.ts";
 import { SearchOption } from "../types.ts";
@@ -61,13 +61,13 @@ export const useSearchLogic = (lectures: Lecture[]) => {
     return [...new Set(lectures.map((lecture) => lecture.major))];
   }, [lectures]);
 
-  // 검색 옵션 변경 함수
-  const changeSearchOption = (
-    field: keyof SearchOption,
-    value: SearchOption[typeof field]
-  ) => {
-    setSearchOptions((prev) => ({ ...prev, [field]: value }));
-  };
+  // 검색 옵션 변경 함수 - useCallback으로 최적화
+  const changeSearchOption = useCallback(
+    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setSearchOptions((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
 
   return {
     searchOptions,

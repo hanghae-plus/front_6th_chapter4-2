@@ -18,11 +18,26 @@ const SearchResultTableBody = ({
 }: Props) => {
   return (
     <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
-      <Table size="sm" variant="striped">
+      {/* <Table size="sm" variant="striped"/> */}
+      <Table
+        size="sm"
+        variant="striped"
+        sx={{
+          fontSize: "xs",
+          // "& td": {
+          //   px: "4px",
+          //   py: "4px",
+          // },
+          "& button": {
+            colorScheme: "green",
+            size: "sm",
+          },
+        }}
+      >
         <Tbody>
-          {visibleLectures.map((lecture) => (
+          {visibleLectures.map((lecture, index) => (
             <SearchResultTableRow
-              key={lecture.id}
+              key={`${lecture.id}-${index}`}
               lecture={lecture}
               onAddSchedule={onAddSchedule}
             />
