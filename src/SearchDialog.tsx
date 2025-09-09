@@ -1,5 +1,5 @@
-import { useEffect, useCallback, useRef, useState, useMemo } from 'react';
-import { AxiosResponse } from 'axios';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import axios, { AxiosResponse } from 'axios';
 import { useAutoCallback } from './hooks';
 import {
   Box,
@@ -23,7 +23,6 @@ import { useScheduleContext } from './ScheduleContext.tsx';
 import { Lecture } from './types.ts';
 import { parseSchedule } from './utils.ts';
 import { SearchFilters } from './SearchFilters.tsx';
-import axios from 'axios';
 
 interface Props {
   searchInfo: {
@@ -91,7 +90,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = useCallback(() => {
+  const filteredLectures = useMemo(() => {
     const { query = '', credits, grades, days, times, majors } = searchOptions;
     return lectures
       .filter(
@@ -118,9 +117,14 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       });
   }, [lectures, searchOptions]);
 
-  const filteredLectures = getFilteredLectures();
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
+  const lastPage = useMemo(
+    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
+    [filteredLectures]
+  );
+  const visibleLectures = useMemo(
+    () => filteredLectures.slice(0, page * PAGE_SIZE),
+    [filteredLectures, page]
+  );
   const allMajors = useMemo(
     () => [...new Set(lectures.map((lecture) => lecture.major))],
     [lectures]
@@ -166,7 +170,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       const end = performance.now();
       console.log('모든 API 호출 완료 ', end);
       console.log('API 호출에 걸린 시간(ms): ', end - start);
-      setLectures(results.flatMap((result) => result.data));
+      setLectures(results.flatMap((result) => result?.data ?? []));
     });
   }, []);
 
