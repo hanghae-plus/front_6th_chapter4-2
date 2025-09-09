@@ -1,11 +1,11 @@
 import { HStack } from '@chakra-ui/react';
-import { SearchOption } from './types.ts';
-import CreditFilter from './CreditFilter';
-import DayFilter from './DayFilter';
-import GradeFilter from './GradeFilter';
-import MajorFilter from './MajorFilter';
-import QueryFilter from './QueryFilter';
-import TimeFilter from './TimeFilter';
+import { SearchOption } from '../../types.ts';
+import CreditFilter from './CreditFilter.tsx';
+import DayFilter from './DayFilter.tsx';
+import GradeFilter from './GradeFilter.tsx';
+import MajorFilter from './MajorFilter.tsx';
+import QueryFilter from './QueryFilter.tsx';
+import TimeFilter from './TimeFilter.tsx';
 
 interface SearchOptionFilterProps {
 	searchOptions: SearchOption;

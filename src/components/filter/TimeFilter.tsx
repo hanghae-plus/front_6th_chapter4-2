@@ -11,7 +11,7 @@ import {
 	TagLabel,
 	Wrap,
 } from '@chakra-ui/react';
-import { SearchOption } from './types.ts';
+import { SearchOption } from '../../types.ts';
 
 const TIME_SLOTS = [
 	{ id: 1, label: '09:00~09:30' },

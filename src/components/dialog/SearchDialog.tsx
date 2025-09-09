@@ -13,13 +13,13 @@ import {
 	VStack,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { Lecture, SearchOption } from './types.ts';
-import { PAGE_SIZE } from './constants.ts';
-import { parseSchedule } from './utils.ts';
-import { useIntersectionObserver } from './hooks/useIntersectionObserver.ts';
-import SearchOptionFilter from './SearchOptionFilter.tsx';
-import LectureHeadItem from './LectureHeadItem.tsx';
-import LectureItem from './LectureItem.tsx';
+import { Lecture, SearchOption } from '../../types.ts';
+import { PAGE_SIZE } from '../../constants.ts';
+import { parseSchedule } from '../../utils.ts';
+import { useIntersectionObserver } from '../../hooks/useIntersectionObserver.ts';
+import SearchOptionFilter from '../filter/SearchOptionFilter.tsx';
+import LectureHeadItem from '../lecture/LectureHeadItem.tsx';
+import LectureItem from '../lecture/LectureItem.tsx';
 
 interface Props {
 	searchInfo: {

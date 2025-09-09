@@ -1,7 +1,7 @@
 import React from 'react';
 import { Checkbox, CheckboxGroup, FormControl, FormLabel, HStack } from '@chakra-ui/react';
-import { SearchOption } from './types.ts';
-import { DAY_LABELS } from './constants';
+import { SearchOption } from '../../types.ts';
+import { DAY_LABELS } from '../../constants';
 
 interface DayFilterProps {
 	days: SearchOption['days'];

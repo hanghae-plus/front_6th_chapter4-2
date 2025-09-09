@@ -1,13 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { Box, Button, ButtonGroup, Flex, Heading, Stack } from '@chakra-ui/react';
 import { Active } from '@dnd-kit/core';
-import { DAY_LABELS } from './constants.ts';
-import { Lecture, Schedule } from './types.ts';
-import { parseSchedule } from './utils.ts';
-import ScheduleDndProvider from './ScheduleDndProvider.tsx';
+import { DAY_LABELS } from '../../constants.ts';
+import { Lecture, Schedule } from '../../types.ts';
+import { parseSchedule } from '../../utils.ts';
+import ScheduleDndProvider from '../../provider/ScheduleDndProvider.tsx';
 import DraggableSchedule from './DraggableSchedule.tsx';
 import ScheduleTemplate from './ScheduleTemplate.tsx';
-import SearchDialog from './SearchDialog.tsx';
+import SearchDialog from '../dialog/SearchDialog.tsx';
 
 interface Props {
 	index: number;

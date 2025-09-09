@@ -1,6 +1,6 @@
 import React from 'react';
 import { Checkbox, CheckboxGroup, FormControl, FormLabel, HStack } from '@chakra-ui/react';
-import { SearchOption } from './types.ts';
+import { SearchOption } from '../../types.ts';
 
 interface GradeFilterProps {
 	grades: SearchOption['grades'];

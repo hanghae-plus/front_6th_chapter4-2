@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Td, Tr } from '@chakra-ui/react';
-import { Lecture } from './types';
+import { Lecture } from '../../types';
 
 interface LectureItemProps {
 	index: number;

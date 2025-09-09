@@ -11,7 +11,7 @@ import {
 	TagLabel,
 	Wrap,
 } from '@chakra-ui/react';
-import { SearchOption } from './types.ts';
+import { SearchOption } from '../../types.ts';
 
 interface MajorFilterProps {
 	majors: SearchOption['majors'];

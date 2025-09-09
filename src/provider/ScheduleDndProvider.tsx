@@ -1,5 +1,5 @@
 import { DndContext, Modifier, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { CellSize } from './constants.ts';
+import { CellSize } from '../constants.ts';
 
 // 드래그 스냅 함수
 // 그리드에 맞춰 강의 스냅, 컨테이너 밖을 나가지 않도록 제한

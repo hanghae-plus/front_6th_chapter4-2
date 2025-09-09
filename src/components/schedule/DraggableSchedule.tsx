@@ -12,8 +12,8 @@ import {
 } from '@chakra-ui/react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Schedule } from './types.ts';
-import { CellSize, DAY_LABELS } from './constants.ts';
+import { Schedule } from '../../types.ts';
+import { CellSize, DAY_LABELS } from '../../constants.ts';
 
 // 단일 강의 아이템
 const DraggableSchedule = React.memo(

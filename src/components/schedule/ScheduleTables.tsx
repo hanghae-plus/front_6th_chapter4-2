@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Flex } from '@chakra-ui/react';
-import { Schedule } from './types.ts';
-import { useScheduleContext } from './ScheduleContext.tsx';
+import { Schedule } from '../../types.ts';
+import { useScheduleContext } from '../../provider/ScheduleContext.tsx';
 import ScheduleTable from './ScheduleTable.tsx';
 
 export const ScheduleTables = () => {

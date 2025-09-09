@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormControl, FormLabel, Select } from '@chakra-ui/react';
-import { SearchOption } from './types.ts';
+import { SearchOption } from '../../types.ts';
 
 interface CreditFilterProps {
 	credits: SearchOption['credits'];
