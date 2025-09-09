@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { useAutoCallback } from './hooks';
 import {
@@ -238,24 +238,8 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>
-                    {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
-                        <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
-                        <Td width="80px">
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() => addSchedule(lecture)}
-                          >
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
+                    {visibleLectures.map((lecture) => (
+                      <SearchItem key={lecture.id} addSchedule={addSchedule} lecture={lecture} />
                     ))}
                   </Tbody>
                 </Table>
@@ -270,3 +254,25 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 };
 
 export default SearchDialog;
+
+const SearchItem = memo(
+  ({ addSchedule, lecture }: { addSchedule: (lecture: Lecture) => void; lecture: Lecture }) => {
+    const { id, grade, title, credits, major, schedule } = lecture;
+
+    return (
+      <Tr>
+        <Td width="100px">{id}</Td>
+        <Td width="50px">{grade}</Td>
+        <Td width="200px">{title}</Td>
+        <Td width="50px">{credits}</Td>
+        <Td width="150px" dangerouslySetInnerHTML={{ __html: major }} />
+        <Td width="150px" dangerouslySetInnerHTML={{ __html: schedule }} />
+        <Td width="80px">
+          <Button size="sm" colorScheme="green" onClick={() => addSchedule(lecture)}>
+            추가
+          </Button>
+        </Td>
+      </Tr>
+    );
+  }
+);
