@@ -186,12 +186,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     });
   }, [lecturesWithSchedules, deferredSearchQuery, searchOptions]);
 
-  const lastPage = useMemo(
-    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
-    [filteredLectures],
-  );
-  const lastPageRef = useRef(lastPage);
-  lastPageRef.current = lastPage;
+  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE)
 
   const visibleLectures = useMemo(
     () => filteredLectures.slice(0, page * PAGE_SIZE),
@@ -254,7 +249,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPageRef.current, prevPage + 1));
+          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
         }
       },
       { threshold: 0, root: $loaderWrapper },
@@ -263,7 +258,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     observer.observe($loader);
 
     return () => observer.unobserve($loader);
-  }, []);
+  }, [lastPage]);
 
   useEffect(() => {
     setSearchOptions((prev) => ({
