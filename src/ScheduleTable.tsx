@@ -27,7 +27,7 @@ const TableOutline = memo(({tableId}: {tableId: string}) => {
 	return <Box position='absolute' top='0' left='0' right='0' bottom='0' outline={activeTableId === tableId ? '5px dashed' : undefined} outlineColor='blue.300' pointerEvents='none' />
 })
 
-const ScheduleTable = ({tableId, schedules, onScheduleTimeClick, onDeleteButtonClick}: Props) => {
+const ScheduleTable = memo(({tableId, schedules, onScheduleTimeClick, onDeleteButtonClick}: Props) => {
 	const getColor = useCallback(
 		(lectureId: string): string => {
 			const lectures = [...new Set(schedules.map(({lecture}) => lecture.id))]
@@ -72,7 +72,7 @@ const ScheduleTable = ({tableId, schedules, onScheduleTimeClick, onDeleteButtonC
 			))}
 		</Box>
 	)
-}
+})
 
 const DraggableSchedule = memo(
 	({
