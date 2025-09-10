@@ -1,30 +1,38 @@
-import {Flex} from '@chakra-ui/react'
-import {useScheduleContext} from './ScheduleContext.tsx'
-import SearchDialog from './SearchDialog.tsx'
-import {useState} from 'react'
-import ScheduleDndProvider from './ScheduleDndProvider.tsx'
-import ScheduleTableWrapper from './components/ScheduleTableWrapper.tsx'
+import { Flex } from "@chakra-ui/react";
+import SearchDialog from "./SearchDialog.tsx";
+import { useState } from "react";
+import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
+import ScheduleTableWrapper from "./components/ScheduleTableWrapper.tsx";
+import { useAllTableIds } from "./store/scheduleStore.ts";
 
 export const ScheduleTables = () => {
-	const {schedulesMap, setSchedulesMap} = useScheduleContext()
-	const [searchInfo, setSearchInfo] = useState<{
-		tableId: string
-		day?: string
-		time?: number
-	} | null>(null)
+  const tableIds = useAllTableIds();
+  const [searchInfo, setSearchInfo] = useState<{
+    tableId: string;
+    day?: string;
+    time?: number;
+  } | null>(null);
 
-	const disabledRemoveButton = Object.keys(schedulesMap).length === 1
+  const disabledRemoveButton = tableIds.length === 1;
 
-	return (
-		<>
-			<Flex w='full' gap={6} p={6} flexWrap='wrap'>
-				{Object.entries(schedulesMap).map(([tableId, schedules], index) => (
-					<ScheduleDndProvider key={tableId}>
-						<ScheduleTableWrapper index={index} tableId={tableId} disabledRemoveButton={disabledRemoveButton} setSearchInfo={setSearchInfo} schedules={schedules} setSchedulesMap={setSchedulesMap} />
-					</ScheduleDndProvider>
-				))}
-			</Flex>
-			<SearchDialog searchInfo={searchInfo} onClose={() => setSearchInfo(null)} />
-		</>
-	)
-}
+  return (
+    <>
+      <Flex w="full" gap={6} p={6} flexWrap="wrap">
+        {tableIds.map((tableId, index) => (
+          <ScheduleDndProvider key={tableId} tableId={tableId}>
+            <ScheduleTableWrapper
+              index={index}
+              tableId={tableId}
+              disabledRemoveButton={disabledRemoveButton}
+              setSearchInfo={setSearchInfo}
+            />
+          </ScheduleDndProvider>
+        ))}
+      </Flex>
+      <SearchDialog
+        searchInfo={searchInfo}
+        onClose={() => setSearchInfo(null)}
+      />
+    </>
+  );
+};
