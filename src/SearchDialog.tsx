@@ -46,9 +46,15 @@ interface SearchOption {
 
 // PAGE_SIZE는 LectureTable로 이동
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
+const assetUrl = (path: string) => {
+  const base = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "/");
+  return `${base}${path.replace(/^\//, "")}`;
+};
+
+const fetchMajors = () =>
+  axios.get<Lecture[]>(assetUrl("schedules-majors.json"));
 const fetchLiberalArts = () =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json");
+  axios.get<Lecture[]>(assetUrl("schedules-liberal-arts.json"));
 
 const createCachedPromise = <T,>(fn: () => Promise<T>) => {
   let cached: Promise<T> | null = null;
