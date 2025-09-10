@@ -18,12 +18,12 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useScheduleContext } from "../ScheduleContext.tsx";
-import { Lecture, SearchOption } from "./types";
-import { parseSchedule } from "../utils";
+import { Lecture, SearchOption } from "./types.ts";
+import { parseSchedule } from "../utils.ts";
 import axios from "axios";
 import { cacheManager } from "../cache";
-import SearchFilter from "./components/SearchFilters";
-import SearchResultTable from "./components/SearchResultTable";
+import SearchFilter from "./components/SearchFilters.tsx";
+import SearchResultTable from "./components/SearchResultTable.tsx";
 
 interface Props {
   searchInfo: {
@@ -32,6 +32,7 @@ interface Props {
     time?: number;
   } | null;
   onClose: () => void;
+  addLecture: (lecture: Lecture) => void;
 }
 
 const PAGE_SIZE = 100;
@@ -68,7 +69,7 @@ const fetchAllLectures = async () => {
   return [...majorsResult.data, ...liberalArtsResult.data];
 };
 
-const SearchDialog = ({ searchInfo, onClose }: Props) => {
+const SearchDialog = ({ searchInfo, onClose, addLecture }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
   const loaderWrapperRef = useRef<HTMLDivElement | null>(null);
@@ -212,9 +213,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         [tableId]: [...prev[tableId], ...schedules],
       }));
 
+      addLecture(lecture);
       onClose();
     },
-    [searchInfo, setSchedulesMap, onClose]
+    [searchInfo, setSchedulesMap, onClose, addLecture]
   );
 
   useEffect(() => {

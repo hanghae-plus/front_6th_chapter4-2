@@ -1,7 +1,3 @@
-/**
- * 드래그 앤 드롭 기능을 제공하는 Provider 컴포넌트
- * 시간표 내의 강의들을 드래그하여 다른 시간/요일로 이동할 수 있게 합니다.
- */
 import {
   DndContext,
   Modifier,
@@ -9,11 +5,10 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { PropsWithChildren } from "react";
-import { CellSize, DAY_LABELS } from "./constants.ts";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { CellSize } from "./constants.ts";
 
-// 드래그 시 격자에 스냅되도록 하는 modifier 생성
+// 드래그 스냅 함수
+// 그리드에 맞춰 강의 스냅, 컨테이너 밖을 나가지 않도록 제한
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
     const containerTop = containerNodeRect?.top ?? 0;
@@ -50,49 +45,32 @@ function createSnapModifier(): Modifier {
 
 const modifiers = [createSnapModifier()];
 
-export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+interface ScheduleDndProviderProps {
+  children: React.ReactNode;
+  onDragStart?: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  onDragEnd?: (event: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+export default function ScheduleDndProvider({
+  children,
+  onDragStart,
+  onDragEnd,
+}: ScheduleDndProviderProps) {
   const sensors = useSensors(
+    // PointerSensor - 마우스나 터치 입력을 기준으로 드래그 감지
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 8, // 8px 이상 움직여야 드래그 시작
       },
     })
   );
 
-  // 드래그 종료 시 스케줄 위치 업데이트 처리
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (event: any) => {
-    const { active, delta } = event;
-    const { x, y } = delta;
-    const [tableId, index] = active.id.split(":");
-    const schedule = schedulesMap[tableId][index];
-    const nowDayIndex = DAY_LABELS.indexOf(
-      schedule.day as (typeof DAY_LABELS)[number]
-    );
-    const moveDayIndex = Math.floor(x / 80);
-    const moveTimeIndex = Math.floor(y / 30);
-
-    setSchedulesMap({
-      ...schedulesMap,
-      [tableId]: schedulesMap[tableId].map((targetSchedule, targetIndex) => {
-        if (targetIndex !== Number(index)) {
-          return { ...targetSchedule };
-        }
-        return {
-          ...targetSchedule,
-          day: DAY_LABELS[nowDayIndex + moveDayIndex],
-          range: targetSchedule.range.map((time) => time + moveTimeIndex),
-        };
-      }),
-    });
-  };
-
   return (
     <DndContext
       sensors={sensors}
-      onDragEnd={handleDragEnd}
       modifiers={modifiers}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
     >
       {children}
     </DndContext>
