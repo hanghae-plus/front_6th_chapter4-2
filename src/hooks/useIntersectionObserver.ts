@@ -41,25 +41,3 @@ export const useIntersectionObserver = ({
 		return () => observer.unobserve($loader); // 컴포넌트 언마운트 시 해제
 	}, [onIntersect, options, loaderRef, loaderWrapperRef]);
 };
-
-// useEffect(() => {
-// 	const $loader = loaderRef.current;
-// 	const $loaderWrapper = loaderWrapperRef.current;
-
-// 	if (!$loader || !$loaderWrapper) {
-// 		return;
-// 	}
-
-// 	const observer = new IntersectionObserver(
-// 		(entries) => {
-// 			if (entries[0].isIntersecting) {
-// 				setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-// 			}
-// 		},
-// 		{ threshold: 0, root: $loaderWrapper }
-// 	);
-
-// 	observer.observe($loader);
-
-// 	return () => observer.unobserve($loader);
-// }, [lastPage]);
