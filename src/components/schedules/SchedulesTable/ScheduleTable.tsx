@@ -18,6 +18,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { ComponentProps, useMemo, useCallback, memo } from 'react';
 import { useDragState } from '../../../SchedulesDragStateProvider.tsx';
 import { TimeRow } from './components';
+import { ScheduleTableHeader } from './components/table/ScheduleTableHeader.tsx';
 
 interface Props {
   tableId: string;
@@ -26,12 +27,43 @@ interface Props {
   onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
 }
 
-function ScheduleHeader() {
-  return null;
-}
+// Grid를 별도 컴포넌트로 분리 - schedules와 무관하게 메모이제이션
+const ScheduleGrid = memo(
+  ({ onTimeClick }: { onTimeClick: (day: string, time: number) => void }) => {
+    console.log('ScheduleGrid 리렌더링'); // 디버깅용
+
+    return (
+      <Grid
+        templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}
+        templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`}
+        bg="white"
+        fontSize="sm"
+        textAlign="center"
+        outline="1px solid"
+        outlineColor="gray.300"
+      >
+        <ScheduleTableHeader />
+        {TIMES.map((time, timeIndex) => {
+          const timeNumber = timeIndex + 1;
+          return (
+            <TimeRow
+              key={timeNumber}
+              time={time}
+              timeIndex={timeIndex}
+              timeNumber={timeNumber}
+              onTimeClick={onTimeClick}
+            />
+          );
+        })}
+      </Grid>
+    );
+  }
+);
 
 const ScheduleTable = memo(
   ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
+    console.log(`ScheduleTable ${tableId} 리렌더링`); // 디버깅용
+
     // 강의별 색상 매핑 메모이제이션
     const lectureColorMap = useMemo(() => {
       const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
@@ -52,17 +84,17 @@ const ScheduleTable = memo(
       [lectureColorMap]
     );
 
-    // const dndContext = useDndContext();
     const { activeTableId } = useDragState();
 
-    // 핸들러 함수들 메모이제이션 - 고차함수로 최적화
-    const createTimeClickHandler = useCallback(
-      (day: string, time: number) => () => {
+    // TimeRow를 위한 단순한 핸들러 - 메모이제이션 강화
+    const handleTimeClick = useCallback(
+      (day: string, time: number) => {
         onScheduleTimeClick?.({ day, time });
       },
       [onScheduleTimeClick]
     );
 
+    // DraggableSchedule를 위한 삭제 핸들러
     const createDeleteHandler = useCallback(
       (day: string, time: number) => () => {
         onDeleteButtonClick?.({ day, time });
@@ -76,29 +108,8 @@ const ScheduleTable = memo(
         outline={activeTableId === tableId ? '5px dashed' : undefined}
         outlineColor="blue.300"
       >
-        <Grid
-          templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}
-          templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`}
-          bg="white"
-          fontSize="sm"
-          textAlign="center"
-          outline="1px solid"
-          outlineColor="gray.300"
-        >
-          <ScheduleHeader />
-          {TIMES.map((time, timeIndex) => {
-            const timeNumber = timeIndex + 1;
-            return (
-              <TimeRow
-                key={timeNumber}
-                time={time}
-                timeIndex={timeIndex}
-                timeNumber={timeNumber}
-                onTimeClick={createTimeClickHandler}
-              />
-            );
-          })}
-        </Grid>
+        {/* Grid를 별도 컴포넌트로 분리 */}
+        <ScheduleGrid onTimeClick={handleTimeClick} />
 
         {schedules.map((schedule, index) => (
           <DraggableSchedule
@@ -126,6 +137,8 @@ const DraggableSchedule = memo(
   }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
       onDeleteButtonClick: () => void;
     }) => {
+    console.log(`DraggableSchedule ${id} 리렌더링`); // 디버깅용
+
     const { day, range, room, lecture } = data;
     const { attributes, setNodeRef, listeners, transform } = useDraggable({
       id,
@@ -185,13 +198,29 @@ const DraggableSchedule = memo(
     );
   },
   (prevProps, nextProps) => {
-    // 실제로 변경된 스케줄만 리렌더링
-    return (
-      prevProps.data.day === nextProps.data.day &&
-      prevProps.data.range[0] === nextProps.data.range[0] &&
-      prevProps.data.range.length === nextProps.data.range.length &&
-      prevProps.bg === nextProps.bg
-    );
+    // 깊은 비교로 실제 변경사항만 체크
+    const prevData = prevProps.data;
+    const nextData = nextProps.data;
+
+    const isSame =
+      prevProps.id === nextProps.id &&
+      prevProps.bg === nextProps.bg &&
+      prevData.day === nextData.day &&
+      prevData.room === nextData.room &&
+      prevData.lecture.id === nextData.lecture.id &&
+      prevData.lecture.title === nextData.lecture.title &&
+      prevData.range.length === nextData.range.length &&
+      prevData.range.every((val, idx) => val === nextData.range[idx]);
+
+    if (!isSame) {
+      console.log(`${nextProps.id} 변경 감지:`, {
+        day: prevData.day !== nextData.day,
+        range: !prevData.range.every((val, idx) => val === nextData.range[idx]),
+        lecture: prevData.lecture.id !== nextData.lecture.id,
+      });
+    }
+
+    return isSame;
   }
 );
 
