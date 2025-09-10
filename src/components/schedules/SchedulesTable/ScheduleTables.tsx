@@ -91,17 +91,13 @@ const ScheduleTableItem = memo(
     onSearchOpen: (tableId: string) => void;
     onDuplicate: (tableId: string) => void;
     onRemove: (tableId: string) => void;
-    onScheduleTimeClick: (
-      tableId: string
-    ) => (timeInfo: { day?: string; time?: number }) => void;
-    onDeleteButtonClick: (
-      tableId: string
-    ) => ({ day, time }: { day: string; time: number }) => void;
+    onScheduleTimeClick: (timeInfo: { day?: string; time?: number }) => void; // 변경!
+    onDeleteButtonClick: ({ day, time }: { day: string; time: number }) => void; // 변경!
     onScheduleUpdate: (tableId: string, schedules: Schedule[]) => void;
   }) => {
     return (
       <DragStateProvider>
-        <ScheduleDndProvider 
+        <ScheduleDndProvider
           tableId={tableId}
           schedules={schedules}
           onScheduleUpdate={onScheduleUpdate}
@@ -122,8 +118,8 @@ const ScheduleTableItem = memo(
             <ScheduleTable
               schedules={schedules}
               tableId={tableId}
-              onScheduleTimeClick={onScheduleTimeClick(tableId)}
-              onDeleteButtonClick={onDeleteButtonClick(tableId)}
+              onScheduleTimeClick={onScheduleTimeClick}
+              onDeleteButtonClick={onDeleteButtonClick}
             />
           </Stack>
         </ScheduleDndProvider>
@@ -175,26 +171,6 @@ const ScheduleTables = () => {
     setSearchInfo({ tableId });
   }, []);
 
-  const handleScheduleTimeClick = useCallback(
-    (tableId: string) => (timeInfo: { day?: string; time?: number }) => {
-      setSearchInfo({ tableId, ...timeInfo });
-    },
-    []
-  );
-
-  const handleDeleteButtonClick = useCallback(
-    (tableId: string) =>
-      ({ day, time }: { day: string; time: number }) => {
-        setSchedulesMap(prev => ({
-          ...prev,
-          [tableId]: prev[tableId].filter(
-            schedule => schedule.day !== day || !schedule.range.includes(time)
-          ),
-        }));
-      },
-    [setSchedulesMap]
-  );
-
   const handleScheduleUpdate = useCallback(
     (tableId: string, updatedSchedules: Schedule[]) => {
       setSchedulesMap(prev => ({
@@ -209,6 +185,44 @@ const ScheduleTables = () => {
     setSearchInfo(null);
   }, []);
 
+  // 각 테이블의 핸들러를 메모이제이션 - scheduleEntries 의존성 제거
+  const tableHandlers = useMemo(() => {
+    const handlers: Record<
+      string,
+      {
+        onScheduleTimeClick: (timeInfo: {
+          day?: string;
+          time?: number;
+        }) => void;
+        onDeleteButtonClick: ({
+          day,
+          time,
+        }: {
+          day: string;
+          time: number;
+        }) => void;
+      }
+    > = {};
+
+    Object.keys(schedulesMap).forEach(tableId => {
+      handlers[tableId] = {
+        onScheduleTimeClick: timeInfo => {
+          setSearchInfo({ tableId, ...timeInfo });
+        },
+        onDeleteButtonClick: ({ day, time }) => {
+          setSchedulesMap(prev => ({
+            ...prev,
+            [tableId]: prev[tableId].filter(
+              schedule => schedule.day !== day || !schedule.range.includes(time)
+            ),
+          }));
+        },
+      };
+    });
+
+    return handlers;
+  }, []); // 의존성 배열 비움!
+
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
@@ -222,8 +236,8 @@ const ScheduleTables = () => {
             onSearchOpen={handleSearchOpen}
             onDuplicate={duplicate}
             onRemove={remove}
-            onScheduleTimeClick={handleScheduleTimeClick}
-            onDeleteButtonClick={handleDeleteButtonClick}
+            onScheduleTimeClick={tableHandlers[tableId].onScheduleTimeClick}
+            onDeleteButtonClick={tableHandlers[tableId].onDeleteButtonClick}
             onScheduleUpdate={handleScheduleUpdate}
           />
         ))}
