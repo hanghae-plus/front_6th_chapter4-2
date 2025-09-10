@@ -6,6 +6,8 @@ import { useScheduleContext } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { useState } from "react";
 import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
+import { Schedule } from "./types.ts";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
 export const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
@@ -69,9 +71,6 @@ export const ScheduleTables = () => {
     </>
   );
 };
-
-import { Schedule } from "./types.ts";
-import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
 interface ScheduleCardProps {
   index: number;
@@ -153,3 +152,5 @@ const ScheduleCard = memo(
     );
   },
 );
+
+ScheduleCard.displayName = "ScheduleCard";

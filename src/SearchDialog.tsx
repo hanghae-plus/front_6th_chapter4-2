@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -87,6 +87,15 @@ const allLecturesCache: {
   liberal?: Promise<import("axios").AxiosResponse<Lecture[]>>;
 } = {};
 
+const scheduleParseCache = new Map<string, ReturnType<typeof parseSchedule>>();
+const getParsedSchedule = (schedule: string) => {
+  const cached = scheduleParseCache.get(schedule);
+  if (cached) return cached;
+  const parsed = parseSchedule(schedule);
+  scheduleParseCache.set(schedule, parsed);
+  return parsed;
+};
+
 const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
 const fetchLiberalArts = () => axios.get<Lecture[]>("/schedules-liberal-arts.json");
 
@@ -167,7 +176,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  const filteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
     return lectures
       .filter(
@@ -179,25 +188,32 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       .filter((lecture) => majors.length === 0 || majors.includes(lecture.major))
       .filter((lecture) => !credits || lecture.credits.startsWith(String(credits)))
       .filter((lecture) => {
-        if (days.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+        if (days.length === 0) return true;
+        const schedules = lecture.schedule ? getParsedSchedule(lecture.schedule) : [];
         return schedules.some((s) => days.includes(s.day));
       })
       .filter((lecture) => {
-        if (times.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+        if (times.length === 0) return true;
+        const schedules = lecture.schedule ? getParsedSchedule(lecture.schedule) : [];
         return schedules.some((s) => s.range.some((time) => times.includes(time)));
       });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lectures, searchOptions]);
 
-  const filteredLectures = getFilteredLectures();
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+  const lastPage = useMemo(
+    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
+    [filteredLectures.length],
+  );
+
+  const visibleLectures = useMemo(
+    () => filteredLectures.slice(0, page * PAGE_SIZE),
+    [filteredLectures, page],
+  );
+
+  const allMajors = useMemo(
+    () => [...new Set(lectures.map((lecture) => lecture.major))],
+    [lectures],
+  );
 
   const changeSearchOption = (field: keyof SearchOption, value: SearchOption[typeof field]) => {
     setPage(1);
