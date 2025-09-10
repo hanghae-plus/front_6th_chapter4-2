@@ -1,5 +1,4 @@
 import { memo, useMemo } from 'react';
-import { SearchOption } from '../SearchDialog.tsx';
 import { Checkbox, CheckboxGroup } from '@chakra-ui/react/checkbox';
 import { Wrap } from '@chakra-ui/react/wrap';
 import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react/tag';
@@ -8,6 +7,7 @@ import { TIME_SLOTS } from '../../../../constants/constants.ts';
 import { Box } from '@chakra-ui/react/box';
 
 import { FormControl } from '@chakra-ui/react';
+import { SearchOption } from '../../../../types.ts';
 
 export const CheckTime = memo(
   ({

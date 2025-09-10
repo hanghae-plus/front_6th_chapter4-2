@@ -6,8 +6,8 @@ import {
   FormLabel,
 } from '@chakra-ui/react';
 import { DAY_LABELS } from '../../../../constants/constants.ts';
-import { SearchOption } from '../SearchDialog.tsx';
 import { memo } from 'react';
+import { SearchOption } from '../../../../types.ts';
 
 export const CheckDays = memo(
   ({

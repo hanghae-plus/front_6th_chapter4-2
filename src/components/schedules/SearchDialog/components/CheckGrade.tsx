@@ -1,8 +1,9 @@
 import { FormControl, FormLabel } from '@chakra-ui/react/form-control';
 import { Checkbox, CheckboxGroup } from '@chakra-ui/react/checkbox';
 import { HStack } from '@chakra-ui/react/stack';
-import { SearchOption } from '../SearchDialog.tsx';
+
 import { memo } from 'react';
+import { SearchOption } from '../../../../types.ts';
 
 const CheckGrade = memo(
   ({

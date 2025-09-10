@@ -1,7 +1,7 @@
 import { FormControl, FormLabel } from '@chakra-ui/react/form-control';
 import { Select } from '@chakra-ui/react/select';
-import { SearchOption } from '../SearchDialog.tsx';
 import { memo } from 'react';
+import { SearchOption } from '../../../../types.ts';
 
 export const GradeSelect = memo(
   ({

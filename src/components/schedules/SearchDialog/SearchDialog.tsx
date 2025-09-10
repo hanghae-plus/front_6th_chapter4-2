@@ -12,8 +12,7 @@ import {
 } from '@chakra-ui/react/modal';
 import { Input } from '@chakra-ui/react/input';
 import { Box } from '@chakra-ui/react/box';
-import { useScheduleContext } from '../../../ScheduleContext.tsx';
-import { Lecture } from '../../../types.ts';
+import { Lecture, SearchOption } from '../../../types.ts';
 import { parseSchedule } from '../../../utils/utils.ts';
 import axios from 'axios';
 
@@ -31,6 +30,7 @@ import {
   CheckDays,
 } from './components';
 import CheckGrade from './components/CheckGrade.tsx';
+import { store } from '../../../store/externalStore.ts';
 
 interface Props {
   searchInfo: {
@@ -39,15 +39,6 @@ interface Props {
     time?: number;
   } | null;
   onClose: () => void;
-}
-
-export interface SearchOption {
-  query?: string;
-  grades: number[];
-  days: string[];
-  times: number[];
-  majors: string[];
-  credits?: number;
 }
 
 const fetchMajors = createCachedApi(() =>
@@ -102,7 +93,7 @@ const SearchDialogHeader = () => {
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  // const { setSchedulesMap } = useScheduleContext();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -168,19 +159,14 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 
   const addSchedule = useAutoCallback((lecture: Lecture) => {
     if (!searchInfo) return;
-
+    console.log('추가');
     const { tableId } = searchInfo;
 
     const schedules = parseSchedule(lecture.schedule).map(schedule => ({
       ...schedule,
       lecture,
     }));
-
-    setSchedulesMap(prev => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
-
+    store.addSchedule(tableId, schedules);
     onClose();
   });
 

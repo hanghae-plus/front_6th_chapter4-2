@@ -11,8 +11,6 @@ import { TimeRow } from './TimeRow.tsx';
 
 export const ScheduleGrid = memo(
   ({ onTimeClick }: { onTimeClick: (day: string, time: number) => void }) => {
-    console.log('ScheduleGrid 리렌더링'); // 디버깅용
-
     return (
       <Grid
         templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}

@@ -3,9 +3,9 @@ import { memo, useCallback } from 'react';
 import { Checkbox, CheckboxGroup } from '@chakra-ui/react/checkbox';
 import { Stack } from '@chakra-ui/react/stack';
 import { Box } from '@chakra-ui/react/box';
-import { SearchOption } from '../SearchDialog.tsx';
 import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react/tag';
 import { FormControl } from '@chakra-ui/react/form-control';
+import { SearchOption } from '../../../../types.ts';
 
 const MajorCheckboxItem = memo(
   ({

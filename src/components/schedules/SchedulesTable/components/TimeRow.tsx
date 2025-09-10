@@ -20,7 +20,7 @@ const TimeCell = memo(
     const handleClick = () => {
       onTimeClick(day, timeNumber);
     };
-
+    console.log('TIME CELL RERENDER');
     return (
       <GridItem
         borderWidth="1px 0 0 1px"
@@ -48,7 +48,7 @@ export const TimeRow = memo(
   }) => {
     // console.log(`TimeRow ${timeNumber} 리렌더링`); // 디버깅용
     const isEvening = timeIndex > 17;
-
+    // console.log('TIME ROW RERENDER');
     return (
       <Fragment key={`시간-${timeNumber}`}>
         <GridItem

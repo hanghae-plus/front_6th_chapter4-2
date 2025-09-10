@@ -12,25 +12,25 @@ import { store } from '../../../../store/externalStore.ts';
 export const ScheduleTableContainer = memo(
   ({
     tableId,
-    // schedules,
+
     index,
     disabledRemoveButton,
     onSearchOpen,
     onDuplicate,
     onRemove,
     onScheduleTimeClick,
-    onDeleteButtonClick,
+
     onScheduleUpdate,
   }: {
     tableId: string;
-    schedules: Schedule[];
+
     index: number;
     disabledRemoveButton: boolean;
     onSearchOpen: (tableId: string) => void;
     onDuplicate: (tableId: string) => void;
     onRemove: (tableId: string) => void;
     onScheduleTimeClick: (timeInfo: { day?: string; time?: number }) => void; // 변경!
-    onDeleteButtonClick: ({ day, time }: { day: string; time: number }) => void; // 변경!
+    // onDeleteButtonClick: ({ day, time }: { day: string; time: number }) => void; // 변경!
     onScheduleUpdate: (tableId: string, schedules: Schedule[]) => void;
   }) => {
     // const { schedulesMap } = useScheduleContext();
@@ -40,10 +40,7 @@ export const ScheduleTableContainer = memo(
       () => store.getTableSchedules(tableId),
       () => store.getTableSchedules(tableId)
     );
-    // useEffect(() => {
-    //   store.initializeFromContext(schedulesMap);
-    // }, [schedulesMap]);
-    // console.log('스케쥴스 :', schedules);
+
     return (
       <DragStateProvider>
         <ScheduleDndProvider
@@ -68,7 +65,7 @@ export const ScheduleTableContainer = memo(
               schedules={schedules}
               tableId={tableId}
               onScheduleTimeClick={onScheduleTimeClick}
-              onDeleteButtonClick={onDeleteButtonClick}
+              // onDeleteButtonClick={onDeleteButtonClick}
             />
           </Stack>
         </ScheduleDndProvider>

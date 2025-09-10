@@ -17,15 +17,21 @@ import { CSS } from '@dnd-kit/utilities';
 import { ComponentProps, useMemo, useCallback, memo } from 'react';
 import { useActiveTableId } from '../../../SchedulesDragStateProvider.tsx';
 import { ScheduleGrid } from './components';
+import { store } from '../../../store/externalStore.ts';
 interface Props {
   tableId: string;
   schedules: Schedule[];
   onScheduleTimeClick?: (timeInfo: { day: string; time: number }) => void;
-  onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
+  // onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
 }
 
 const ScheduleTable = memo(
-  ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
+  ({
+    tableId,
+    schedules,
+    onScheduleTimeClick,
+    // onDeleteButtonClick
+  }: Props) => {
     // 강의별 색상 매핑 메모이제이션
     const lectureColorMap = useMemo(() => {
       const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
@@ -56,8 +62,6 @@ const ScheduleTable = memo(
       [onScheduleTimeClick]
     );
 
-    // 삭제 핸들러는 개별 아이템 내부에서 생성하도록 위임하여 불필요한 새 함수 생성을 방지
-
     return (
       <Box
         position="relative"
@@ -73,7 +77,7 @@ const ScheduleTable = memo(
             id={`${tableId}:${index}`}
             data={schedule}
             bg={getColor(schedule.lecture.id)}
-            onDeleteButtonClick={onDeleteButtonClick}
+            // onDeleteButtonClick={onDeleteButtonClick}
           />
         ))}
       </Box>
@@ -86,9 +90,9 @@ const DraggableSchedule = memo(
     id,
     data,
     bg,
-    onDeleteButtonClick,
+    // onDeleteButtonClick,
   }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
-      onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
+      // onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
     }) => {
     // console.log(`DraggableSchedule ${id} 리렌더링`); // 디버깅용
 
@@ -96,6 +100,14 @@ const DraggableSchedule = memo(
     const { attributes, setNodeRef, listeners, transform } = useDraggable({
       id,
     });
+    const handleDeleteButtonClick = useCallback(
+      (tableId: string, { day, time }: { day: string; time: number }) => {
+        // console.log(id);
+        const lectureId = tableId.split(':')[0];
+        store.removeSchedule(lectureId, day, time); // ← 이미 store에 있는 메서드 사용
+      },
+      []
+    );
 
     // 위치 계산 메모이제이션
     const position = useMemo(() => {
@@ -145,7 +157,9 @@ const DraggableSchedule = memo(
             <Button
               colorScheme="red"
               size="xs"
-              onClick={() => onDeleteButtonClick?.({ day, time: range[0] })}
+              onClick={() =>
+                handleDeleteButtonClick(id, { day, time: range[0] })
+              }
             >
               삭제
             </Button>
@@ -158,8 +172,7 @@ const DraggableSchedule = memo(
     return (
       prevProps.id === nextProps.id &&
       prevProps.bg === nextProps.bg &&
-      prevProps.data === nextProps.data && // 객체 참조만 비교
-      prevProps.onDeleteButtonClick === nextProps.onDeleteButtonClick
+      prevProps.data === nextProps.data // 객체 참조만 비교
     );
   }
 );

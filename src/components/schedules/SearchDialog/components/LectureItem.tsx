@@ -20,13 +20,7 @@ export const LectureItem = memo(
         <td style={{ width: '150px' }}>{major}</td>
         <td style={{ width: '150px' }}>{schedule}</td>
         <td style={{ width: '80px' }}>
-          <button
-            // size="sm"
-            // colorScheme="green"
-            onClick={() => onAddSchedule(lecture)}
-          >
-            추가
-          </button>
+          <button onClick={() => onAddSchedule(lecture)}>추가</button>
         </td>
       </Tr>
     );
