@@ -16,7 +16,6 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { useScheduleSetter } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import { fetchWithCache } from "./api/cacheApi.ts";
@@ -27,6 +26,7 @@ import { DayCheckboxGroup } from "./dialogForm/DayCheckboxGroup.tsx";
 import { TimeSlotCheckboxGroup } from "./dialogForm/TimeSlotCheckboxGroup.tsx";
 import { MajorCheckboxGroup } from "./dialogForm/MajorCheckboxGroup.tsx";
 import { LectureRow } from "./LectureRow.tsx";
+import { scheduleStore } from "./store/schedule.store.ts";
 
 interface Props {
   searchInfo: {
@@ -65,7 +65,7 @@ const fetchAllLectures = async () =>
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const { setTable } = useScheduleSetter();
+  const setTable = scheduleStore.setTable;
 
   // 무한스크롤 관련 참조
   const loaderWrapperRef = useRef<HTMLDivElement>(null);

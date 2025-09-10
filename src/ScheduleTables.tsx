@@ -1,14 +1,14 @@
 import { Flex } from "@chakra-ui/react";
 
-import { useScheduleValue } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { useState } from "react";
 import useCustomDnd from "./hooks/useCustomDnd.tsx";
 import { ScheduleTableContainer } from "./ScheduleTableContainer.tsx";
 import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
+import { useSchedulesMap } from "./store/useSchedules.ts";
 
 export const ScheduleTables = () => {
-  const schedulesMap = useScheduleValue();
+  const schedulesMap = useSchedulesMap();
   const { activeId } = useCustomDnd();
 
   const [searchInfo, setSearchInfo] = useState<{

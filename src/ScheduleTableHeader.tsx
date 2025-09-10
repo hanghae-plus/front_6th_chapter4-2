@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Button, ButtonGroup, Flex, Heading } from "@chakra-ui/react";
-import { useScheduleSetter } from "./ScheduleContext.tsx";
+import { scheduleStore } from "./store/schedule.store.ts";
 
 interface ScheduleTableHeaderProps {
   index: number;
@@ -16,7 +16,8 @@ export const ScheduleTableHeader = memo(
     disabledRemoveButton,
     tableId,
   }: ScheduleTableHeaderProps) => {
-    const { duplicateTable, deleteTable } = useScheduleSetter();
+    const duplicateTable = scheduleStore.duplicateTable;
+    const deleteTable = scheduleStore.deleteTable;
 
     return (
       <Flex justifyContent="space-between" alignItems="center">

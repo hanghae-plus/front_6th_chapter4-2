@@ -7,8 +7,8 @@ import {
   PopoverContent,
   Text,
 } from "@chakra-ui/react";
-import { useScheduleSetter } from "./ScheduleContext.tsx";
 import { Schedule } from "./types.ts";
+import { scheduleStore } from "./store/schedule.store.ts";
 
 interface LectureDeletePopoverProps {
   tableId: string;
@@ -18,7 +18,8 @@ interface LectureDeletePopoverProps {
 export const LectureDeletePopover = memo(
   ({ tableId, data }: LectureDeletePopoverProps) => {
     console.log("LectureDeletePopover rerender!");
-    const { deleteScheduleItem } = useScheduleSetter();
+
+    const deleteScheduleItem = scheduleStore.deleteScheduleItem;
     return (
       <PopoverContent onClick={(event) => event.stopPropagation()}>
         <PopoverArrow />
