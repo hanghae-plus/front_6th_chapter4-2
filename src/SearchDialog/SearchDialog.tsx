@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import axios, { type AxiosResponse } from "axios";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BASE } from "../config.ts";
 import { useAutoCallback } from "../hook/useAutoCallback.ts";
 import { useSchedules } from "../hook/useSchedules.ts";
 import type { Lecture } from "../types.ts";
@@ -63,8 +64,8 @@ const createApiCache = () => {
 
 const apiCahce = createApiCache();
 
-const fetchMajors = () => apiCahce("/schedules-majors.json");
-const fetchLiberalArts = () => apiCahce("/schedules-liberal-arts.json");
+const fetchMajors = () => apiCahce(`${BASE}schedules-majors.json`);
+const fetchLiberalArts = () => apiCahce(`${BASE}schedules-liberal-arts.json`);
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 const fetchAllLectures = async () =>
