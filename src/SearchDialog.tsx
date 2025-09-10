@@ -90,15 +90,48 @@ const fetchLiberalArts = () =>
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 // Promise.all([ promise1, promise2, ... ]) 의 형태로 사용되며, 배열로 받은 모든 프로미스가 fulfill 된 이후, 모든 프로미스의 반환 값을 배열에 넣어 반환한다.
 // 그런데 만약 배열에 있는 프로미스 중 하나라도 reject가 호출된다면, 성공한 프로미스 응답은 무시된채로 그냥 바로 catch로 빠져버리게 된다.
-const fetchAllLectures = async () =>
-  await Promise.all([
-    (console.log("API Call 1", performance.now()), await fetchMajors()),
-    (console.log("API Call 2", performance.now()), await fetchLiberalArts()),
-    (console.log("API Call 3", performance.now()), await fetchMajors()),
-    (console.log("API Call 4", performance.now()), await fetchLiberalArts()),
-    (console.log("API Call 5", performance.now()), await fetchMajors()),
-    (console.log("API Call 6", performance.now()), await fetchLiberalArts()),
-  ]);
+// const fetchAllLectures = async () =>
+//   await Promise.all([
+//     (console.log("API Call 1", performance.now()), await fetchMajors()),
+//     (console.log("API Call 2", performance.now()), await fetchLiberalArts()),
+//     (console.log("API Call 3", performance.now()), await fetchMajors()),
+//     (console.log("API Call 4", performance.now()), await fetchLiberalArts()),
+//     (console.log("API Call 5", performance.now()), await fetchMajors()),
+//     (console.log("API Call 6", performance.now()), await fetchLiberalArts()),
+//   ]);
+const fetchAllLectures = (() => {
+  const cache = new Map();
+
+  return async () => {
+    const start = performance.now();
+    console.log("API 호출 시작:", start);
+
+    const getCachedPromise = (
+      fetchFn: () => Promise<{ data: Lecture[] }>,
+      key: string
+    ) => {
+      if (cache.has(key)) {
+        console.log(`${key} 캐시에서 반환:`, performance.now());
+        return cache.get(key);
+      }
+      console.log(`${key} 새로 호출:`, performance.now());
+      const promise = fetchFn();
+      cache.set(key, promise);
+      return promise;
+    };
+
+    const results = await Promise.all([
+      getCachedPromise(fetchMajors, "majors"),
+      getCachedPromise(fetchLiberalArts, "liberal-arts"),
+    ]);
+
+    const end = performance.now();
+    console.log("모든 API 호출 완료:", end);
+    console.log("총 소요 시간:", end - start, "ms");
+
+    return results;
+  };
+})();
 
 const SearchItem = memo(
   ({
@@ -447,12 +480,16 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 </Thead>
               </Table>
 
+              {/* 
+              - 컴포넌트 자체가 문제 , 스타일링 자체가 많은 비용을 소모, 테이블에 위임하면 줄어든다
+              - 디자인시스템 하는거 좋은데 필요한건지 생각해보자 
+              - 컴포넌트로 분리하면서 렝더링을 분리하쟈, 불필요한 분리는 하지 말자*/}
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
                       <SearchItem
-                        key={`${lecture.id} - ${index}`}
+                        key={`${lecture.id}-${index}`}
                         {...lecture}
                         addSchedule={addSchedule}
                       />
