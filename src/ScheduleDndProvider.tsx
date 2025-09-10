@@ -1,7 +1,7 @@
 import { DndContext, Modifier, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useCallback } from "react";
 import { CellSize, DAY_LABELS } from "./constants.ts";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useSchedulesData, useSchedulesActions } from "./ScheduleContext.tsx";
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -29,7 +29,7 @@ function createSnapModifier(): Modifier {
 const modifiers = [createSnapModifier()]
 
 export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const { setSchedulesMap } = useSchedulesActions();
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -39,29 +39,35 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = useCallback((event: any) => {
     const { active, delta } = event;
     const { x, y } = delta;
     const [tableId, index] = active.id.split(':');
-    const schedule = schedulesMap[tableId][index];
-    const nowDayIndex = DAY_LABELS.indexOf(schedule.day as typeof DAY_LABELS[number])
-    const moveDayIndex = Math.floor(x / 80);
-    const moveTimeIndex = Math.floor(y / 30);
+    
+    setSchedulesMap(prev => {
+      const schedule = prev[tableId][index];
+      const nowDayIndex = DAY_LABELS.indexOf(schedule.day as typeof DAY_LABELS[number])
+      const moveDayIndex = Math.floor(x / 80);
+      const moveTimeIndex = Math.floor(y / 30);
 
-    setSchedulesMap({
-      ...schedulesMap,
-      [tableId]: schedulesMap[tableId].map((targetSchedule, targetIndex) => {
+      const newSchedules = prev[tableId].map((targetSchedule, targetIndex) => {
         if (targetIndex !== Number(index)) {
-          return { ...targetSchedule }
+          return targetSchedule; // 변경되지 않은 스케줄은 참조 유지
         }
         return {
           ...targetSchedule,
           day: DAY_LABELS[nowDayIndex + moveDayIndex],
           range: targetSchedule.range.map(time => time + moveTimeIndex),
         }
-      })
+      });
+      
+      // 변경된 테이블만 새로 생성
+      return {
+        ...prev,
+        [tableId]: newSchedules
+      };
     })
-  };
+  }, [setSchedulesMap]);
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd} modifiers={modifiers}>

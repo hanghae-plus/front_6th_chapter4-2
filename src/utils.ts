@@ -28,3 +28,24 @@ export const parseSchedule = (schedule: string) => {
     return { day, range, room };
   });
 };
+
+export function createApiCache() {
+  const cache = new Map<string, unknown>();
+  
+  return async function<T>(key: string, apiFunction: () => Promise<T>): Promise<T> {
+    if (cache.has(key)) {
+      return cache.get(key) as T;
+    }
+    
+    const promise: Promise<T> = apiFunction()
+      .then((result: T) => {
+        cache.set(key, result);
+        return result;
+      })
+      .catch(error => {
+        throw error;
+      });
+    
+    return promise;
+  };
+}

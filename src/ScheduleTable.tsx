@@ -1,23 +1,19 @@
 import {
   Box,
   Button,
-  Flex,
-  Grid,
-  GridItem,
   Popover,
   PopoverArrow,
   PopoverBody,
   PopoverCloseButton,
   PopoverContent,
   PopoverTrigger,
-  Text,
 } from "@chakra-ui/react";
 import { CellSize, DAY_LABELS, 분 } from "./constants.ts";
 import { Schedule } from "./types.ts";
 import { fill2, parseHnM } from "./utils.ts";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { ComponentProps, Fragment } from "react";
+import { ComponentProps, memo } from "react";
 
 interface Props {
   tableId: string;
@@ -38,8 +34,84 @@ const TIMES = [
     .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
 ] as const;
 
-const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
+const ScheduleTableGrid = memo(({ onScheduleTimeClick }: { onScheduleTimeClick?: (timeInfo: { day: string, time: number }) => void }) => {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`,
+        gridTemplateRows: `40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`,
+        backgroundColor: 'white',
+        fontSize: '14px',
+        textAlign: 'center',
+        outline: '1px solid #d0d5dd',
+      }}
+    >
+      <div 
+        key="교시"
+        style={{
+          borderColor: '#e2e8f0',
+          backgroundColor: '#f7fafc',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+          width: '100%'
+        }}
+      >
+        <span style={{ fontWeight: 'bold' }}>교시</span>
+      </div>
+      {DAY_LABELS.map((day) => (
+        <div 
+          key={day}
+          style={{
+            borderLeft: '1px solid #e2e8f0',
+            backgroundColor: '#f7fafc',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%'
+          }}
+        >
+          <span style={{ fontWeight: 'bold' }}>{day}</span>
+        </div>
+      ))}
+      {TIMES.map((time, timeIndex) => [
+        <div
+          key={`시간-${timeIndex + 1}`}
+          style={{
+            borderTop: '1px solid #e2e8f0',
+            backgroundColor: timeIndex > 17 ? '#edf2f7' : '#f7fafc',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%'
+          }}
+        >
+          <span style={{ fontSize: '12px' }}>{fill2(timeIndex + 1)} ({time})</span>
+        </div>,
+        ...DAY_LABELS.map((day) => (
+          <div
+            key={`${day}-${timeIndex + 2}`}
+            style={{
+              borderWidth: '1px 0 0 1px',
+              borderStyle: 'solid',
+              borderColor: '#e2e8f0',
+              backgroundColor: timeIndex > 17 ? '#f7fafc' : 'white',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fffff0'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = timeIndex > 17 ? '#f7fafc' : 'white'}
+            onClick={() => onScheduleTimeClick?.({ day, time: timeIndex + 1 })}
+          />
+        ))
+      ]).flat()}
+    </div>
+  );
+})
 
+const ScheduleTable = memo(({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
   const getColor = (lectureId: string): string => {
     const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
     const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
@@ -64,53 +136,7 @@ const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButton
       outline={activeTableId === tableId ? "5px dashed" : undefined}
       outlineColor="blue.300"
     >
-      <Grid
-        templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}
-        templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`}
-        bg="white"
-        fontSize="sm"
-        textAlign="center"
-        outline="1px solid"
-        outlineColor="gray.300"
-      >
-        <GridItem key="교시" borderColor="gray.300" bg="gray.100">
-          <Flex justifyContent="center" alignItems="center" h="full" w="full">
-            <Text fontWeight="bold">교시</Text>
-          </Flex>
-        </GridItem>
-        {DAY_LABELS.map((day) => (
-          <GridItem key={day} borderLeft="1px" borderColor="gray.300" bg="gray.100">
-            <Flex justifyContent="center" alignItems="center" h="full">
-              <Text fontWeight="bold">{day}</Text>
-            </Flex>
-          </GridItem>
-        ))}
-        {TIMES.map((time, timeIndex) => (
-          <Fragment key={`시간-${timeIndex + 1}`}>
-            <GridItem
-              borderTop="1px solid"
-              borderColor="gray.300"
-              bg={timeIndex > 17 ? 'gray.200' : 'gray.100'}
-            >
-              <Flex justifyContent="center" alignItems="center" h="full">
-                <Text fontSize="xs">{fill2(timeIndex + 1)} ({time})</Text>
-              </Flex>
-            </GridItem>
-            {DAY_LABELS.map((day) => (
-              <GridItem
-                key={`${day}-${timeIndex + 2}`}
-                borderWidth="1px 0 0 1px"
-                borderColor="gray.300"
-                bg={timeIndex > 17 ? 'gray.100' : 'white'}
-                cursor="pointer"
-                _hover={{ bg: 'yellow.100' }}
-                onClick={() => onScheduleTimeClick?.({ day, time: timeIndex + 1 })}
-              />
-            ))}
-          </Fragment>
-        ))}
-      </Grid>
-
+      <ScheduleTableGrid onScheduleTimeClick={onScheduleTimeClick}/>
       {schedules.map((schedule, index) => (
         <DraggableSchedule
           key={`${schedule.lecture.title}-${index}`}
@@ -125,9 +151,9 @@ const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButton
       ))}
     </Box>
   );
-};
+});
 
-const DraggableSchedule = ({
+const DraggableSchedule = memo(({
  id,
  data,
  bg,
@@ -159,15 +185,15 @@ const DraggableSchedule = ({
           {...listeners}
           {...attributes}
         >
-          <Text fontSize="sm" fontWeight="bold">{lecture.title}</Text>
-          <Text fontSize="xs">{room}</Text>
+          <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{lecture.title}</span>
+          <span style={{ fontSize: '12px' }}>{room}</span>
         </Box>
       </PopoverTrigger>
       <PopoverContent onClick={event => event.stopPropagation()}>
         <PopoverArrow/>
         <PopoverCloseButton/>
         <PopoverBody>
-          <Text>강의를 삭제하시겠습니까?</Text>
+          <span>강의를 삭제하시겠습니까?</span>
           <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
             삭제
           </Button>
@@ -175,6 +201,18 @@ const DraggableSchedule = ({
       </PopoverContent>
     </Popover>
   );
-}
+}, (prevProps, nextProps) => {
+  const prevData = prevProps.data;
+  const nextData = nextProps.data;
+
+  const prevLeftIndex = DAY_LABELS.indexOf(prevData.day as typeof DAY_LABELS[number]);
+  const nextLeftIndex = DAY_LABELS.indexOf(nextData.day as typeof DAY_LABELS[number]);
+  const prevTopIndex = prevData.range[0] - 1;
+  const nextTopIndex = nextData.range[0] - 1;
+  
+  return prevData.lecture.title === nextData.lecture.title &&
+    prevLeftIndex === nextLeftIndex &&
+    prevTopIndex === nextTopIndex;
+});
 
 export default ScheduleTable;
