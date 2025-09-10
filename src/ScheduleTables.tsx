@@ -3,6 +3,7 @@ import ScheduleTable from "./ScheduleTable.tsx";
 import { useScheduleContext } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { useState } from "react";
+import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
 
 export const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
@@ -53,20 +54,22 @@ export const ScheduleTables = () => {
                 </Button>
               </ButtonGroup>
             </Flex>
-            <ScheduleTable
-              key={`schedule-table-${index}`}
-              schedules={schedules}
-              tableId={tableId}
-              onScheduleTimeClick={(timeInfo) => setSearchInfo({ tableId, ...timeInfo })}
-              onDeleteButtonClick={({ day, time }) =>
-                setSchedulesMap((prev) => ({
-                  ...prev,
-                  [tableId]: prev[tableId].filter(
-                    (schedule) => schedule.day !== day || !schedule.range.includes(time),
-                  ),
-                }))
-              }
-            />
+            <ScheduleDndProvider>
+              <ScheduleTable
+                key={`schedule-table-${index}`}
+                schedules={schedules}
+                tableId={tableId}
+                onScheduleTimeClick={(timeInfo) => setSearchInfo({ tableId, ...timeInfo })}
+                onDeleteButtonClick={({ day, time }) =>
+                  setSchedulesMap((prev) => ({
+                    ...prev,
+                    [tableId]: prev[tableId].filter(
+                      (schedule) => schedule.day !== day || !schedule.range.includes(time),
+                    ),
+                  }))
+                }
+              />
+            </ScheduleDndProvider>
           </Stack>
         ))}
       </Flex>
