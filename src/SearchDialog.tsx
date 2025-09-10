@@ -21,7 +21,6 @@ import {
   TagCloseButton,
   TagLabel,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
@@ -112,21 +111,41 @@ interface SearchItemProps {
   addSchedule: (lecture: Lecture) => void;
 }
 
+const tableRowStyles = {
+  borderBottom: "1px solid #e2e8f0",
+  backgroundColor: "transparent",
+  transition: "background-color 0.2s",
+} as const;
+
+const tableCellStyles = {
+  padding: "12px",
+  textAlign: "left" as const,
+  verticalAlign: "middle" as const,
+  fontSize: "14px",
+  color: "#2d3748",
+} as const;
+
 const SearchItem = memo(({ lecture, addSchedule }: SearchItemProps) => {
   return (
-    <Tr>
-      <Td width="100px">{lecture.id}</Td>
-      <Td width="50px">{lecture.grade}</Td>
-      <Td width="200px">{lecture.title}</Td>
-      <Td width="50px">{lecture.credits}</Td>
-      <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
-      <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
-      <Td width="80px">
+    <tr style={tableRowStyles}>
+      <td style={{ ...tableCellStyles, width: "100px" }}>{lecture.id}</td>
+      <td style={{ ...tableCellStyles, width: "50px" }}>{lecture.grade}</td>
+      <td style={{ ...tableCellStyles, width: "200px" }}>{lecture.title}</td>
+      <td style={{ ...tableCellStyles, width: "50px" }}>{lecture.credits}</td>
+      <td
+        style={{ ...tableCellStyles, width: "150px" }}
+        dangerouslySetInnerHTML={{ __html: lecture.major }}
+      />
+      <td
+        style={{ ...tableCellStyles, width: "150px" }}
+        dangerouslySetInnerHTML={{ __html: lecture.schedule }}
+      />
+      <td style={{ ...tableCellStyles, width: "80px" }}>
         <Button size="sm" colorScheme="green" onClick={() => addSchedule(lecture)}>
           추가
         </Button>
-      </Td>
-    </Tr>
+      </td>
+    </tr>
   );
 });
 
