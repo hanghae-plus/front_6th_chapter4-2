@@ -14,7 +14,7 @@ import {
 import axios, { type AxiosResponse } from "axios";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAutoCallback } from "../hook/useAutoCallback.ts";
-import { useScheduleContext } from "../ScheduleContext.tsx";
+import { useSchedules } from "../hook/useSchedules.ts";
 import type { Lecture } from "../types.ts";
 import { parseSchedule } from "../utils.ts";
 import { GradeDayFilters } from "./GradeDayFilters.tsx";
@@ -79,7 +79,7 @@ const fetchAllLectures = async () =>
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-	const { setSchedulesMap } = useScheduleContext();
+	const setSchedulesMap = useSchedules((state) => state.setSchedulesMap);
 
 	const loaderWrapperRef = useRef<HTMLDivElement>(null);
 	const loaderRef = useRef<HTMLDivElement>(null);

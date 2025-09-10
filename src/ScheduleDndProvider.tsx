@@ -7,7 +7,7 @@ import {
 } from "@dnd-kit/core";
 import type { PropsWithChildren } from "react";
 import { CellSize, DAY_LABELS } from "./constants.ts";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useSchedules } from "./hook/useSchedules.ts";
 
 function createSnapModifier(): Modifier {
 	return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -46,7 +46,8 @@ function createSnapModifier(): Modifier {
 const modifiers = [createSnapModifier()];
 
 export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-	const { schedulesMap, setSchedulesMap } = useScheduleContext();
+	const setSchedulesMap = useSchedules((state) => state.setSchedulesMap);
+
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
@@ -60,6 +61,7 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
 		const { active, delta } = event;
 		const { x, y } = delta;
 		const [tableId, index] = active.id.split(":");
+		const { schedulesMap } = useSchedules.getState();
 		const schedule = schedulesMap[tableId][index];
 		const nowDayIndex = DAY_LABELS.indexOf(
 			schedule.day as (typeof DAY_LABELS)[number],
