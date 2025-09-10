@@ -22,7 +22,6 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "../../context/ScheduleContext.tsx";
 import { Lecture, SearchOption } from "../../types";
 import { parseSchedule } from "../../lib/utils";
 import { DAY_LABELS, PAGE_SIZE } from "../../constants";
@@ -31,6 +30,7 @@ import { fetchAllLectures } from "../../lib/api.ts";
 import { TimeFilter } from "./TimeFilter.tsx";
 import { MajorFilter } from "./MajorFilter.tsx";
 import { SearchItem } from "./SearchItem.tsx";
+import { useScheduleStore } from "../../store/scheduleStore";
 
 interface Props {
   searchInfo: {
@@ -42,7 +42,7 @@ interface Props {
 }
 
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const setSchedulesMap = useScheduleStore((state) => state.setSchedulesMap);
 
   const observerRef = useRef<IntersectionObserver>(null);
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
@@ -119,10 +119,12 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       lecture,
     }));
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+    setSchedulesMap((prev: any) => {
+      return {
+        ...prev,
+        [tableId]: [...prev[tableId], schedules],
+      };
+    });
 
     onClose();
   });

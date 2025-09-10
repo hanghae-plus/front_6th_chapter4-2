@@ -18,12 +18,12 @@ import { fill2, parseHnM } from "../lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { ComponentProps, Fragment, memo } from "react";
+import { useScheduleStore } from "../store/scheduleStore.ts";
 
 interface Props {
   tableId: string;
-  schedules: Schedule[];
   onScheduleTimeClick?: (timeInfo: { day: string; time: number }) => void;
-  onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
+  onDeleteButtonClick?: (tableId: string, timeInfo: { day: string; time: number }) => void;
 }
 
 const TIMES = [
@@ -93,7 +93,9 @@ const TimeTableGrid = memo(
   }
 );
 
-const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
+const ScheduleTable = ({ tableId, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
+  const schedules = useScheduleStore((state) => state.schedulesMap[tableId]);
+
   const getColor = (lectureId: string): string => {
     const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
     const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
@@ -106,12 +108,12 @@ const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButton
 
       {schedules.map((schedule, index) => (
         <DraggableSchedule
-          key={`${schedule.lecture.title}-${index}`}
+          key={`${schedule.lecture.id}`}
           id={`${tableId}:${index}`}
           data={schedule}
           bg={getColor(schedule.lecture.id)}
           onDeleteButtonClick={() =>
-            onDeleteButtonClick?.({
+            onDeleteButtonClick?.(tableId, {
               day: schedule.day,
               time: schedule.range[0],
             })

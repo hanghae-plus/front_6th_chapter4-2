@@ -1,38 +1,43 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "../context/ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { useScheduleStore } from "../store/scheduleStore";
+import { useShallow } from "zustand/shallow";
 import ScheduleDndProvider from "../context/ScheduleDndProvider.tsx";
 
 export const ScheduleTables = () => {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const tableIds = useScheduleStore(useShallow((state) => Object.keys(state.schedulesMap)));
+
+  const duplicate = useScheduleStore((state) => state.duplicateTable);
+  const remove = useScheduleStore((state) => state.removeTable);
+  const deleteScheduleItem = useScheduleStore((state) => state.deleteScheduleItem);
+
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
     time?: number;
   } | null>(null);
 
-  const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
+  const handleDeleteButtonClick = useCallback(
+    (tableId: string, info: { day: string; time: number }) => {
+      deleteScheduleItem(tableId, info.day, info.time);
+    },
+    [deleteScheduleItem]
+  );
 
-  const duplicate = (targetId: string) => {
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [`schedule-${Date.now()}`]: [...prev[targetId]],
-    }));
-  };
+  const handleScheduleTimeClick = useCallback((timeInfo: any) => {
+    setSearchInfo(timeInfo);
+  }, []);
 
-  const remove = (targetId: string) => {
-    setSchedulesMap((prev) => {
-      delete prev[targetId];
-      return { ...prev };
-    });
-  };
+  if (!tableIds) return null;
+
+  const disabledRemoveButton = tableIds.length === 1;
 
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
-        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
+        {tableIds.map((tableId, index) => (
           <Stack key={tableId} width="600px">
             <Flex justifyContent="space-between" alignItems="center">
               <Heading as="h3" fontSize="lg">
@@ -56,18 +61,10 @@ export const ScheduleTables = () => {
             </Flex>
             <ScheduleDndProvider>
               <ScheduleTable
-                key={`schedule-table-${index}`}
-                schedules={schedules}
                 tableId={tableId}
-                onScheduleTimeClick={(timeInfo) => setSearchInfo({ tableId, ...timeInfo })}
-                onDeleteButtonClick={({ day, time }) =>
-                  setSchedulesMap((prev) => ({
-                    ...prev,
-                    [tableId]: prev[tableId].filter(
-                      (schedule) => schedule.day !== day || !schedule.range.includes(time)
-                    ),
-                  }))
-                }
+                key={`schedule-table-${index}`}
+                onScheduleTimeClick={handleScheduleTimeClick}
+                onDeleteButtonClick={handleDeleteButtonClick}
               />
             </ScheduleDndProvider>
           </Stack>
