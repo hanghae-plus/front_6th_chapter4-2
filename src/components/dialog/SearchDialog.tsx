@@ -12,7 +12,7 @@ import {
 	Text,
 	VStack,
 } from '@chakra-ui/react';
-import axios from 'axios';
+import { fetchLiberalArts, fetchMajors } from '../../api/lecture.ts';
 import { Lecture, SearchOption } from '../../types.ts';
 import { PAGE_SIZE } from '../../constants.ts';
 import { parseSchedule } from '../../utils.ts';
@@ -31,9 +31,6 @@ interface Props {
 	addLecture: (lecture: Lecture) => void;
 }
 
-const fetchMajors = () => axios.get<Lecture[]>('/schedules-majors.json'); // 전공 불러오기
-const fetchLiberalArts = () => axios.get<Lecture[]>('/schedules-liberal-arts.json'); // 교양 불러오기
-
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 // (이미 호출한 api는 다시 호출하지 않도록 - 클로저를 이용하여 캐시 구성)
 const fetchAllLectures = () => {
@@ -51,7 +48,7 @@ const fetchAllLectures = () => {
 			(console.log('API Call 6', performance.now()), fetchLiberalArts()),
 		]);
 
-		lectureCache = res.flatMap((r) => r.data);
+		lectureCache = res.flatMap((r) => r.data); // 전공과 교양을 평탄화하여 하나의 배열로 처리
 		return lectureCache;
 	};
 };
@@ -119,7 +116,7 @@ const SearchDialog = ({ searchInfo, onClose, addLecture }: Props) => {
 			console.log('모든 API 호출 완료 ', end);
 			console.log('API 호출에 걸린 시간(ms): ', end - start);
 
-			setLectures(results); // 전공과 교양을 평탄화하여 하나의 배열로 처리
+			setLectures(results);
 		});
 	}, []);
 
