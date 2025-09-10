@@ -5,7 +5,7 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
 import { useScheduleContext } from "./ScheduleContext.tsx";
-import { SearchDialog } from "./SearchDialog/SearchDialog.tsx";
+import SearchDialog from "./SearchDialog/SearchDialog.tsx";
 import { SearchInfo } from "./SearchDialog/types.ts";
 import { useState } from "react";
 
@@ -83,10 +83,12 @@ export const ScheduleTables = () => {
           </Stack>
         ))}
       </Flex>
-      <SearchDialog
-        searchInfo={searchInfo}
-        onClose={() => setSearchInfo(null)}
-      />
+      {searchInfo && (
+        <SearchDialog
+          searchInfo={searchInfo}
+          onClose={() => setSearchInfo(null)}
+        />
+      )}
     </>
   );
 };
