@@ -37,7 +37,7 @@ const Table = ({
 	};
 
 	return (
-		<Stack key={tableId} width="600px">
+		<Stack width="600px">
 			<Flex justifyContent="space-between" alignItems="center">
 				<Heading as="h3" fontSize="lg">
 					시간표 {index + 1}

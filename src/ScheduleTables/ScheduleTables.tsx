@@ -20,6 +20,7 @@ export const ScheduleTables = () => {
 			<Flex w="full" gap={6} p={6} flexWrap="wrap">
 				{Object.entries(schedulesMap).map(([tableId, schedules], index) => (
 					<Table
+						key={tableId}
 						tableId={tableId}
 						index={index}
 						schedules={schedules}
