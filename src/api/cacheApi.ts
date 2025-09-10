@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import { baseUrl } from "../baseUrl";
 
 type CacheEntry = {
   promise: Promise<AxiosResponse<unknown>>;
@@ -23,7 +24,7 @@ export const fetchWithCache = async <T>(
 
   // 그 외 새 요청 실행
   console.log("API 호출 : ", url);
-  const request = axios.get<T>(url);
+  const request = axios.get<T>(baseUrl + url);
 
   // 새 요청 캐시 저장
   cache.set(url, { promise: request, time: now });
