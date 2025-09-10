@@ -1,38 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
-  Button,
-  Checkbox,
-  CheckboxGroup,
-  FormControl,
-  FormLabel,
   HStack,
-  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Select,
-  Stack,
   Table,
-  Tag,
-  TagCloseButton,
-  TagLabel,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
   Tr,
   VStack,
-  Wrap,
 } from "@chakra-ui/react";
 import { useScheduleSetter } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
-import { DAY_LABELS } from "./constants.ts";
 import { fetchWithCache } from "./api/cacheApi.ts";
 import { SearchInput } from "./dialogForm/SearchInput.tsx";
 import { CreditSelect } from "./dialogForm/CreditSelect.tsx";
@@ -40,6 +26,7 @@ import { GradeCheckboxGroup } from "./dialogForm/GradeCheckboxGroup.tsx";
 import { DayCheckboxGroup } from "./dialogForm/DayCheckboxGroup.tsx";
 import { TimeSlotCheckboxGroup } from "./dialogForm/TimeSlotCheckboxGroup.tsx";
 import { MajorCheckboxGroup } from "./dialogForm/MajorCheckboxGroup.tsx";
+import { LectureRow } from "./LectureRow.tsx";
 
 interface Props {
   searchInfo: {
@@ -58,33 +45,6 @@ export interface SearchOption {
   majors: string[];
   credits?: number;
 }
-
-const TIME_SLOTS = [
-  { id: 1, label: "09:00~09:30" },
-  { id: 2, label: "09:30~10:00" },
-  { id: 3, label: "10:00~10:30" },
-  { id: 4, label: "10:30~11:00" },
-  { id: 5, label: "11:00~11:30" },
-  { id: 6, label: "11:30~12:00" },
-  { id: 7, label: "12:00~12:30" },
-  { id: 8, label: "12:30~13:00" },
-  { id: 9, label: "13:00~13:30" },
-  { id: 10, label: "13:30~14:00" },
-  { id: 11, label: "14:00~14:30" },
-  { id: 12, label: "14:30~15:00" },
-  { id: 13, label: "15:00~15:30" },
-  { id: 14, label: "15:30~16:00" },
-  { id: 15, label: "16:00~16:30" },
-  { id: 16, label: "16:30~17:00" },
-  { id: 17, label: "17:00~17:30" },
-  { id: 18, label: "17:30~18:00" },
-  { id: 19, label: "18:00~18:50" },
-  { id: 20, label: "18:55~19:45" },
-  { id: 21, label: "19:50~20:40" },
-  { id: 22, label: "20:45~21:35" },
-  { id: 23, label: "21:40~22:30" },
-  { id: 24, label: "22:35~23:25" },
-];
 
 const PAGE_SIZE = 100;
 
@@ -112,6 +72,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const loaderRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // 상태 관리
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
@@ -122,8 +83,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  // 🔃 불필요한 연산 최적화
-  // useCallback으로 묶고, lectures, searchOptions가 변할때만 재연산되도록 함
   const getFilteredLectures = useCallback(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
     return lectures
@@ -322,29 +281,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <Table size="sm" variant="striped">
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.major }}
-                        />
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-                        />
-                        <Td width="80px">
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() => addSchedule(lecture)}
-                          >
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
+                      <LectureRow
+                        key={`${lecture.id}-${index}`}
+                        lecture={lecture}
+                        addSchedule={addSchedule}
+                      />
                     ))}
                   </Tbody>
                 </Table>
