@@ -149,7 +149,7 @@ const DraggableSchedule = memo(
 		const topIndex = range[0] - 1
 		const size = range.length
 
-		// 드래그 중일 때는 PopoverContent를 렌더링하지 않음
+		// 드래그 중일 때는 강의 삭제 모달도 같이 리랜더링이 되지 않게
 		const shouldRenderPopover = !isDragging
 
 		return (
