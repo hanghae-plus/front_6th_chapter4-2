@@ -8,7 +8,7 @@ export interface PromiseCacheOptions {
   maxSize?: number;
   /** 디버그 모드 활성화 */
   debug?: boolean;
-}/**
+} /**
 
  * 캐시 통계 정보
  */
@@ -39,7 +39,7 @@ export const createPromiseCache = (options: PromiseCacheOptions = {}): PromiseCa
     // 캐시 확인 및 TTL 검사
     if (cache.has(key)) {
       const cached = cache.get(key)!;
-      
+
       // TTL 확인 (설정된 경우)
       if (ttl && cached.timestamp && now - cached.timestamp > ttl) {
         if (debug) console.log(`캐시 만료: ${key}`);
@@ -47,7 +47,7 @@ export const createPromiseCache = (options: PromiseCacheOptions = {}): PromiseCa
       } else {
         stats.hits++;
         if (debug) {
-          const hitRate = (stats.hits / (stats.hits + stats.misses) * 100).toFixed(1);
+          const hitRate = ((stats.hits / (stats.hits + stats.misses)) * 100).toFixed(1);
           console.log(`캐시 히트: ${key} (히트율: ${hitRate}%)`);
         }
         return cached.promise as Promise<T>;
@@ -74,9 +74,9 @@ export const createPromiseCache = (options: PromiseCacheOptions = {}): PromiseCa
       throw error;
     });
 
-    cache.set(key, { 
-      promise, 
-      timestamp: ttl ? now : undefined 
+    cache.set(key, {
+      promise,
+      timestamp: ttl ? now : undefined,
     });
 
     return promise;
@@ -85,7 +85,7 @@ export const createPromiseCache = (options: PromiseCacheOptions = {}): PromiseCa
   // 유틸리티 메서드들
   cacheFunction.getStats = (): CacheStats => ({
     ...stats,
-    size: cache.size
+    size: cache.size,
   });
 
   cacheFunction.clear = (): void => {
@@ -110,6 +110,6 @@ export const createApiCache = (options: PromiseCacheOptions = {}) => {
     ttl: 5 * 60 * 1000, // 5분
     maxSize: 50,
     debug: process.env.NODE_ENV === 'development',
-    ...options
+    ...options,
   });
 };
