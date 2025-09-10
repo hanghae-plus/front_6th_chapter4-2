@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useSyncExternalStore } from 'react';
 import { Schedule } from '../../../../types.ts';
 import { DragStateProvider } from '../../../../SchedulesDragStateProvider.tsx';
 import ScheduleDndProvider from '../../../../ScheduleDndProvider.tsx';
@@ -7,12 +7,12 @@ import { Flex } from '@chakra-ui/react/flex';
 import { Heading } from '@chakra-ui/react/typography';
 import ScheduleTable from '../ScheduleTable.tsx';
 import { SchedulesTableButton } from './SchedulesTableButton.tsx';
-// import { store } from '../../../../store/externalStore.ts';
-// import { useScheduleContext } from '../../../../ScheduleContext.tsx';
+import { store } from '../../../../store/externalStore.ts';
+
 export const ScheduleTableContainer = memo(
   ({
     tableId,
-    schedules,
+    // schedules,
     index,
     disabledRemoveButton,
     onSearchOpen,
@@ -35,14 +35,11 @@ export const ScheduleTableContainer = memo(
   }) => {
     // const { schedulesMap } = useScheduleContext();
     //
-    // const schedules = useSyncExternalStore(
-    //   callback => store.subscribe(tableId, callback),
-    //   () => {
-    //     const currentSchedules = store.getTableSchedules(tableId);
-    //     return currentSchedules;
-    //   },
-    //   () => []
-    // );
+    const schedules = useSyncExternalStore(
+      callback => store.subscribe(tableId, callback),
+      () => store.getTableSchedules(tableId),
+      () => store.getTableSchedules(tableId)
+    );
     // useEffect(() => {
     //   store.initializeFromContext(schedulesMap);
     // }, [schedulesMap]);
