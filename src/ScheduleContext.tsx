@@ -12,7 +12,7 @@ const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined
 export const useScheduleContext = () => {
   const context = useContext(ScheduleContext);
   if (context === undefined) {
-    throw new Error('useSchedule must be used within a ScheduleProvider');
+    throw new Error("useSchedule must be used within a ScheduleProvider");
   }
   return context;
 };
