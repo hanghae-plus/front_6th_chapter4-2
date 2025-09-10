@@ -10,9 +10,6 @@ export default mergeConfig(
     optimizeDeps: {
       include: ['@chakra-ui/react'],
     },
-    build: {
-      minify: 'terser',
-    },
   }),
   defineTestConfig({
     test: {

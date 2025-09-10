@@ -21,7 +21,6 @@
     "@emotion/styled": "latest",
     "axios": "latest",
     "framer-motion": "latest",
-    "fxjs": "^0.21.3",
     "gh-pages": "^6.3.0",
     "msw": "latest",
     "prettier": "^3.6.2",
