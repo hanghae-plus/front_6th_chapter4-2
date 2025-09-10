@@ -109,7 +109,7 @@ const fetchAllLectures = async () =>
  * TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
  *
  * * 1. useMemo, useCallback 적용
- * * 3. IntersectionObserver 의존성 배열 제거
+ * * 3. setSearchOptions prevValue 사용
  * * 3. 필터 순회 1번으로 변경
  */
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
@@ -200,10 +200,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const changeSearchOption = useCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
       setPage(1);
-      setSearchOptions({ ...searchOptions, [field]: value });
+      setSearchOptions(prev => ({ ...prev, [field]: value }));
       loaderWrapperRef.current?.scrollTo(0, 0);
     },
-    [searchOptions],
+    [],
   );
 
   const addSchedule = useCallback(
