@@ -20,7 +20,6 @@ import {
   TagCloseButton,
   TagLabel,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
@@ -29,7 +28,7 @@ import {
   Wrap,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useScheduleContext } from './ScheduleContext.tsx';
 import { DAY_LABELS } from './constants.ts';
 import { Lecture } from './types.ts';
@@ -120,69 +119,110 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  const filteredLectures = useMemo(() => {
+    console.log('getFilteredLectures');
     const { query = '', credits, grades, days, times, majors } = searchOptions;
-    return lectures
-      .filter(
-        lecture =>
-          lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-          lecture.id.toLowerCase().includes(query.toLowerCase())
-      )
-      .filter(lecture => grades.length === 0 || grades.includes(lecture.grade))
-      .filter(lecture => majors.length === 0 || majors.includes(lecture.major))
-      .filter(lecture => !credits || lecture.credits.startsWith(String(credits)))
-      .filter(lecture => {
-        if (days.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some(s => days.includes(s.day));
-      })
-      .filter(lecture => {
-        if (times.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some(s => s.range.some(time => times.includes(time)));
-      });
-  };
 
-  const filteredLectures = getFilteredLectures();
+    return (
+      lectures
+        // 검색어 필터
+        .filter(
+          lecture =>
+            lecture.title.toLowerCase().includes(query.toLowerCase()) ||
+            lecture.id.toLowerCase().includes(query.toLowerCase())
+        )
+        // 학년 필터
+        .filter(lecture => grades.length === 0 || grades.includes(lecture.grade))
+        // 전공 필터
+        .filter(lecture => majors.length === 0 || majors.includes(lecture.major))
+        // 학점 필터
+        .filter(lecture => !credits || lecture.credits.startsWith(String(credits)))
+        // 요일 필터 - parseSchedule을 통해 시간표를 파싱하고 요일을 추출
+        .filter(lecture => {
+          if (days.length === 0) {
+            return true;
+          }
+          const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+          return schedules.some(s => days.includes(s.day));
+        })
+        // 시간 필터 - parseSchedule을 통해 시간표를 파싱하고 시간을 추출
+        .filter(lecture => {
+          if (times.length === 0) {
+            return true;
+          }
+          const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+          return schedules.some(s => s.range.some(time => times.includes(time)));
+        })
+    );
+  }, [lectures, searchOptions]);
+
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map(lecture => lecture.major))];
 
-  const changeSearchOption = (field: keyof SearchOption, value: SearchOption[typeof field]) => {
-    setPage(1);
-    setSearchOptions({ ...searchOptions, [field]: value });
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  };
+  const visibleLectures = useMemo(() => {
+    console.log('getVisibleLectures');
+    return filteredLectures.slice(0, page * PAGE_SIZE);
+  }, [filteredLectures, page]);
 
-  const addSchedule = (lecture: Lecture) => {
-    if (!searchInfo) return;
+  const allMajors = useMemo(() => [...new Set(lectures.map(lecture => lecture.major))], [lectures]);
 
-    const { tableId } = searchInfo;
+  const changeSearchOption = useCallback(
+    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
+      setSearchOptions(prev => ({ ...prev, [field]: value }));
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    },
+    []
+  );
 
-    const schedules = parseSchedule(lecture.schedule).map(schedule => ({
-      ...schedule,
-      lecture,
-    }));
+  const addSchedule = useCallback(
+    (lecture: Lecture) => {
+      if (!searchInfo) return;
 
-    setSchedulesMap(prev => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+      const { tableId } = searchInfo;
+      const schedules = parseSchedule(lecture.schedule).map(schedule => ({
+        ...schedule,
+        lecture,
+      }));
 
-    onClose();
-  };
+      setSchedulesMap(prev => ({
+        ...prev,
+        [tableId]: [...prev[tableId], ...schedules],
+      }));
+
+      onClose();
+    },
+    [searchInfo, setSchedulesMap, onClose]
+  );
+
+  const LectureRow = memo(
+    ({ lecture, onAdd }: { lecture: Lecture; onAdd: (lecture: Lecture) => void }) => (
+      <tr>
+        <td width="100px">{lecture.id}</td>
+        <td width="50px">{lecture.grade}</td>
+        <td width="200px">{lecture.title}</td>
+        <td width="50px">{lecture.credits}</td>
+        <td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
+        <td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
+        <td width="80px">
+          <Button size="sm" colorScheme="green" onClick={() => onAdd(lecture)}>
+            추가
+          </Button>
+        </td>
+      </tr>
+    )
+  );
 
   useEffect(() => {
     const start = performance.now();
+
     console.log('API 호출 시작: ', start);
+
     fetchAllLectures().then(results => {
       const end = performance.now();
+
       console.log('모든 API 호출 완료 ', end);
       console.log('API 호출에 걸린 시간(ms): ', end - start);
+
       setLectures(results.flatMap(result => result.data));
     });
   }, []);
@@ -391,23 +431,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <Table size="sm" variant="striped">
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
-                        <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
-                        <Td width="80px">
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() => addSchedule(lecture)}
-                          >
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
+                      <LectureRow
+                        key={`${lecture.id}-${index}`}
+                        lecture={lecture}
+                        onAdd={addSchedule}
+                      />
                     ))}
                   </Tbody>
                 </Table>
