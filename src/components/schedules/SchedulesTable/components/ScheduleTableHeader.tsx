@@ -1,10 +1,9 @@
-import { memo } from 'react';
 import { GridItem } from '@chakra-ui/react/grid';
 import { Flex } from '@chakra-ui/react/flex';
 import { Text } from '@chakra-ui/react/typography';
 import { DAY_LABELS } from '../../../../constants/constants.ts';
 
-export const ScheduleTableHeader = memo(() => (
+export const ScheduleTableHeader = () => (
   <>
     <GridItem key="교시" borderColor="gray.300" bg="gray.100">
       <Flex justifyContent="center" alignItems="center" h="full" w="full">
@@ -19,4 +18,4 @@ export const ScheduleTableHeader = memo(() => (
       </GridItem>
     ))}
   </>
-));
+);

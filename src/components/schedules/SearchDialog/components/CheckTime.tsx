@@ -20,7 +20,6 @@ export const CheckTime = memo(
       value: SearchOption[typeof field]
     ) => void;
   }) => {
-    console.log('CheckTime 리렌더링!'); // 이게 출력되는지 확인
     const sortedTimes = useMemo(
       () => [...selectedTimes].sort((a, b) => a - b),
       [selectedTimes]

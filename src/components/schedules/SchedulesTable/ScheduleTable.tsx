@@ -15,7 +15,7 @@ import { Schedule } from '../../../types.ts';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { ComponentProps, useMemo, useCallback, memo } from 'react';
-import { useDragState } from '../../../SchedulesDragStateProvider.tsx';
+import { useActiveTableId } from '../../../SchedulesDragStateProvider.tsx';
 import { ScheduleGrid } from './components';
 interface Props {
   tableId: string;
@@ -46,7 +46,7 @@ const ScheduleTable = memo(
       [lectureColorMap]
     );
 
-    const { activeTableId } = useDragState();
+    const activeTableId = useActiveTableId();
 
     // TimeRow를 위한 단순한 핸들러 - 메모이제이션 강화
     const handleTimeClick = useCallback(
@@ -90,7 +90,7 @@ const DraggableSchedule = memo(
   }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
       onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
     }) => {
-    console.log(`DraggableSchedule ${id} 리렌더링`); // 디버깅용
+    // console.log(`DraggableSchedule ${id} 리렌더링`); // 디버깅용
 
     const { day, range, room, lecture } = data;
     const { attributes, setNodeRef, listeners, transform } = useDraggable({
@@ -155,22 +155,12 @@ const DraggableSchedule = memo(
     );
   },
   (prevProps, nextProps) => {
-    // 실제로 표시되는 데이터/스타일이 바뀌지 않으면 스킵
-    if (prevProps.id !== nextProps.id) return false;
-    if (prevProps.bg !== nextProps.bg) return false;
-
-    const prevData = prevProps.data;
-    const nextData = nextProps.data;
-
-    if (prevData.day !== nextData.day) return false;
-    if (prevData.room !== nextData.room) return false;
-    if (prevData.lecture.id !== nextData.lecture.id) return false;
-    if (prevData.lecture.title !== nextData.lecture.title) return false;
-    if (prevData.range.length !== nextData.range.length) return false;
-    for (let i = 0; i < prevData.range.length; i += 1) {
-      if (prevData.range[i] !== nextData.range[i]) return false;
-    }
-    return true;
+    return (
+      prevProps.id === nextProps.id &&
+      prevProps.bg === nextProps.bg &&
+      prevProps.data === nextProps.data && // 객체 참조만 비교
+      prevProps.onDeleteButtonClick === nextProps.onDeleteButtonClick
+    );
   }
 );
 

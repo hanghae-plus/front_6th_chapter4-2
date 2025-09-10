@@ -7,7 +7,8 @@ import { Flex } from '@chakra-ui/react/flex';
 import { Heading } from '@chakra-ui/react/typography';
 import ScheduleTable from '../ScheduleTable.tsx';
 import { SchedulesTableButton } from './SchedulesTableButton.tsx';
-
+// import { store } from '../../../../store/externalStore.ts';
+// import { useScheduleContext } from '../../../../ScheduleContext.tsx';
 export const ScheduleTableContainer = memo(
   ({
     tableId,
@@ -32,6 +33,20 @@ export const ScheduleTableContainer = memo(
     onDeleteButtonClick: ({ day, time }: { day: string; time: number }) => void; // 변경!
     onScheduleUpdate: (tableId: string, schedules: Schedule[]) => void;
   }) => {
+    // const { schedulesMap } = useScheduleContext();
+    //
+    // const schedules = useSyncExternalStore(
+    //   callback => store.subscribe(tableId, callback),
+    //   () => {
+    //     const currentSchedules = store.getTableSchedules(tableId);
+    //     return currentSchedules;
+    //   },
+    //   () => []
+    // );
+    // useEffect(() => {
+    //   store.initializeFromContext(schedulesMap);
+    // }, [schedulesMap]);
+    // console.log('스케쥴스 :', schedules);
     return (
       <DragStateProvider>
         <ScheduleDndProvider

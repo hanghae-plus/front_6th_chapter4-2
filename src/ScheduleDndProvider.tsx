@@ -73,8 +73,8 @@ export default function ScheduleDndProvider({
     setActiveTableId(dragTableId);
     setIsDragging(true);
   }, []);
-
   const handleDragEnd = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (event: any) => {
       const { active, delta } = event;
       const { x, y } = delta;

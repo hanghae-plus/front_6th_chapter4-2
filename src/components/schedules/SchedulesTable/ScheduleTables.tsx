@@ -54,28 +54,22 @@ const ScheduleTables = () => {
 
   const handleScheduleUpdate = useCallback(
     (tableId: string, updatedSchedules: Schedule[]) => {
-      setSchedulesMap(
-        prev => {
-          const next: Record<string, Schedule[]> = {};
-          for (const key of Object.keys(prev)) {
-            next[key] = key === tableId ? updatedSchedules : prev[key];
-          }
-          return next;
+      setSchedulesMap(prev => {
+        const next: Record<string, Schedule[]> = {};
+        for (const key of Object.keys(prev)) {
+          next[key] = key === tableId ? updatedSchedules : prev[key];
         }
-        //   ({
-        //   ...prev,
-        //   [tableId]: updatedSchedules,
-        // })
-      );
+        return next;
+      });
     },
     [setSchedulesMap]
   );
 
+  console.log('schedules map :', schedulesMap);
   const handleSearchClose = useCallback(() => {
     setSearchInfo(null);
   }, []);
 
-  // 각 테이블의 핸들러를 메모이제이션 - scheduleEntries 의존성 제거
   const tableHandlers = useMemo(() => {
     const handlers: Record<
       string,
@@ -110,8 +104,25 @@ const ScheduleTables = () => {
       };
     });
     return handlers;
-  }, []); // 의존성 배열 비움!
-
+  }, []);
+  // const handleScheduleTimeClick = useCallback(
+  //   (tableId: string, timeInfo: { day?: string; time?: number }) => {
+  //     setSearchInfo({ tableId, ...timeInfo });
+  //   },
+  //   []
+  // );
+  //
+  // const handleDeleteButtonClick = useCallback(
+  //   (tableId: string, { day, time }: { day: string; time: number }) => {
+  //     setSchedulesMap(prev => ({
+  //       ...prev,
+  //       [tableId]: prev[tableId].filter(
+  //         schedule => schedule.day !== day || !schedule.range.includes(time)
+  //       ),
+  //     }));
+  //   },
+  //   [setSchedulesMap]
+  // );
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">

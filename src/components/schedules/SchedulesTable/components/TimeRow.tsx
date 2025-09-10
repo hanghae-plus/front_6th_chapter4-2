@@ -1,4 +1,4 @@
-import { Fragment, memo, useCallback } from 'react';
+import { Fragment, memo } from 'react';
 import { GridItem } from '@chakra-ui/react/grid';
 import { Flex } from '@chakra-ui/react/flex';
 import { fill2 } from '../../../../utils/utils.ts';
@@ -17,9 +17,9 @@ const TimeCell = memo(
     isEvening: boolean;
     onTimeClick: (day: string, time: number) => void;
   }) => {
-    const handleClick = useCallback(() => {
+    const handleClick = () => {
       onTimeClick(day, timeNumber);
-    }, [day, timeNumber, onTimeClick]);
+    };
 
     return (
       <GridItem
@@ -46,7 +46,7 @@ export const TimeRow = memo(
     timeNumber: number;
     onTimeClick: (day: string, timeNumber: number) => void;
   }) => {
-    console.log(`TimeRow ${timeNumber} 리렌더링`); // 디버깅용
+    // console.log(`TimeRow ${timeNumber} 리렌더링`); // 디버깅용
     const isEvening = timeIndex > 17;
 
     return (
