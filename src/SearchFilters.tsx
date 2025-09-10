@@ -1,5 +1,4 @@
-import type { Lecture } from './types';
-import { memo } from 'react';
+import { memo, PropsWithChildren } from 'react';
 import {
   Box,
   Checkbox,
@@ -18,7 +17,6 @@ import {
   Wrap,
 } from '@chakra-ui/react';
 import { DAY_LABELS } from './constants';
-import { SearchOption } from './types';
 
 const TIME_SLOTS = [
   { id: 1, label: '09:00~09:30' },
@@ -47,164 +45,199 @@ const TIME_SLOTS = [
   { id: 24, label: '22:35~23:25' },
 ];
 
-interface SearchOptionProps {
-  searchOptions: SearchOption;
-  changeSearchOption: (field: keyof SearchOption, value: SearchOption[typeof field]) => void;
-  filteredLectures: Lecture[];
-  allMajors: string[];
-  removeTime: (time: number) => void;
+interface SearchProps {
+  value: string | undefined;
+  onChange: (value: string) => void;
 }
 
-export const SearchFilters = memo(
-  ({
-    searchOptions,
-    changeSearchOption,
-    filteredLectures,
-    allMajors,
-    removeTime,
-  }: SearchOptionProps) => {
-    return (
-      <VStack spacing={4} align="stretch">
-        <HStack spacing={4}>
-          <FormControl>
-            <FormLabel>검색어</FormLabel>
-            <Input
-              placeholder="과목명 또는 과목코드"
-              value={searchOptions.query}
-              onChange={(e) => changeSearchOption('query', e.target.value)}
-            />
-          </FormControl>
+interface CreditsProps {
+  value: number | undefined;
+  onChange: (value: number) => void;
+}
 
-          <FormControl>
-            <FormLabel>학점</FormLabel>
-            <Select
-              value={searchOptions.credits}
-              onChange={(e) => changeSearchOption('credits', e.target.value)}
-            >
-              <option value="">전체</option>
-              <option value="1">1학점</option>
-              <option value="2">2학점</option>
-              <option value="3">3학점</option>
-            </Select>
-          </FormControl>
-        </HStack>
+interface GradesProps {
+  value: number[];
+  onChange: (value: number[]) => void;
+}
 
-        <HStack spacing={4}>
-          <FormControl>
-            <FormLabel>학년</FormLabel>
-            <CheckboxGroup
-              value={searchOptions.grades}
-              onChange={(value) => changeSearchOption('grades', value.map(Number))}
-            >
-              <HStack spacing={4}>
-                {[1, 2, 3, 4].map((grade) => (
-                  <Checkbox key={grade} value={grade}>
-                    {grade}학년
-                  </Checkbox>
-                ))}
-              </HStack>
-            </CheckboxGroup>
-          </FormControl>
+interface DaysProps {
+  value: string[];
+  onChange: (value: string[]) => void;
+}
 
-          <FormControl>
-            <FormLabel>요일</FormLabel>
-            <CheckboxGroup
-              value={searchOptions.days}
-              onChange={(value) => changeSearchOption('days', value as string[])}
-            >
-              <HStack spacing={4}>
-                {DAY_LABELS.map((day) => (
-                  <Checkbox key={day} value={day}>
-                    {day}
-                  </Checkbox>
-                ))}
-              </HStack>
-            </CheckboxGroup>
-          </FormControl>
-        </HStack>
+const Search = memo(({ value, onChange }: SearchProps) => (
+  <FormControl>
+    <FormLabel>검색어</FormLabel>
+    <Input
+      placeholder="과목명 또는 과목코드"
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  </FormControl>
+));
 
-        <HStack spacing={4}>
-          <FormControl>
-            <FormLabel>시간</FormLabel>
-            <CheckboxGroup
-              colorScheme="green"
-              value={searchOptions.times}
-              onChange={(values) => changeSearchOption('times', values.map(Number))}
-            >
-              <Wrap spacing={1} mb={2}>
-                {searchOptions.times
-                  .sort((a, b) => a - b)
-                  .map((time) => (
-                    <Tag key={time} size="sm" variant="outline" colorScheme="blue">
-                      <TagLabel>{time}교시</TagLabel>
-                      <TagCloseButton onClick={() => removeTime(time)} />
-                    </Tag>
-                  ))}
-              </Wrap>
-              <Stack
-                spacing={2}
-                overflowY="auto"
-                h="100px"
-                border="1px solid"
-                borderColor="gray.200"
-                borderRadius={5}
-                p={2}
-              >
-                {TIME_SLOTS.map(({ id, label }) => (
-                  <Box key={id}>
-                    <Checkbox key={id} size="sm" value={id}>
-                      {id}교시({label})
-                    </Checkbox>
-                  </Box>
-                ))}
-              </Stack>
-            </CheckboxGroup>
-          </FormControl>
+const Credits = memo(({ value, onChange }: CreditsProps) => (
+  <FormControl>
+    <FormLabel>학점</FormLabel>
+    <Select value={value || ''} onChange={(e) => onChange(Number(e.target.value))}>
+      <option value="">전체</option>
+      <option value="1">1학점</option>
+      <option value="2">2학점</option>
+      <option value="3">3학점</option>
+    </Select>
+  </FormControl>
+));
 
-          <FormControl>
-            <FormLabel>전공</FormLabel>
-            <CheckboxGroup
-              colorScheme="green"
-              value={searchOptions.majors}
-              onChange={(values) => changeSearchOption('majors', values as string[])}
-            >
-              <Wrap spacing={1} mb={2}>
-                {searchOptions.majors.map((major) => (
-                  <Tag key={major} size="sm" variant="outline" colorScheme="blue">
-                    <TagLabel>{major.split('<p>').pop()}</TagLabel>
-                    <TagCloseButton
-                      onClick={() =>
-                        changeSearchOption(
-                          'majors',
-                          searchOptions.majors.filter((v) => v !== major)
-                        )
-                      }
-                    />
-                  </Tag>
-                ))}
-              </Wrap>
-              <Stack
-                spacing={2}
-                overflowY="auto"
-                h="100px"
-                border="1px solid"
-                borderColor="gray.200"
-                borderRadius={5}
-                p={2}
-              >
-                {allMajors.map((major) => (
-                  <Box key={major}>
-                    <Checkbox key={major} size="sm" value={major}>
-                      {major.replace(/<p>/gi, ' ')}
-                    </Checkbox>
-                  </Box>
-                ))}
-              </Stack>
-            </CheckboxGroup>
-          </FormControl>
-        </HStack>
-        <Text align="right">검색결과: {filteredLectures.length}개</Text>
-      </VStack>
-    );
-  }
-);
+const Grades = memo(({ value, onChange }: GradesProps) => (
+  <FormControl>
+    <FormLabel>학년</FormLabel>
+    <CheckboxGroup value={value} onChange={(values) => onChange(values.map(Number))}>
+      <HStack spacing={4}>
+        {[1, 2, 3, 4].map((grade) => (
+          <Checkbox key={grade} value={grade}>
+            {grade}학년
+          </Checkbox>
+        ))}
+      </HStack>
+    </CheckboxGroup>
+  </FormControl>
+));
+
+const Days = memo(({ value, onChange }: DaysProps) => (
+  <FormControl>
+    <FormLabel>요일</FormLabel>
+    <CheckboxGroup value={value} onChange={(values) => onChange(values as string[])}>
+      <HStack spacing={4}>
+        {DAY_LABELS.map((day) => (
+          <Checkbox key={day} value={day}>
+            {day}
+          </Checkbox>
+        ))}
+      </HStack>
+    </CheckboxGroup>
+  </FormControl>
+));
+
+interface TimesProps {
+  value: number[];
+  onChange: (value: number[]) => void;
+  onRemove?: (time: number) => void;
+}
+
+const Times = memo(({ value, onChange, onRemove }: TimesProps) => (
+  <FormControl>
+    <FormLabel>시간</FormLabel>
+    <CheckboxGroup
+      colorScheme="green"
+      value={value}
+      onChange={(values) => onChange(values.map(Number))}
+    >
+      <Wrap spacing={1} mb={2}>
+        {value
+          .sort((a: number, b: number) => a - b)
+          .map((time: number) => (
+            <Tag key={time} size="sm" variant="outline" colorScheme="blue">
+              <TagLabel>{time}교시</TagLabel>
+              <TagCloseButton onClick={() => onRemove?.(time)} />
+            </Tag>
+          ))}
+      </Wrap>
+      <Stack
+        spacing={2}
+        overflowY="auto"
+        h="100px"
+        border="1px solid"
+        borderColor="gray.200"
+        borderRadius={5}
+        p={2}
+      >
+        {TIME_SLOTS.map(({ id, label }) => (
+          <TimeSlotItem key={id} id={id} label={label} />
+        ))}
+      </Stack>
+    </CheckboxGroup>
+  </FormControl>
+));
+
+interface MajorsProps {
+  value: string[];
+  onChange: (value: string[]) => void;
+  allMajors: string[];
+  onRemove?: (major: string) => void;
+}
+
+const Majors = memo(({ value, onChange, allMajors, onRemove }: MajorsProps) => (
+  <FormControl>
+    <FormLabel>전공</FormLabel>
+    <CheckboxGroup
+      colorScheme="green"
+      value={value}
+      onChange={(values) => onChange(values as string[])}
+    >
+      <Wrap spacing={1} mb={2}>
+        {value.map((major: string) => (
+          <Tag key={major} size="sm" variant="outline" colorScheme="blue">
+            <TagLabel>{major.split('<p>').pop()}</TagLabel>
+            <TagCloseButton onClick={() => onRemove?.(major)} />
+          </Tag>
+        ))}
+      </Wrap>
+      <Stack
+        spacing={2}
+        overflowY="auto"
+        h="100px"
+        border="1px solid"
+        borderColor="gray.200"
+        borderRadius={5}
+        p={2}
+      >
+        {allMajors.map((major) => (
+          <CheckBoxItem key={major} major={major} />
+        ))}
+      </Stack>
+    </CheckboxGroup>
+  </FormControl>
+));
+
+const ResultCount = memo(({ count }: { count: number }) => (
+  <Text align="right">검색결과: {count}개</Text>
+));
+
+const SearchFilters = ({ children }: PropsWithChildren) => {
+  return (
+    <VStack spacing={4} align="stretch">
+      {children}
+    </VStack>
+  );
+};
+
+SearchFilters.Search = Search;
+SearchFilters.Credits = Credits;
+SearchFilters.Grades = Grades;
+SearchFilters.Days = Days;
+SearchFilters.Times = Times;
+SearchFilters.Majors = Majors;
+SearchFilters.ResultCount = ResultCount;
+
+export { SearchFilters };
+
+// 하위 컴포넌트들
+const CheckBoxItem = memo(({ major }: { major: string }) => {
+  return (
+    <Box>
+      <Checkbox size="sm" value={major}>
+        {major.replace(/<p>/gi, ' ')}
+      </Checkbox>
+    </Box>
+  );
+});
+
+const TimeSlotItem = memo(({ id, label }: { id: number; label: string }) => {
+  return (
+    <Box>
+      <Checkbox size="sm" value={id}>
+        {id}교시({label})
+      </Checkbox>
+    </Box>
+  );
+});
