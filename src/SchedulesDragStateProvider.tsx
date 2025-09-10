@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useState } from 'react';
+import React, { ReactNode, useContext, useMemo, useState } from 'react';
 
 interface DragStateContextType {
   activeTableId: string | null;
@@ -14,16 +14,17 @@ const DragStateContext = React.createContext<DragStateContextType | undefined>(
 export const DragStateProvider = ({ children }: { children: ReactNode }) => {
   const [activeTableId, setActiveTableId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-
+  const value = useMemo(
+    () => ({
+      activeTableId,
+      isDragging,
+      setActiveTableId,
+      setIsDragging,
+    }),
+    [activeTableId, isDragging]
+  );
   return (
-    <DragStateContext.Provider
-      value={{
-        activeTableId,
-        isDragging,
-        setActiveTableId,
-        setIsDragging,
-      }}
-    >
+    <DragStateContext.Provider value={value}>
       {children}
     </DragStateContext.Provider>
   );

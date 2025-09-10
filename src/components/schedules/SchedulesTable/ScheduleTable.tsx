@@ -7,19 +7,16 @@ import {
   PopoverTrigger,
 } from '@chakra-ui/react/popover';
 
-import { Grid } from '@chakra-ui/react/grid';
 import { Button } from '@chakra-ui/react/button';
 import { Box } from '@chakra-ui/react/box';
 import { Text } from '@chakra-ui/react/typography';
-import { CellSize, DAY_LABELS, TIMES } from '../../../constants.ts';
+import { CellSize, DAY_LABELS } from '../../../constants/constants.ts';
 import { Schedule } from '../../../types.ts';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { ComponentProps, useMemo, useCallback, memo } from 'react';
 import { useDragState } from '../../../SchedulesDragStateProvider.tsx';
-import { TimeRow } from './components';
-import { ScheduleTableHeader } from './components/table/ScheduleTableHeader.tsx';
-
+import { ScheduleGrid } from './components';
 interface Props {
   tableId: string;
   schedules: Schedule[];
@@ -27,43 +24,8 @@ interface Props {
   onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
 }
 
-// Grid를 별도 컴포넌트로 분리 - schedules와 무관하게 메모이제이션
-const ScheduleGrid = memo(
-  ({ onTimeClick }: { onTimeClick: (day: string, time: number) => void }) => {
-    console.log('ScheduleGrid 리렌더링'); // 디버깅용
-
-    return (
-      <Grid
-        templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}
-        templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`}
-        bg="white"
-        fontSize="sm"
-        textAlign="center"
-        outline="1px solid"
-        outlineColor="gray.300"
-      >
-        <ScheduleTableHeader />
-        {TIMES.map((time, timeIndex) => {
-          const timeNumber = timeIndex + 1;
-          return (
-            <TimeRow
-              key={timeNumber}
-              time={time}
-              timeIndex={timeIndex}
-              timeNumber={timeNumber}
-              onTimeClick={onTimeClick}
-            />
-          );
-        })}
-      </Grid>
-    );
-  }
-);
-
 const ScheduleTable = memo(
   ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
-    console.log(`ScheduleTable ${tableId} 리렌더링`); // 디버깅용
-
     // 강의별 색상 매핑 메모이제이션
     const lectureColorMap = useMemo(() => {
       const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
@@ -94,13 +56,7 @@ const ScheduleTable = memo(
       [onScheduleTimeClick]
     );
 
-    // DraggableSchedule를 위한 삭제 핸들러
-    const createDeleteHandler = useCallback(
-      (day: string, time: number) => () => {
-        onDeleteButtonClick?.({ day, time });
-      },
-      [onDeleteButtonClick]
-    );
+    // 삭제 핸들러는 개별 아이템 내부에서 생성하도록 위임하여 불필요한 새 함수 생성을 방지
 
     return (
       <Box
@@ -117,10 +73,7 @@ const ScheduleTable = memo(
             id={`${tableId}:${index}`}
             data={schedule}
             bg={getColor(schedule.lecture.id)}
-            onDeleteButtonClick={createDeleteHandler(
-              schedule.day,
-              schedule.range[0]
-            )}
+            onDeleteButtonClick={onDeleteButtonClick}
           />
         ))}
       </Box>
@@ -135,7 +88,7 @@ const DraggableSchedule = memo(
     bg,
     onDeleteButtonClick,
   }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
-      onDeleteButtonClick: () => void;
+      onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
     }) => {
     console.log(`DraggableSchedule ${id} 리렌더링`); // 디버깅용
 
@@ -189,7 +142,11 @@ const DraggableSchedule = memo(
           <PopoverCloseButton />
           <PopoverBody>
             <Text>강의를 삭제하시겠습니까?</Text>
-            <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
+            <Button
+              colorScheme="red"
+              size="xs"
+              onClick={() => onDeleteButtonClick?.({ day, time: range[0] })}
+            >
               삭제
             </Button>
           </PopoverBody>
@@ -198,29 +155,22 @@ const DraggableSchedule = memo(
     );
   },
   (prevProps, nextProps) => {
-    // 깊은 비교로 실제 변경사항만 체크
+    // 실제로 표시되는 데이터/스타일이 바뀌지 않으면 스킵
+    if (prevProps.id !== nextProps.id) return false;
+    if (prevProps.bg !== nextProps.bg) return false;
+
     const prevData = prevProps.data;
     const nextData = nextProps.data;
 
-    const isSame =
-      prevProps.id === nextProps.id &&
-      prevProps.bg === nextProps.bg &&
-      prevData.day === nextData.day &&
-      prevData.room === nextData.room &&
-      prevData.lecture.id === nextData.lecture.id &&
-      prevData.lecture.title === nextData.lecture.title &&
-      prevData.range.length === nextData.range.length &&
-      prevData.range.every((val, idx) => val === nextData.range[idx]);
-
-    if (!isSame) {
-      console.log(`${nextProps.id} 변경 감지:`, {
-        day: prevData.day !== nextData.day,
-        range: !prevData.range.every((val, idx) => val === nextData.range[idx]),
-        lecture: prevData.lecture.id !== nextData.lecture.id,
-      });
+    if (prevData.day !== nextData.day) return false;
+    if (prevData.room !== nextData.room) return false;
+    if (prevData.lecture.id !== nextData.lecture.id) return false;
+    if (prevData.lecture.title !== nextData.lecture.title) return false;
+    if (prevData.range.length !== nextData.range.length) return false;
+    for (let i = 0; i < prevData.range.length; i += 1) {
+      if (prevData.range[i] !== nextData.range[i]) return false;
     }
-
-    return isSame;
+    return true;
   }
 );
 

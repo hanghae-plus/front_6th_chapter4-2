@@ -14,7 +14,7 @@ import { Input } from '@chakra-ui/react/input';
 import { Box } from '@chakra-ui/react/box';
 import { useScheduleContext } from '../../../ScheduleContext.tsx';
 import { Lecture } from '../../../types.ts';
-import { parseSchedule } from '../../../utils.ts';
+import { parseSchedule } from '../../../utils/utils.ts';
 import axios from 'axios';
 
 import { createCachedApi } from '../../../lib/createCachedApi.ts';
@@ -22,7 +22,7 @@ import { createCachedApi } from '../../../lib/createCachedApi.ts';
 import { Table, Tbody, Thead } from '@chakra-ui/react/table';
 
 import { useAutoCallback } from '../../../hooks/useAutoCallback.ts';
-import { PAGE_SIZE } from '../../../constants.ts';
+import { PAGE_SIZE } from '../../../constants/constants.ts';
 import {
   CheckMajor,
   CheckTime,
