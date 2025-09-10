@@ -1,23 +1,14 @@
 import { Flex } from '@chakra-ui/react/flex';
-// import { useScheduleContext } from '../../../ScheduleContext.tsx';
-import { useState, useCallback, useMemo, useSyncExternalStore } from 'react';
+
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { Schedule } from '../../../types.ts';
 import { ScheduleTableContainer } from './components';
-import { store } from '../../../store/externalStore.ts';
+import { store } from '../../../store/schedules.store.ts';
 import dummyScheduleMap from '../../../mocks/dummyScheduleMap.ts';
 import SearchDialog from '../SearchDialog/SearchDialog.tsx';
+import { searchInfoStore } from '../../../store/searchInfo.store.ts';
 
 const ScheduleTables = () => {
-  // const {
-  //   // schedulesMap,
-  //   setSchedulesMap,
-  // } = useScheduleContext();
-  const [searchInfo, setSearchInfo] = useState<{
-    tableId: string;
-    day?: string;
-    time?: number;
-  } | null>(null);
-  // const schedulesMap = store.getSchedulesMap();
   const schedulesMap = useSyncExternalStore(
     callback => store.subscribeAll(callback),
     () => store.getSchedulesMap(),
@@ -31,9 +22,9 @@ const ScheduleTables = () => {
     [schedulesMap]
   );
 
-  const handleSearchOpen = useCallback((tableId: string) => {
-    setSearchInfo({ tableId });
-  }, []);
+  const handleSearchOpen = (tableId: string) =>
+    searchInfoStore.setSearchInfo({ tableId });
+
   const duplicate = useCallback((targetId: string) => {
     store.duplicateTable(targetId); // ← store 메서드 사용
   }, []);
@@ -48,13 +39,10 @@ const ScheduleTables = () => {
     },
     []
   );
-  const handleSearchClose = () => {
-    setSearchInfo(null);
-  };
 
   const handleScheduleTimeClick = useCallback(
     (tableId: string, timeInfo: { day?: string; time?: number }) => {
-      setSearchInfo({ tableId, ...timeInfo });
+      searchInfoStore.setSearchInfo({ tableId, ...timeInfo });
     },
     []
   );
@@ -78,7 +66,7 @@ const ScheduleTables = () => {
           />
         ))}
       </Flex>
-      <SearchDialog searchInfo={searchInfo} onClose={handleSearchClose} />
+      <SearchDialog />
     </>
   );
 };

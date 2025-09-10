@@ -1,4 +1,12 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { Text } from '@chakra-ui/react/typography';
 import { FormControl, FormLabel } from '@chakra-ui/react/form-control';
 import { HStack, VStack } from '@chakra-ui/react/stack';
@@ -30,16 +38,8 @@ import {
   CheckDays,
 } from './components';
 import CheckGrade from './components/CheckGrade.tsx';
-import { store } from '../../../store/externalStore.ts';
-
-interface Props {
-  searchInfo: {
-    tableId: string;
-    day?: string;
-    time?: number;
-  } | null;
-  onClose: () => void;
-}
+import { store } from '../../../store/schedules.store.ts';
+import { searchInfoStore } from '../../../store/searchInfo.store.ts';
 
 const fetchMajors = createCachedApi(() =>
   axios.get<Lecture[]>('/schedules-majors.json')
@@ -57,15 +57,6 @@ const fetchAllLectures = async () => {
 
   return [...majorsResponse.data, ...liberalArtsResponse.data];
 };
-
-interface Props {
-  searchInfo: {
-    tableId: string;
-    day?: string;
-    time?: number;
-  } | null;
-  onClose: () => void;
-}
 
 const LectureTableHead = memo(() => {
   return (
@@ -92,8 +83,13 @@ const SearchDialogHeader = () => {
 };
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
-const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  // const { setSchedulesMap } = useScheduleContext();
+const SearchDialog = memo(() => {
+  const searchInfo = useSyncExternalStore(
+    callback => searchInfoStore.subscribeSearch(callback),
+    () => searchInfoStore.getSearchInfo(),
+    () => null
+  );
+  const handleSearchClose = () => searchInfoStore.setSearchInfo(null);
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -140,7 +136,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       });
   }, [lectures, searchOptions]);
 
-  // const filteredLectures = getFilteredLectures;
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
   const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
   const allMajors = useMemo(
@@ -167,7 +162,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       lecture,
     }));
     store.addSchedule(tableId, schedules);
-    onClose();
+    handleSearchClose();
   });
 
   useEffect(() => {
@@ -215,7 +210,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, [searchInfo]);
 
   return (
-    <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
+    <Modal isOpen={Boolean(searchInfo)} onClose={handleSearchClose} size="6xl">
       <ModalOverlay />
       <ModalContent maxW="90vw" w="1000px">
         <SearchDialogHeader />
@@ -308,6 +303,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       </ModalContent>
     </Modal>
   );
-};
+});
 
 export default SearchDialog;

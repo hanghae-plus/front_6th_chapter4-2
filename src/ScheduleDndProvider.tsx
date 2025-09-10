@@ -10,7 +10,7 @@ import { PropsWithChildren, useCallback } from 'react';
 import { CellSize, DAY_LABELS } from './constants/constants.ts';
 import { Schedule } from './types.ts';
 import { useDragState } from './SchedulesDragStateProvider.tsx';
-// import { store } from './store/externalStore.ts';
+// import { store } from './store/schedules.store.ts';
 // import dummyScheduleMap from './mocks/dummyScheduleMap.ts';
 
 function createSnapModifier(): Modifier {

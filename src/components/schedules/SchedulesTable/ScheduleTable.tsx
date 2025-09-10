@@ -17,7 +17,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { ComponentProps, useMemo, useCallback, memo } from 'react';
 import { useActiveTableId } from '../../../SchedulesDragStateProvider.tsx';
 import { ScheduleGrid } from './components';
-import { store } from '../../../store/externalStore.ts';
+import { store } from '../../../store/schedules.store.ts';
 interface Props {
   tableId: string;
   schedules: Schedule[];

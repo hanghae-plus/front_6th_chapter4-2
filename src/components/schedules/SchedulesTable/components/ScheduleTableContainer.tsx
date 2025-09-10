@@ -7,7 +7,7 @@ import { Flex } from '@chakra-ui/react/flex';
 import { Heading } from '@chakra-ui/react/typography';
 import ScheduleTable from '../ScheduleTable.tsx';
 import { SchedulesTableButton } from './SchedulesTableButton.tsx';
-import { store } from '../../../../store/externalStore.ts';
+import { store } from '../../../../store/schedules.store.ts';
 
 export const ScheduleTableContainer = memo(
   ({
