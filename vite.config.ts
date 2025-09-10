@@ -1,10 +1,12 @@
 import { defineConfig as defineTestConfig, mergeConfig } from 'vitest/config';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
-
+const baseUrl =
+  process.env.NODE_ENV === 'production' ? '/front_6th_chapter4-2' : '';
 export default mergeConfig(
   defineConfig({
     plugins: [react()],
+    base: baseUrl,
     optimizeDeps: {
       include: ['@chakra-ui/react'],
     },
