@@ -1,11 +1,15 @@
+// useReducer + useMemo를 직접 사용
+
 import { useCallback, useMemo, useState } from "react";
 import { Lecture } from "../../types.ts";
 import { parseSchedule } from "../../utils.ts";
 import { SearchOption } from "../types.ts";
 
 /**
- * 검색 로직을 관리하는 커스텀 훅
+ * 검색 로직을 관리하는 커스텀 훅 (DEPRECATED)
  * 검색 옵션 및 필터링 로직을 담당합니다.
+ *
+ * 새로운 버전에서는 useReducer + useMemo를 직접 사용하므로 더 이상 사용되지 않습니다.
  */
 export const useSearchLogic = (lectures: Lecture[]) => {
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
@@ -19,7 +23,8 @@ export const useSearchLogic = (lectures: Lecture[]) => {
   // 검색 옵션에 따라 강의 목록을 필터링하는 함수
   const filteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
-    return lectures
+
+    const result = lectures
       .filter(
         (lecture) =>
           lecture.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -54,6 +59,8 @@ export const useSearchLogic = (lectures: Lecture[]) => {
           s.range.some((time) => times.includes(time))
         );
       });
+
+    return result;
   }, [lectures, searchOptions]);
 
   // 전공 목록 계산

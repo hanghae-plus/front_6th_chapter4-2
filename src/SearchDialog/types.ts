@@ -17,3 +17,12 @@ export interface SearchDialogProps {
   searchInfo: SearchInfo | null;
   onClose: () => void;
 }
+
+export interface Lecture {
+  id: string;
+  title: string;
+  credits: string;
+  major: string;
+  schedule: string;
+  grade: number;
+}
