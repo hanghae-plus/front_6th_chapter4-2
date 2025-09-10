@@ -1,10 +1,10 @@
-import {Box, Button, Flex, Grid, GridItem, Popover, PopoverArrow, PopoverBody, PopoverCloseButton, PopoverContent, PopoverTrigger, Text} from '@chakra-ui/react'
-import {CellSize, DAY_LABELS, 분} from './constants.ts'
+import {Box, Button, Popover, PopoverArrow, PopoverBody, PopoverCloseButton, PopoverContent, PopoverTrigger, Text} from '@chakra-ui/react'
+import {CellSize, DAY_LABELS} from './constants.ts'
 import {Schedule} from './types.ts'
-import {fill2, parseHnM} from './utils.ts'
 import {useDndContext, useDraggable} from '@dnd-kit/core'
 import {CSS} from '@dnd-kit/utilities'
-import {ComponentProps, Fragment, memo, useCallback, useMemo} from 'react'
+import {ComponentProps, memo, useCallback, useMemo} from 'react'
+import {ScheduleTableGrid} from './components/ScheduleTableGrid.tsx'
 
 interface Props {
 	tableId: string
@@ -12,47 +12,6 @@ interface Props {
 	onScheduleTimeClick?: (timeInfo: {day: string; time: number}) => void
 	onDeleteButtonClick?: (timeInfo: {day: string; time: number}) => void
 }
-
-const TIMES = [
-	...Array(18)
-		.fill(0)
-		.map((v, k) => v + k * 30 * 분)
-		.map((v) => `${parseHnM(v)}~${parseHnM(v + 30 * 분)}`),
-
-	...Array(6)
-		.fill(18 * 30 * 분)
-		.map((v, k) => v + k * 55 * 분)
-		.map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`)
-] as const
-
-// 테이블 셀 컴포넌트
-const TableCell = memo(({day, timeIndex, onScheduleTimeClick}: {day: string; timeIndex: number; onScheduleTimeClick?: (timeInfo: {day: string; time: number}) => void}) => {
-	const handleClick = useCallback(() => {
-		onScheduleTimeClick?.({day, time: timeIndex + 1})
-	}, [day, timeIndex, onScheduleTimeClick])
-
-	return <GridItem key={`${day}-${timeIndex + 2}`} borderWidth='1px 0 0 1px' borderColor='gray.300' bg={timeIndex > 17 ? 'gray.100' : 'white'} cursor='pointer' _hover={{bg: 'yellow.100'}} onClick={handleClick} />
-})
-
-// 시간 라벨 셀
-const TimeCell = memo(({time, timeIndex}: {time: string; timeIndex: number}) => (
-	<GridItem borderTop='1px solid' borderColor='gray.300' bg={timeIndex > 17 ? 'gray.200' : 'gray.100'}>
-		<Flex justifyContent='center' alignItems='center' h='full'>
-			<Text fontSize='xs'>
-				{fill2(timeIndex + 1)} ({time})
-			</Text>
-		</Flex>
-	</GridItem>
-))
-
-// 요일 헤더
-const DayHeaderCell = memo(({day}: {day: string}) => (
-	<GridItem borderLeft='1px' borderColor='gray.300' bg='gray.100'>
-		<Flex justifyContent='center' alignItems='center' h='full'>
-			<Text fontWeight='bold'>{day}</Text>
-		</Flex>
-	</GridItem>
-))
 
 const TableOutline = memo(({tableId}: {tableId: string}) => {
 	const dndContext = useDndContext()
@@ -95,27 +54,8 @@ const ScheduleTable = ({tableId, schedules, onScheduleTimeClick, onDeleteButtonC
 
 	return (
 		<Box position='relative'>
-			<Grid templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`} templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`} bg='white' fontSize='sm' textAlign='center' outline='1px solid' outlineColor='gray.300'>
-				<GridItem key='교시' borderColor='gray.300' bg='gray.100'>
-					<Flex justifyContent='center' alignItems='center' h='full' w='full'>
-						<Text fontWeight='bold'>교시</Text>
-					</Flex>
-				</GridItem>
-				{DAY_LABELS.map((day) => (
-					<DayHeaderCell key={day} day={day} />
-				))}
-				{TIMES.map((time, timeIndex) => (
-					<Fragment key={`시간-${timeIndex + 1}`}>
-						<TimeCell time={time} timeIndex={timeIndex} />
-						{DAY_LABELS.map((day) => (
-							<TableCell key={`${day}-${timeIndex + 2}`} day={day} timeIndex={timeIndex} onScheduleTimeClick={memoizedOnScheduleTimeClick} />
-						))}
-					</Fragment>
-				))}
-			</Grid>
-
+			<ScheduleTableGrid memoizedOnScheduleTimeClick={memoizedOnScheduleTimeClick} />
 			<TableOutline tableId={tableId} />
-
 			{schedules.map((schedule, index) => (
 				<DraggableSchedule
 					key={`${schedule.lecture.title}-${index}`}
