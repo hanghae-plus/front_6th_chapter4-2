@@ -17,13 +17,16 @@ import { Schedule } from "./types.ts";
 import { fill2, parseHnM } from "./utils.ts";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { ComponentProps, Fragment } from "react";
+import { ComponentProps, Fragment, memo } from "react";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
+
+type TimeInfo = { day: string; time: number };
 
 interface Props {
   tableId: string;
   schedules: Schedule[];
-  onScheduleTimeClick?: (timeInfo: { day: string; time: number }) => void;
-  onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
+  onScheduleTimeClick?: (timeInfo: TimeInfo) => void;
+  onDeleteButtonClick?: (timeInfo: TimeInfo) => void;
 }
 
 const TIMES = [
@@ -38,31 +41,9 @@ const TIMES = [
     .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
 ] as const;
 
-const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
-  const getColor = (lectureId: string): string => {
-    const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
-    const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
-    return colors[lectures.indexOf(lectureId) % colors.length];
-  };
-
-  const dndContext = useDndContext();
-
-  const getActiveTableId = () => {
-    const activeId = dndContext.active?.id;
-    if (activeId) {
-      return String(activeId).split(":")[0];
-    }
-    return null;
-  };
-
-  const activeTableId = getActiveTableId();
-
-  return (
-    <Box
-      position="relative"
-      outline={activeTableId === tableId ? "5px dashed" : undefined}
-      outlineColor="blue.300"
-    >
+const TableGrid = memo(
+  ({ onScheduleTimeClick }: { onScheduleTimeClick?: (timeInfo: TimeInfo) => void }) => {
+    return (
       <Grid
         templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}
         templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`}
@@ -111,6 +92,40 @@ const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButton
           </Fragment>
         ))}
       </Grid>
+    );
+  },
+);
+
+const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
+  const getColor = (lectureId: string): string => {
+    const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
+    const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
+    return colors[lectures.indexOf(lectureId) % colors.length];
+  };
+
+  const dndContext = useDndContext();
+
+  const getActiveTableId = () => {
+    const activeId = dndContext.active?.id;
+    if (activeId) {
+      return String(activeId).split(":")[0];
+    }
+    return null;
+  };
+
+  const activeTableId = getActiveTableId();
+
+  const handleScheduleTimeClock = useAutoCallback((timeInfo: TimeInfo) =>
+    onScheduleTimeClick?.(timeInfo),
+  );
+
+  return (
+    <Box
+      position="relative"
+      outline={activeTableId === tableId ? "5px dashed" : undefined}
+      outlineColor="blue.300"
+    >
+      <TableGrid onScheduleTimeClick={handleScheduleTimeClock} />
 
       {schedules.map((schedule, index) => (
         <DraggableSchedule
