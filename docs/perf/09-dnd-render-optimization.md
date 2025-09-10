@@ -73,6 +73,54 @@
 
 ---
 
+## 5단계 — 드래그(컨텍스트 스코프 최적화)
+
+- 원인: dnd-kit의 `DndContext` 상태(`active`, `over`, `delta` 등)가 변하면 해당 컨텍스트를 구독하는 모든 컴포넌트가 리렌더됨.
+- 처방: `ScheduleDndProvider`를 테이블 단위로 유지해 각 테이블이 독립 컨텍스트를 갖도록 스코프를 축소.
+  - 위치를 상위(앱 전체)로 올리면 모든 테이블이 동일 컨텍스트를 구독 → 드래그 시작만으로 전체 리렌더 재발.
+- 기대 효과: 드래그 중인 테이블만 리렌더, 다른 테이블은 영향 없음.
+- 관련 코드: `src/ScheduleTables.tsx`(테이블 내부 Provider 배치), `src/ScheduleDndProvider.tsx`
+
+## 6단계 — 드롭(전역 상태 전파 최소화)
+
+- 원인: 드롭 시 `setSchedulesMap`으로 전역 상태가 바뀌고, 이를 렌더하는 상위가 리렌더되면서 프레임(제목/버튼/컨테이너)도 다시 그림.
+- 처방: 프레임을 `TableCard`로 분리해 `React.memo` 적용, 전달 props는 `useCallback`으로 참조 안정화. 변경 없는 테이블은 프레임 렌더 자체를 스킵.
+- 가이드:
+  - 상태 업데이트는 함수형(prev)으로만 수행하고, 변경된 테이블 key만 새 배열 생성.
+  - `openSearch`/`duplicate`/`remove`는 `useCallback`으로 고정.
+  - 본문(`ScheduleTable`)은 그대로 두되, 프레임(`TableCard`)을 별도 컴포넌트로 메모.
+- 관련 코드: 테이블 프레임 분리/메모 `src/ScheduleTables.tsx:52`, 드롭 함수형 업데이트 `src/ScheduleDndProvider.tsx:48`
+
+### 자주 하는 실수와 증상
+
+- 드래그: `ScheduleDndProvider`를 앱 최상위에 배치 → 드래그 시작 시 모든 테이블 하이라이트.
+- 드롭: 프레임을 메모하지 않음 → 드롭 때 다른 테이블의 제목/버튼도 하이라이트.
+- 드롭: `remove`에서 원본 변형/새 객체 남발 → 참조 동등성 깨져 `memo` 무력화.
+
+### 재현/검증 시나리오
+
+1. React DevTools → ⚙️ → "Highlight updates when components render" 활성화
+2. 시간표 2에서 드래그 시작 → 시간표 2만 하이라이트되어야 함
+3. 드롭 수행 → 시간표 2만 하이라이트되어야 하며, 1/3/4의 프레임(제목/버튼/컨테이너)은 하이라이트되지 않아야 함
+
+### 코드 레퍼런스
+
+- 테이블 프레임 분리/메모: `src/ScheduleTables.tsx:52`
+- 드롭 함수형 업데이트: `src/ScheduleDndProvider.tsx:48`
+- 정적 격자/아이템 메모: `src/ScheduleTable.tsx:1`
+
+---
+
+## 7단계 — Popover lazy unmount(드래그 중 숨김 렌더 제거)
+
+- 문제: 드래그 중 `useDraggable`의 `transform`이 매 이동마다 바뀌어 아이템 컴포넌트가 리렌더되는데, 같은 컴포넌트 안에 있는 Chakra `Popover` 트리(닫힌 상태)도 함께 리렌더되어 비용이 증가함. Chakra 기본값은 닫혀 있어도 콘텐츠가 트리에 남아있음.
+- 어떻게: `Popover`에 `isLazy`와 `lazyBehavior="unmount"`를 지정해 닫혀 있을 때 콘텐츠를 아예 언마운트.
+  - 적용 파일: `src/ScheduleTable.tsx`
+  - 변경: `<Popover isLazy lazyBehavior="unmount">`
+- 효과: 드래그 중(팝오버 닫힘)에는 Popover 콘텐츠 트리가 존재하지 않아 리렌더 전파가 차단됨. 드래그 체감 부드러움 향상.
+
+---
+
 ## 체크리스트
 
 - [ ] 액션만 필요한 곳은 `useSchedulesDispatch()`만 사용한다.
@@ -86,46 +134,3 @@
 ## 비고
 
 - 레퍼런스 워크스페이스는 “테이블 전용 Provider/컨테이너” 없이도, 위 전략(함수형 업데이트 + 핸들러/메모 최적화)만으로 충분히 최적화됨.
-
----
-
-## 부록 — 드래그 vs 드롭 이슈 구분과 처방
-
-### 드래그(Drag) — 컨텍스트 스코프 문제
-
-- 원인: dnd-kit의 `DndContext` 상태(`active`, `over`, `delta` 등)가 변하면 해당 컨텍스트를 구독하는 모든 컴포넌트가 리렌더됨.
-- 처방: `ScheduleDndProvider`를 “테이블 단위”로 유지하여 각 테이블이 독립 컨텍스트를 갖게 함.
-  - 위치를 상위(앱 전체)로 올리면 모든 테이블이 동일 컨텍스트를 구독 → 드래그 시작만으로 전체 리렌더 재발.
-- 기대 효과: 드래그 중인 테이블만 리렌더, 다른 테이블은 영향 없음.
-
-### 드롭(Drop) — 전역 상태 변경 전파 문제
-
-- 원인: 드롭 시 `setSchedulesMap`으로 전역 상태가 바뀌고, 이를 렌더하는 상위(예: `ScheduleTables`)가 리렌더되면서 프레임(제목/버튼/컨테이너)도 함께 다시 그림.
-- 처방: 프레임을 `TableCard`로 분리하고 `React.memo` 적용 + 전달 props 참조 안정화(`useCallback`). 변경 없는 테이블은 프레임 렌더 자체를 스킵.
-- 기대 효과: 드롭 후 “이동된 테이블만” 하이라이트되고, 다른 테이블 프레임은 깜빡이지 않음.
-
-### 권장 구조(요약)
-
-- DnD: `ScheduleDndProvider`는 각 테이블 카드 내부에서만 사용(테이블 스코프).
-- 상태 업데이트: 드롭 처리 시 컨텍스트 상태 읽기 금지, 함수형 업데이트로 `prev` 기반 계산만 수행.
-- 경계 분리: 프레임(`TableCard`)와 본문(`ScheduleTable`) 분리 + `memo`.
-- 참조 안정화: `openSearch`/`duplicate`/`remove`는 `useCallback`으로 고정.
-- 불변성: 변경된 테이블 key만 새 배열을 만들고, 나머지는 참조 유지.
-
-### 자주 하는 실수와 증상
-
-- 실수: `ScheduleDndProvider`를 앱 최상위에 배치 → 드래그 시작 시 모든 테이블 하이라이트.
-- 실수: 프레임을 메모하지 않음 → 드롭 때 다른 테이블의 제목/버튼도 하이라이트.
-- 실수: `remove`에서 원본 변형/새 객체 남발 → 참조 동등성 깨져 `memo` 무력화.
-
-### 재현/검증 시나리오
-
-1. React DevTools → ⚙️ → "Highlight updates when components render" 활성화
-2. 시간표 2에서 드래그 시작 → 시간표 2만 하이라이트되어야 함
-3. 드롭 수행 → 시간표 2만 하이라이트되어야 하며, 1/3/4의 프레임(제목/버튼/컨테이너)은 하이라이트되지 않아야 함
-
-### 코드 레퍼런스
-
-- 테이블 프레임 분리/메모: `src/ScheduleTables.tsx:52`
-- 드롭 함수형 업데이트: `src/ScheduleDndProvider.tsx:48`
-- 정적 격자/아이템 메모: `src/ScheduleTable.tsx:1`
