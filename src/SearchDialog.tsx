@@ -19,6 +19,7 @@ import TimeMajorFilters from "./components/SearchDialog/TimeMajorFilters";
 import { useScheduleContext } from "./ScheduleContext.tsx";
 import type { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
 interface Props {
   searchInfo: {
@@ -136,16 +137,13 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
     };
   }, [lectures, searchOptions]);
 
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
+  const visibleLectures = useMemo(() => filteredLectures.slice(0, page * PAGE_SIZE), [filteredLectures, page]);
 
-  const changeSearchOption = useMemo(
-    () => (field: keyof SearchOption, value: SearchOption[typeof field]) => {
-      setPage(1);
-      setSearchOptions((prev) => ({ ...prev, [field]: value }));
-      loaderWrapperRef.current?.scrollTo(0, 0);
-    },
-    []
-  );
+  const changeSearchOption = useAutoCallback((field: keyof SearchOption, value: SearchOption[typeof field]) => {
+    setPage(1);
+    setSearchOptions((prev) => ({ ...prev, [field]: value }));
+    loaderWrapperRef.current?.scrollTo(0, 0);
+  });
 
   const addSchedule = useMemo(
     () => (lecture: Lecture) => {

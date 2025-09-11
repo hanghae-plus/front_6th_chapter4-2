@@ -18,6 +18,7 @@ interface SearchInputFiltersProps {
 }
 
 const SearchInputFilters = memo(({ query, credits, onChange }: SearchInputFiltersProps) => {
+  console.log("SearchInputFilters 리렌더링");
   return (
     <HStack spacing={4}>
       <FormControl>
