@@ -154,8 +154,9 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     fetchAllLectures().then(results => {
       const end = performance.now();
       console.log('모든 API 호출 완료 ', end)
-      console.log('API 호출에 걸린 시간(ms): ', end - start)
-      setLectures(results.flatMap(r => r.data));
+      console.log('API 호출에 걸린 시간(ms): ', end - start);
+      const [majors, liberalArts] = results;
+      setLectures([...majors.data, ...liberalArts.data]);
     })
   }, []);
 

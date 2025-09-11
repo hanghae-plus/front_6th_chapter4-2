@@ -1,6 +1,5 @@
 import { Thead, Tr, Th } from "@chakra-ui/react";
 import { memo } from "react";
-import SearchItem from "./SearchItem.tsx";
 
 const SearchTableHead = memo(() => (
     <Thead>
@@ -16,5 +15,5 @@ const SearchTableHead = memo(() => (
     </Thead>
 ));
 
-SearchItem.displayName = "SearchTableHead";
+SearchTableHead.displayName = "SearchTableHead";
 export default SearchTableHead;
