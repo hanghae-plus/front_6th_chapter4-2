@@ -1,4 +1,5 @@
 import { Schedule, TimeInfo } from '../types';
+import { DAY_LABELS } from '../constants';
 
 export type ScheduleAction =
   | {
@@ -6,6 +7,13 @@ export type ScheduleAction =
       tableId: string;
       scheduleIndex: number;
       schedule: Schedule;
+    }
+  | {
+      type: 'MOVE_SCHEDULE'; // ✅ 새로운 액션 추가
+      tableId: string;
+      scheduleIndex: number;
+      moveDayIndex: number;
+      moveTimeIndex: number;
     }
   | { type: 'ADD_SCHEDULES'; tableId: string; schedules: Schedule[] }
   | { type: 'DELETE_SCHEDULE'; tableId: string; timeInfo: TimeInfo }
@@ -24,6 +32,55 @@ export const scheduleReducer = (
         ...state,
         [tableId]: state[tableId].map((s, index) =>
           index === scheduleIndex ? schedule : s
+        ),
+      };
+    }
+
+    // ✅ 새로운 케이스: 상대적 이동 처리
+    case 'MOVE_SCHEDULE': {
+      const { tableId, scheduleIndex, moveDayIndex, moveTimeIndex } = action;
+
+      const currentSchedule = state[tableId]?.[scheduleIndex];
+      if (!currentSchedule) {
+        console.warn(
+          `Schedule not found: tableId=${tableId}, index=${scheduleIndex}`
+        );
+        return state;
+      }
+
+      // 현재 요일 인덱스 계산
+      const currentDayIndex = DAY_LABELS.indexOf(
+        currentSchedule.day as (typeof DAY_LABELS)[number]
+      );
+
+      // 새로운 위치 계산
+      const newDayIndex = currentDayIndex + moveDayIndex;
+      const newDay = DAY_LABELS[newDayIndex];
+
+      // 경계 체크
+      if (newDayIndex < 0 || newDayIndex >= DAY_LABELS.length) {
+        return state;
+      }
+
+      // 업데이트된 스케줄 생성
+      const updatedSchedule = {
+        ...currentSchedule,
+        day: newDay,
+        range: currentSchedule.range.map((time) => time + moveTimeIndex),
+      };
+
+      // 시간 범위 유효성 검사
+      const minTime = Math.min(...updatedSchedule.range);
+      const maxTime = Math.max(...updatedSchedule.range);
+      if (minTime < 1 || maxTime > 24) {
+        return state;
+      }
+
+      // ✅ 해당 테이블만 업데이트
+      return {
+        ...state,
+        [tableId]: state[tableId].map((s, index) =>
+          index === scheduleIndex ? updatedSchedule : s
         ),
       };
     }
