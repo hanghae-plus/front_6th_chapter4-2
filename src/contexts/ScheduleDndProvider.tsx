@@ -6,9 +6,9 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { PropsWithChildren, memo } from "react";
-import { CellSize, DAY_LABELS } from "./constants.ts";
-import { useSchedulesActions } from "./contexts";
-import { useAutoCallback } from "./hooks/useAutoCallback";
+import { CellSize, DAY_LABELS } from "../constants.ts";
+import { useSchedulesActions } from "./ScheduleContext";
+import { useAutoCallback } from "../hooks/useAutoCallback";
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {

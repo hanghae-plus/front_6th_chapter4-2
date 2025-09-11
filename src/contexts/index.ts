@@ -4,3 +4,4 @@ export {
   SchedulesProvider,
   ScheduleProvider,
 } from "./ScheduleContext";
+export { ScheduleDndProvider } from "./ScheduleDndProvider";
