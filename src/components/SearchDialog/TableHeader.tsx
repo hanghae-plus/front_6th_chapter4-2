@@ -1,5 +1,5 @@
-import { Table, Th, Thead, Tr } from '@chakra-ui/react';
-import { memo } from 'react';
+import { Table, Th, Thead, Tr } from "@chakra-ui/react";
+import { memo } from "react";
 
 const TableHeader = memo(() => {
   return (
@@ -19,6 +19,6 @@ const TableHeader = memo(() => {
   );
 });
 
-TableHeader.displayName = 'TableHeader';
+TableHeader.displayName = "TableHeader";
 
 export default TableHeader;

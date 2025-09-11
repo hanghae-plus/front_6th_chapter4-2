@@ -8,17 +8,17 @@ import {
   ModalOverlay,
   Text,
   VStack,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import GradeDayFilters from './components/SearchDialog/GradeDayFilters';
-import LectureTable from './components/SearchDialog/LectureTable';
-import SearchInputFilters from './components/SearchDialog/SearchInputFilters';
-import TableHeader from './components/SearchDialog/TableHeader';
-import TimeMajorFilters from './components/SearchDialog/TimeMajorFilters';
-import { useScheduleContext } from './ScheduleContext.tsx';
-import type { Lecture } from './types.ts';
-import { parseSchedule } from './utils.ts';
+} from "@chakra-ui/react";
+import axios from "axios";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import GradeDayFilters from "./components/SearchDialog/GradeDayFilters";
+import LectureTable from "./components/SearchDialog/LectureTable";
+import SearchInputFilters from "./components/SearchDialog/SearchInputFilters";
+import TableHeader from "./components/SearchDialog/TableHeader";
+import TimeMajorFilters from "./components/SearchDialog/TimeMajorFilters";
+import { useScheduleContext } from "./ScheduleContext.tsx";
+import type { Lecture } from "./types.ts";
+import { parseSchedule } from "./utils.ts";
 
 interface Props {
   searchInfo: {
@@ -59,17 +59,13 @@ const createApiCache = () => {
 
 const apiCache = createApiCache();
 
-const fetchMajors = () =>
-  apiCache('fetchMajors', () => axios.get<Lecture[]>('/schedules-majors.json'));
-const fetchLiberalArts = () =>
-  apiCache('fetchLiberalArts', () =>
-    axios.get<Lecture[]>('/schedules-liberal-arts.json'),
-  );
+const fetchMajors = () => apiCache("fetchMajors", () => axios.get<Lecture[]>("/schedules-majors.json"));
+const fetchLiberalArts = () => apiCache("fetchLiberalArts", () => axios.get<Lecture[]>("/schedules-liberal-arts.json"));
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 const fetchAllLectures = async () => {
   const start = performance.now();
-  console.log('API 호출 시작: ', start);
+  console.log("API 호출 시작: ", start);
 
   // apiCache를 사용하여 중복 호출을 방지하면서도 원래 구조 유지
   const results = await Promise.all([
@@ -82,8 +78,8 @@ const fetchAllLectures = async () => {
   ]);
 
   const end = performance.now();
-  console.log('API 호출 완료: ', end);
-  console.log('API 호출에 걸린 시간(ms): ', end - start);
+  console.log("API 호출 완료: ", end);
+  console.log("API 호출에 걸린 시간(ms): ", end - start);
 
   return results;
 };
@@ -97,7 +93,7 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
-    query: '',
+    query: "",
     grades: [],
     days: [],
     times: [],
@@ -105,41 +101,29 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
   });
 
   const { filteredLectures, lastPage, allMajors } = useMemo(() => {
-    const { query = '', credits, grades, days, times, majors } = searchOptions;
+    const { query = "", credits, grades, days, times, majors } = searchOptions;
     const filteredLectures = lectures
       .filter(
         (lecture) =>
           lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-          lecture.id.toLowerCase().includes(query.toLowerCase()),
+          lecture.id.toLowerCase().includes(query.toLowerCase())
       )
-      .filter(
-        (lecture) => grades.length === 0 || grades.includes(lecture.grade),
-      )
-      .filter(
-        (lecture) => majors.length === 0 || majors.includes(lecture.major),
-      )
-      .filter(
-        (lecture) => !credits || lecture.credits.startsWith(String(credits)),
-      )
+      .filter((lecture) => grades.length === 0 || grades.includes(lecture.grade))
+      .filter((lecture) => majors.length === 0 || majors.includes(lecture.major))
+      .filter((lecture) => !credits || lecture.credits.startsWith(String(credits)))
       .filter((lecture) => {
         if (days.length === 0) {
           return true;
         }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
+        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
         return schedules.some((s) => days.includes(s.day));
       })
       .filter((lecture) => {
         if (times.length === 0) {
           return true;
         }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) =>
-          s.range.some((time) => times.includes(time)),
-        );
+        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+        return schedules.some((s) => s.range.some((time) => times.includes(time)));
       });
 
     const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
@@ -160,7 +144,7 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
       setSearchOptions((prev) => ({ ...prev, [field]: value }));
       loaderWrapperRef.current?.scrollTo(0, 0);
     },
-    [],
+    []
   );
 
   const addSchedule = useMemo(
@@ -181,7 +165,7 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
 
       onClose();
     },
-    [searchInfo, setSchedulesMap, onClose],
+    [searchInfo, setSchedulesMap, onClose]
   );
 
   useEffect(() => {
@@ -204,7 +188,7 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
           setPage((prevPage) => Math.min(lastPage, prevPage + 1));
         }
       },
-      { threshold: 0, root: $loaderWrapper },
+      { threshold: 0, root: $loaderWrapper }
     );
 
     observer.observe($loader);
@@ -235,11 +219,7 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
               onChange={changeSearchOption}
             />
 
-            <GradeDayFilters
-              grades={searchOptions.grades}
-              days={searchOptions.days}
-              onChange={changeSearchOption}
-            />
+            <GradeDayFilters grades={searchOptions.grades} days={searchOptions.days} onChange={changeSearchOption} />
 
             <TimeMajorFilters
               times={searchOptions.times}
@@ -252,11 +232,7 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
 
             <Box>
               <TableHeader />
-              <LectureTable
-                ref={loaderWrapperRef}
-                visibleLectures={visibleLectures}
-                onAddSchedule={addSchedule}
-              />
+              <LectureTable ref={loaderWrapperRef} visibleLectures={visibleLectures} onAddSchedule={addSchedule} />
               <Box ref={loaderRef} h="20px" />
             </Box>
           </VStack>
@@ -266,6 +242,6 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
   );
 });
 
-SearchDialog.displayName = 'SearchDialog';
+SearchDialog.displayName = "SearchDialog";
 
 export default SearchDialog;

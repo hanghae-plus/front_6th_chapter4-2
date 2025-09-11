@@ -5,9 +5,7 @@ const arraysEqual = <T>(a: T[], b: T[]): boolean => {
 };
 
 // 객체의 특정 프로퍼티들을 비교하는 함수
-export const createMemoComparison = <T extends Record<string, unknown>>(
-  keys: (keyof T)[],
-) => {
+export const createMemoComparison = <T extends Record<string, unknown>>(keys: (keyof T)[]) => {
   return (prevProps: T, nextProps: T): boolean => {
     return keys.every((key) => {
       const prevValue = prevProps[key];
@@ -19,7 +17,7 @@ export const createMemoComparison = <T extends Record<string, unknown>>(
       }
 
       // 함수인 경우 참조 비교
-      if (typeof prevValue === 'function' && typeof nextValue === 'function') {
+      if (typeof prevValue === "function" && typeof nextValue === "function") {
         return prevValue === nextValue;
       }
 
@@ -32,7 +30,7 @@ export const createMemoComparison = <T extends Record<string, unknown>>(
 // Lecture 객체 비교를 위한 특별한 함수
 const lectureEqual = (a: unknown, b: unknown): boolean => {
   if (!a || !b) return a === b;
-  if (typeof a !== 'object' || typeof b !== 'object') return a === b;
+  if (typeof a !== "object" || typeof b !== "object") return a === b;
 
   const lectureA = a as Record<string, unknown>;
   const lectureB = b as Record<string, unknown>;
@@ -54,27 +52,14 @@ const visibleLecturesEqual = (a: unknown[], b: unknown[]): boolean => {
 };
 
 // 자주 사용되는 비교 함수들
-export const searchInputComparison = createMemoComparison([
-  'query',
-  'credits',
-  'onChange',
-]);
-export const gradeDayComparison = createMemoComparison([
-  'grades',
-  'days',
-  'onChange',
-]);
-export const timeMajorComparison = createMemoComparison([
-  'times',
-  'majors',
-  'allMajors',
-  'onChange',
-]);
+export const searchInputComparison = createMemoComparison(["query", "credits", "onChange"]);
+export const gradeDayComparison = createMemoComparison(["grades", "days", "onChange"]);
+export const timeMajorComparison = createMemoComparison(["times", "majors", "allMajors", "onChange"]);
 
 // LectureRow와 LectureTable을 위한 특별한 비교 함수
 export const lectureRowComparison = (
   prevProps: Record<string, unknown>,
-  nextProps: Record<string, unknown>,
+  nextProps: Record<string, unknown>
 ): boolean => {
   return (
     lectureEqual(prevProps.lecture, nextProps.lecture) &&
@@ -85,12 +70,10 @@ export const lectureRowComparison = (
 
 export const lectureTableComparison = (
   prevProps: Record<string, unknown>,
-  nextProps: Record<string, unknown>,
+  nextProps: Record<string, unknown>
 ): boolean => {
   return (
-    visibleLecturesEqual(
-      prevProps.visibleLectures as unknown[],
-      nextProps.visibleLectures as unknown[],
-    ) && prevProps.onAddSchedule === nextProps.onAddSchedule
+    visibleLecturesEqual(prevProps.visibleLectures as unknown[], nextProps.visibleLectures as unknown[]) &&
+    prevProps.onAddSchedule === nextProps.onAddSchedule
   );
 };
