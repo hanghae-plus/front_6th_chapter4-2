@@ -31,6 +31,7 @@ import { TimeFilter } from "./TimeFilter.tsx";
 import { MajorFilter } from "./MajorFilter.tsx";
 import { SearchItem } from "./SearchItem.tsx";
 import { useScheduleStore } from "../../store/scheduleStore";
+import { useDebounce } from "../../hooks/useDebounce.ts";
 
 interface Props {
   searchInfo: {
@@ -39,19 +40,6 @@ interface Props {
     time?: number;
   } | null;
   onClose: () => void;
-}
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-  return debouncedValue;
 }
 
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
