@@ -1,23 +1,11 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Grid,
-  GridItem,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverTrigger,
-  Text,
-} from "@chakra-ui/react";
+import { Flex, Grid, GridItem, Text } from "@chakra-ui/react";
 import { CellSize, DAY_LABELS, 분 } from "./constants.ts";
 import { Schedule } from "./types.ts";
 import { fill2, parseHnM } from "./utils.ts";
-import { useDndContext, useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
-import { ComponentProps, Fragment, useCallback, useMemo } from "react";
+import { useDndContext } from "@dnd-kit/core";
+import { Fragment, useCallback, useMemo } from "react";
+import DndContextWrapper from "./components/DndContextWrapper";
+import DraggableScheduleWrapper from "./components/DraggableScheduleWrapper";
 
 interface Props {
   tableId: string;
@@ -60,7 +48,8 @@ const ScheduleTable = ({
     return null;
   };
 
-  const activeTableId = getActiveTableId();
+  // DndContextWrapper에서 activeTableId 하이라이트 처리
+  getActiveTableId();
 
   const handleScheduleTimeClick = useCallback(
     (day: string, time: number) => {
@@ -97,11 +86,7 @@ const ScheduleTable = ({
   }, [schedules, handleDeleteButtonClick]);
 
   return (
-    <Box
-      position="relative"
-      outline={activeTableId === tableId ? "5px dashed" : undefined}
-      outlineColor="blue.300"
-    >
+    <DndContextWrapper tableId={tableId}>
       <Grid
         templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}
         templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`}
@@ -157,72 +142,15 @@ const ScheduleTable = ({
       </Grid>
 
       {schedules.map((schedule, index) => (
-        <DraggableSchedule
+        <DraggableScheduleWrapper
           key={`${schedule.lecture.title}-${index}`}
           id={`${tableId}:${index}`}
-          data={schedule}
-          bg={getColor(schedule.lecture.id)}
-          onDeleteButtonClick={scheduleDeleteHandlers[index]}
+          schedule={schedule}
+          color={getColor(schedule.lecture.id)}
+          onDelete={scheduleDeleteHandlers[index]}
         />
       ))}
-    </Box>
+    </DndContextWrapper>
   );
 };
-
-const DraggableSchedule = ({
-  id,
-  data,
-  bg,
-  onDeleteButtonClick,
-}: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
-    onDeleteButtonClick: () => void;
-  }) => {
-  const { day, range, room, lecture } = data;
-  const { attributes, setNodeRef, listeners, transform } = useDraggable({ id });
-  const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
-  const topIndex = range[0] - 1;
-  const size = range.length;
-
-  const handleStopPropagation = useCallback((event: React.MouseEvent) => {
-    event.stopPropagation();
-  }, []);
-
-  return (
-    <Popover>
-      <PopoverTrigger>
-        <Box
-          position="absolute"
-          left={`${120 + CellSize.WIDTH * leftIndex + 1}px`}
-          top={`${40 + (topIndex * CellSize.HEIGHT + 1)}px`}
-          width={CellSize.WIDTH - 1 + "px"}
-          height={CellSize.HEIGHT * size - 1 + "px"}
-          bg={bg}
-          p={1}
-          boxSizing="border-box"
-          cursor="pointer"
-          ref={setNodeRef}
-          transform={CSS.Translate.toString(transform)}
-          {...listeners}
-          {...attributes}
-        >
-          <Text fontSize="sm" fontWeight="bold">
-            {lecture.title}
-          </Text>
-          <Text fontSize="xs">{room}</Text>
-        </Box>
-      </PopoverTrigger>
-      <PopoverContent onClick={handleStopPropagation}>
-        <PopoverArrow />
-        <PopoverCloseButton />
-        <PopoverBody>
-          <Text>강의를 삭제하시겠습니까?</Text>
-          <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
-            삭제
-          </Button>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
 export default ScheduleTable;
