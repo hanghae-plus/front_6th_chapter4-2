@@ -8,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { CellSize, DAY_LABELS } from "../../constants";
 import { Schedule } from "../../types";
@@ -30,6 +31,8 @@ export const DraggableSchedule = memo(
       data,
     });
 
+    const { isOpen, onOpen, onClose } = useDisclosure();
+
     const style = useMemo(() => {
       const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
       const topIndex = range[0] - 1;
@@ -49,10 +52,11 @@ export const DraggableSchedule = memo(
     const handleDeleteButtonClick = useCallback(() => {
       const [tableId] = id.split(":");
       onDeleteButtonClick(tableId, { day: data.day, time: data.range[0] });
+      onClose();
     }, [id, data, onDeleteButtonClick]);
 
     return (
-      <Popover>
+      <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
         <PopoverTrigger>
           <Box
             bg={bg}
