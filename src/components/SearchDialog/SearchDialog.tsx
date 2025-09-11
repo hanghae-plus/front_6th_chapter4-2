@@ -33,6 +33,7 @@ interface Props {
     time?: number;
   } | null;
   onClose: () => void;
+  onAddSchedule?: (tableId: string, schedules: any[]) => void;
 }
 
 interface SearchOption {
@@ -91,9 +92,7 @@ const fetchAllLectures = async () => {
 };
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
-const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
-
+const SearchDialog = memo(({ searchInfo, onClose, onAddSchedule }: Props) => {
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -159,14 +158,13 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
         lecture,
       }));
 
-      setSchedulesMap((prev) => ({
-        ...prev,
-        [tableId]: [...prev[tableId], ...schedules],
-      }));
+      if (onAddSchedule) {
+        onAddSchedule(tableId, schedules);
+      }
 
       onClose();
     },
-    [searchInfo, setSchedulesMap, onClose]
+    [searchInfo, onAddSchedule, onClose]
   );
 
   useEffect(() => {

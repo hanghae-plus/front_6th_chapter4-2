@@ -4,8 +4,12 @@ import dummyScheduleMap from "../constants/dummyScheduleMap.ts";
 import type { Schedule } from "../types/types.ts";
 
 interface ScheduleContextType {
-  schedulesMap: Record<string, Schedule[]>;
-  setSchedulesMap: React.Dispatch<React.SetStateAction<Record<string, Schedule[]>>>;
+  tableIds: string[];
+  setTableIds: React.Dispatch<React.SetStateAction<string[]>>;
+  getInitialSchedules: (tableId: string) => Schedule[];
+  addTable: (initialSchedules: Schedule[]) => string;
+  removeTable: (tableId: string) => void;
+  duplicateTable: (tableId: string) => string;
 }
 
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
@@ -19,7 +23,40 @@ export const useScheduleContext = () => {
 };
 
 export const ScheduleProvider = ({ children }: PropsWithChildren) => {
-  const [schedulesMap, setSchedulesMap] = useState<Record<string, Schedule[]>>(dummyScheduleMap);
+  const [tableIds, setTableIds] = useState<string[]>(Object.keys(dummyScheduleMap));
+  const [initialSchedulesMap] = useState<Record<string, Schedule[]>>(dummyScheduleMap);
 
-  return <ScheduleContext.Provider value={{ schedulesMap, setSchedulesMap }}>{children}</ScheduleContext.Provider>;
+  const getInitialSchedules = (tableId: string): Schedule[] => {
+    return initialSchedulesMap[tableId] || [];
+  };
+
+  const addTable = (initialSchedules: Schedule[]): string => {
+    const newTableId = `schedule-${Date.now()}`;
+    setTableIds((prev) => [...prev, newTableId]);
+    return newTableId;
+  };
+
+  const removeTable = (tableId: string): void => {
+    setTableIds((prev) => prev.filter((id) => id !== tableId));
+  };
+
+  const duplicateTable = (tableId: string): string => {
+    const initialSchedules = getInitialSchedules(tableId);
+    return addTable(initialSchedules);
+  };
+
+  return (
+    <ScheduleContext.Provider
+      value={{
+        tableIds,
+        setTableIds,
+        getInitialSchedules,
+        addTable,
+        removeTable,
+        duplicateTable,
+      }}
+    >
+      {children}
+    </ScheduleContext.Provider>
+  );
 };
