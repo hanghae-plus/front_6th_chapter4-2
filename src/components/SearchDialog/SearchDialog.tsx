@@ -74,9 +74,9 @@ const TIME_SLOTS = [
 
 const PAGE_SIZE = 100;
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
+const fetchMajors = () => axios.get<Lecture[]>("./schedules-majors.json");
 const fetchLiberalArts = () =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json");
+  axios.get<Lecture[]>("./schedules-liberal-arts.json");
 
 // 전역 캐시 - 컴포넌트 외부에서 관리하여 함수 호출 시마다 새 캐시가 생성되지 않도록 함
 const apiCache = new Map<string, Promise<Lecture[]>>();
