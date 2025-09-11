@@ -40,6 +40,7 @@ export const ScheduleProvider = ({ children }: PropsWithChildren) => {
     dummyScheduleMap
   );
   const actions = useScheduleActions(dispatch);
+  console.log(actions);
 
   // 레거시 지원을 위한 setter
   const setSchedulesMap = (
