@@ -107,6 +107,19 @@ const LectureRow = memo(({ lecture, onAdd }: { lecture: Lecture & { parsedSchedu
   </Tr>
 ));
 
+const MajorCheckbox = memo(({ major, isSelected, onChange }: { major: string, isSelected: boolean, onChange: (major: string, checked: boolean) => void }) => (
+  <Box>
+    <Checkbox 
+      size="sm" 
+      value={major}
+      isChecked={isSelected}
+      onChange={(e) => onChange(major, e.target.checked)}
+    >
+      {major.replace(/<p>/gi, " ")}
+    </Checkbox>
+  </Box>
+));
+
 const fetchMajors = createCache(() =>
   axios.get<Lecture[]>("/schedules-majors.json"),
 );
@@ -231,6 +244,16 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       loaderWrapperRef.current?.scrollTo(0, 0);
     },
     [],
+  );
+
+  const handleMajorChange = useCallback(
+    (major: string, checked: boolean) => {
+      const newMajors = checked 
+        ? [...searchOptions.majors, major]
+        : searchOptions.majors.filter(m => m !== major);
+      changeSearchOption("majors", newMajors);
+    },
+    [searchOptions.majors, changeSearchOption],
   );
 
   const addSchedule = useCallback(
@@ -465,11 +488,12 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                     p={2}
                   >
                     {allMajors.map((major) => (
-                      <Box key={major}>
-                        <Checkbox key={major} size="sm" value={major}>
-                          {major.replace(/<p>/gi, " ")}
-                        </Checkbox>
-                      </Box>
+                      <MajorCheckbox
+                        key={major}
+                        major={major}
+                        isSelected={searchOptions.majors.includes(major)}
+                        onChange={handleMajorChange}
+                      />
                     ))}
                   </Stack>
                 </CheckboxGroup>
