@@ -1,11 +1,12 @@
 import {
   DndContext,
+  DragEndEvent,
   Modifier,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { PropsWithChildren, useCallback } from "react";
+import { PropsWithChildren, useCallback, useRef } from "react";
 import { CellSize, DAY_LABELS } from "./constants.ts";
 import { useScheduleContext } from "./ScheduleContext.tsx";
 
@@ -46,7 +47,11 @@ function createSnapModifier(): Modifier {
 const modifiers = [createSnapModifier()];
 
 export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const { schedulesMap, updateTableSchedules } = useScheduleContext();
+
+  // schedulesMap을 ref로 관리하여 의존성 제거
+  const schedulesMapRef = useRef(schedulesMap);
+  schedulesMapRef.current = schedulesMap;
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -55,42 +60,36 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
     })
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragEnd = useCallback(
-    (event: any) => {
+    (event: DragEndEvent) => {
       const { active, delta } = event;
       const { x, y } = delta;
-      const [tableId, index] = active.id.split(":");
-      const schedule = schedulesMap[tableId][index];
+      const [tableId, index] = String(active.id).split(":");
+      const schedule = schedulesMapRef.current[tableId][Number(index)];
       const nowDayIndex = DAY_LABELS.indexOf(
         schedule.day as (typeof DAY_LABELS)[number]
       );
       const moveDayIndex = Math.floor(x / 80);
       const moveTimeIndex = Math.floor(y / 30);
 
-      // 변경된 테이블만 업데이트하여 불필요한 리렌더링 방지
-      setSchedulesMap((prevSchedulesMap) => {
-        const newSchedules = prevSchedulesMap[tableId].map(
-          (targetSchedule, targetIndex) => {
-            if (targetIndex !== Number(index)) {
-              return targetSchedule; // 변경되지 않은 스케줄은 참조 유지
-            }
-            return {
-              ...targetSchedule,
-              day: DAY_LABELS[nowDayIndex + moveDayIndex],
-              range: targetSchedule.range.map((time) => time + moveTimeIndex),
-            };
+      // 변경된 스케줄만 업데이트
+      const newSchedules = schedulesMapRef.current[tableId].map(
+        (targetSchedule, targetIndex) => {
+          if (targetIndex !== Number(index)) {
+            return targetSchedule; // 변경되지 않은 스케줄은 참조 유지
           }
-        );
+          return {
+            ...targetSchedule,
+            day: DAY_LABELS[nowDayIndex + moveDayIndex],
+            range: targetSchedule.range.map((time) => time + moveTimeIndex),
+          };
+        }
+      );
 
-        // 변경된 테이블만 새로운 객체로 생성
-        return {
-          ...prevSchedulesMap,
-          [tableId]: newSchedules,
-        };
-      });
+      // 개별 테이블 업데이트 함수 사용 - 더 효율적인 업데이트
+      updateTableSchedules(tableId, newSchedules);
     },
-    [schedulesMap, setSchedulesMap]
+    [updateTableSchedules] // schedulesMap 의존성 제거
   );
 
   return (
