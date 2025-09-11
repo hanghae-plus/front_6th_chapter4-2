@@ -7,7 +7,7 @@ export const useLectureData = () => {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const allMajors = useMemo(
     () => [...new Set(lectures.map((lecture) => lecture.major))],
-    []
+    [lectures]
   );
 
   useEffect(() => {
