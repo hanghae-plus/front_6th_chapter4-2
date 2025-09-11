@@ -2,7 +2,7 @@ import { Button, ButtonGroup, Flex, Heading, Stack } from '@chakra-ui/react';
 import { useState } from 'react';
 import { useScheduleContext } from './ScheduleContext.tsx';
 import ScheduleTable from './ScheduleTable.tsx';
-import SearchDialog from './SearchDialog.tsx';
+import SearchDialog from './SearchDialog/index.tsx';
 
 export const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
