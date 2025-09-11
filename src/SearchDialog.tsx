@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -121,80 +121,56 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
-    const { query = "", credits, grades, days, times, majors } = searchOptions;
-    return lectures
-      .filter(
-        (lecture) =>
-          lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-          lecture.id.toLowerCase().includes(query.toLowerCase())
-      )
-      .filter(
-        (lecture) => grades.length === 0 || grades.includes(lecture.grade)
-      )
-      .filter(
-        (lecture) => majors.length === 0 || majors.includes(lecture.major)
-      )
-      .filter(
-        (lecture) => !credits || lecture.credits.startsWith(String(credits))
-      )
-      .filter((lecture) => {
-        if (days.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) => days.includes(s.day));
-      })
-      .filter((lecture) => {
-        if (times.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) =>
-          s.range.some((time) => times.includes(time))
-        );
-      });
-  };
+  const filteredLectures = React.useMemo(() => {
+    return getFilteredLectures(searchOptions, lectures);
+  }, [searchOptions, lectures]);
 
-  const filteredLectures = getFilteredLectures();
+  const visibleLectures = React.useMemo(() => {
+    return filteredLectures.slice(0, page * PAGE_SIZE);
+  }, [filteredLectures, page]);
 
-  console.log("🐶 jindol log ", filteredLectures.length);
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+  const allMajors = React.useMemo(() => {
+    return [...new Set(lectures.map((lecture) => lecture.major))];
+  }, [lectures]);
 
-  const changeSearchOption = (
-    field: keyof SearchOption,
-    value: SearchOption[typeof field]
-  ) => {
-    setPage(1);
-    setSearchOptions({ ...searchOptions, [field]: value });
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  };
+  const changeSearchOption = React.useCallback(
+    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
+      setSearchOptions({ ...searchOptions, [field]: value });
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    },
+    [
+      searchOptions,
+      setPage,
+      loaderWrapperRef,
+      setSearchOptions,
+      searchInfo,
+      onClose,
+    ]
+  );
 
-  const addSchedule = (lecture: Lecture) => {
-    if (!searchInfo) return;
+  const addSchedule = React.useCallback(
+    (lecture: Lecture) => {
+      if (!searchInfo) return;
 
-    const { tableId } = searchInfo;
+      const { tableId } = searchInfo;
 
-    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-      ...schedule,
-      lecture,
-    }));
+      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+        ...schedule,
+        lecture,
+      }));
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: [...prev[tableId], ...schedules],
+      }));
 
-    onClose();
-  };
+      onClose();
+    },
+    [searchInfo, setSchedulesMap, onClose]
+  );
 
-  useEffect(() => {
+  React.useEffect(() => {
     const start = performance.now();
     console.log("API 호출 시작: ", start);
     fetchAllLectures().then((results) => {
@@ -205,9 +181,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     });
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const $loader = loaderRef.current;
     const $loaderWrapper = loaderWrapperRef.current;
+
+    const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
 
     if (!$loader || !$loaderWrapper) {
       return;
@@ -225,9 +203,9 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     observer.observe($loader);
 
     return () => observer.unobserve($loader);
-  }, [lastPage]);
+  }, [filteredLectures]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setSearchOptions((prev) => ({
       ...prev,
       days: searchInfo?.day ? [searchInfo.day] : [],
@@ -237,7 +215,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, [searchInfo]);
 
   return (
-    <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
+    <Modal isOpen={true} onClose={onClose} size="6xl">
       <ModalOverlay />
       <ModalContent maxW="90vw" w="1000px">
         <ModalHeader>수업 검색</ModalHeader>
@@ -427,33 +405,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
                 <Table size="sm" variant="striped">
-                  <Tbody>
-                    {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.major }}
-                        />
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-                        />
-                        <Td width="80px">
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() => addSchedule(lecture)}
-                          >
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
+                  <List
+                    visibleLectures={visibleLectures}
+                    addSchedule={addSchedule}
+                  />
                 </Table>
                 <Box ref={loaderRef} h="20px" />
               </Box>
@@ -466,3 +421,94 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 };
 
 export default SearchDialog;
+
+/**
+ *List
+ **/
+const List = React.memo(function List({
+  visibleLectures,
+  addSchedule,
+}: {
+  visibleLectures: Lecture[];
+  addSchedule: (lecture: Lecture) => void;
+}) {
+  return (
+    <Tbody>
+      {visibleLectures.map((lecture, index) => (
+        <Row
+          key={`${lecture.id}-${index}`}
+          lecture={lecture}
+          addSchedule={addSchedule}
+        />
+      ))}
+    </Tbody>
+  );
+});
+
+/**
+  Row
+ **/
+const Row = React.memo(function Row({
+  lecture,
+  addSchedule,
+}: {
+  lecture: Lecture;
+  addSchedule: (lecture: Lecture) => void;
+}) {
+  return (
+    <Tr>
+      <Td width="100px">{lecture.id}</Td>
+      <Td width="50px">{lecture.grade}</Td>
+      <Td width="200px">{lecture.title}</Td>
+      <Td width="50px">{lecture.credits}</Td>
+      <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
+      <Td
+        width="150px"
+        dangerouslySetInnerHTML={{ __html: lecture.schedule }}
+      />
+      <Td width="80px">
+        <Button
+          size="sm"
+          colorScheme="green"
+          onClick={() => addSchedule(lecture)}
+        >
+          추가
+        </Button>
+      </Td>
+    </Tr>
+  );
+});
+
+const getFilteredLectures = (
+  searchOptions: SearchOption,
+  lectures: Lecture[]
+) => {
+  const { query = "", credits, grades, days, times, majors } = searchOptions;
+  return lectures
+    .filter(
+      (lecture) =>
+        lecture.title.toLowerCase().includes(query.toLowerCase()) ||
+        lecture.id.toLowerCase().includes(query.toLowerCase())
+    )
+    .filter((lecture) => grades.length === 0 || grades.includes(lecture.grade))
+    .filter((lecture) => majors.length === 0 || majors.includes(lecture.major))
+    .filter(
+      (lecture) => !credits || lecture.credits.startsWith(String(credits))
+    )
+    .filter((lecture) => {
+      if (days.length === 0) {
+        return true;
+      }
+      const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+      return schedules.some((s) => days.includes(s.day));
+    })
+    .filter((lecture) => {
+      if (times.length === 0) {
+        return true;
+      }
+      const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+      return schedules.some((s) =>
+        s.range.some((time) => times.includes(time))
+      );
+    });
+};
