@@ -1,4 +1,4 @@
-import { ComponentProps, Fragment, memo, useMemo } from "react";
+import { ComponentProps, Fragment, memo, useMemo, useCallback } from "react";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -37,6 +37,75 @@ const TIMES = [
     .map((v, k) => v + k * 55 * 분)
     .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
 ] as const;
+
+const DayHeaderCell = memo(({ day }: { day: string }) => (
+  <GridItem
+    borderLeft="1px"
+    borderColor="gray.300"
+    bg="gray.100"
+  >
+    <Flex justifyContent="center" alignItems="center" h="full">
+      <Text fontWeight="bold">{day}</Text>
+    </Flex>
+  </GridItem>
+));
+
+const TimeRowCells = memo(({ 
+  time, 
+  timeIndex, 
+  onScheduleTimeClick 
+}: { 
+  time: string; 
+  timeIndex: number;
+  onScheduleTimeClick?: (timeInfo: { day: string; time: number }) => void;
+}) => (
+  <Fragment>
+    <GridItem
+      borderTop="1px solid"
+      borderColor="gray.300"
+      bg={timeIndex > 17 ? "gray.200" : "gray.100"}
+    >
+      <Flex justifyContent="center" alignItems="center" h="full">
+        <Text fontSize="xs">
+          {fill2(timeIndex + 1)} ({time})
+        </Text>
+      </Flex>
+    </GridItem>
+    {DAY_LABELS.map((day) => (
+      <ScheduleCell
+        key={`${day}-${timeIndex + 2}`}
+        day={day}
+        timeIndex={timeIndex}
+        onScheduleTimeClick={onScheduleTimeClick}
+      />
+    ))}
+  </Fragment>
+));
+
+const ScheduleCell = memo(({ 
+  day, 
+  timeIndex, 
+  onScheduleTimeClick 
+}: { 
+  day: string; 
+  timeIndex: number;
+  onScheduleTimeClick?: (timeInfo: { day: string; time: number }) => void;
+}) => {
+  const handleClick = useCallback(() => {
+    onScheduleTimeClick?.({ day, time: timeIndex + 1 });
+  }, [day, timeIndex, onScheduleTimeClick]);
+
+  return (
+    <GridItem
+      borderWidth="1px 0 0 1px"
+      borderColor="gray.300"
+      bg={timeIndex > 17 ? "gray.100" : "white"}
+      cursor="pointer"
+      _hover={{ bg: "yellow.100" }}
+      onClick={handleClick}
+    />
+  );
+});
 
 const ScheduleTable = ({
   tableId,
@@ -84,44 +153,15 @@ const ScheduleTable = ({
           </Flex>
         </GridItem>
         {DAY_LABELS.map((day) => (
-          <GridItem
-            key={day}
-            borderLeft="1px"
-            borderColor="gray.300"
-            bg="gray.100"
-          >
-            <Flex justifyContent="center" alignItems="center" h="full">
-              <Text fontWeight="bold">{day}</Text>
-            </Flex>
-          </GridItem>
+          <DayHeaderCell key={day} day={day} />
         ))}
         {TIMES.map((time, timeIndex) => (
-          <Fragment key={`시간-${timeIndex + 1}`}>
-            <GridItem
-              borderTop="1px solid"
-              borderColor="gray.300"
-              bg={timeIndex > 17 ? "gray.200" : "gray.100"}
-            >
-              <Flex justifyContent="center" alignItems="center" h="full">
-                <Text fontSize="xs">
-                  {fill2(timeIndex + 1)} ({time})
-                </Text>
-              </Flex>
-            </GridItem>
-            {DAY_LABELS.map((day) => (
-              <GridItem
-                key={`${day}-${timeIndex + 2}`}
-                borderWidth="1px 0 0 1px"
-                borderColor="gray.300"
-                bg={timeIndex > 17 ? "gray.100" : "white"}
-                cursor="pointer"
-                _hover={{ bg: "yellow.100" }}
-                onClick={() =>
-                  onScheduleTimeClick?.({ day, time: timeIndex + 1 })
-                }
-              />
-            ))}
-          </Fragment>
+          <TimeRowCells
+            key={`시간-${timeIndex + 1}`}
+            time={time}
+            timeIndex={timeIndex}
+            onScheduleTimeClick={onScheduleTimeClick}
+          />
         ))}
       </Grid>
 
