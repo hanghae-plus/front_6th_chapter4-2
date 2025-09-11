@@ -1,11 +1,11 @@
 import { memo } from "react";
 import { VStack, HStack } from "@chakra-ui/react";
-import { SearchOption } from "../types";
-import BasicFilter from "./filters/BasicFilter";
-import GradeFilter from "./filters/GradeFilter";
-import DayFilter from "./filters/DayFilter";
-import TimeFilter from "./filters/TimeFilter";
-import MajorFilter from "./filters/MajorFilter";
+import { SearchOption } from "../../types";
+import BasicFilter from "../filters/BasicFilter";
+import GradeFilter from "../filters/GradeFilter";
+import DayFilter from "../filters/DayFilter";
+import TimeFilter from "../filters/TimeFilter";
+import MajorFilter from "../filters/MajorFilter";
 
 interface Props {
   searchOptions: SearchOption;

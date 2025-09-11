@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import { Box, Text } from "@chakra-ui/react";
-import { Lecture } from "../types";
+import { Lecture } from "../../types";
 import SearchResultTableHeader from "./SearchResultTableHeader";
 import SearchResultTableRow from "./SearchResultTableRow";
 

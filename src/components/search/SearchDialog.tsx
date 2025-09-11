@@ -16,9 +16,9 @@ import { parseSchedule } from "../../utils.ts";
 import axios from "axios";
 import { DAY_LABELS } from "../../constants.ts";
 import { createCachedFetch } from "../../createCachedFetch.ts";
-import SearchFilter from "../SearchFilter";
-import SearchResultTable from "../SearchResultTable";
-import { SearchDialogContext } from "../SearchDialogContext";
+import SearchFilter from "./SearchFilter";
+import SearchResultTable from "./SearchResultTable";
+import { SearchDialogContext } from "./SearchDialogContext";
 
 interface Props {
   searchInfo: {

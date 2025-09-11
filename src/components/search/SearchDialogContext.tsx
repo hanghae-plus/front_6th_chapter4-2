@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { SearchOption, Lecture } from "../types";
+import { SearchOption, Lecture } from "../../types";
 
 export const SearchDialogContext = createContext<{
   changeSearchOption: (

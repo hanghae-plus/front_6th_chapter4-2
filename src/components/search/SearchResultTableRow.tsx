@@ -1,5 +1,5 @@
 import { memo, useCallback, useContext, useMemo } from "react";
-import { Lecture } from "../types";
+import { Lecture } from "../../types";
 import { SearchDialogContext } from "./SearchDialogContext";
 
 interface Props {
