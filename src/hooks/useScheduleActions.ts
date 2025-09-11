@@ -32,7 +32,7 @@ export interface ScheduleActionsReturn {
     scheduleIndex: number,
     moveDayIndex: number,
     moveTimeIndex: number
-  ) => void; // ✅ 새로운 액션
+  ) => void;
   addSchedules: (tableId: string, schedules: Schedule[]) => void;
   deleteSchedule: (tableId: string, timeInfo: TimeInfo) => void;
   duplicateTable: (sourceTableId: string) => void;
@@ -50,7 +50,6 @@ export const useScheduleActions = (
     [dispatch]
   );
 
-  // ✅ 새로운 액션 함수
   const moveSchedule = useCallback(
     (
       tableId: string,
