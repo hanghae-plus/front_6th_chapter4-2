@@ -10,7 +10,6 @@ interface LectureRowProps {
 }
 
 const LectureRow = memo(({ lecture, index, onAddSchedule }: LectureRowProps) => {
-  console.log("LectureRow 리렌더링", lecture);
   return (
     <Tr key={`${lecture.id}-${index}`}>
       <Td width="100px">{lecture.id}</Td>

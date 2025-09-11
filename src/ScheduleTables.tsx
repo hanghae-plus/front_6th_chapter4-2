@@ -4,6 +4,7 @@ import { useScheduleContext } from "./ScheduleContext.tsx";
 import ScheduleTable from "./ScheduleTable.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
 export const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
@@ -15,19 +16,19 @@ export const ScheduleTables = () => {
 
   const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
 
-  const duplicate = (targetId: string) => {
+  const duplicate = useAutoCallback((targetId: string) => {
     setSchedulesMap((prev) => ({
       ...prev,
       [`schedule-${Date.now()}`]: [...prev[targetId]],
     }));
-  };
+  });
 
-  const remove = (targetId: string) => {
+  const remove = useAutoCallback((targetId: string) => {
     setSchedulesMap((prev) => {
       delete prev[targetId];
       return { ...prev };
     });
-  };
+  });
 
   return (
     <>

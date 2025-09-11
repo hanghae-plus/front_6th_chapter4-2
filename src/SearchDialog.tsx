@@ -137,7 +137,7 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
     };
   }, [lectures, searchOptions]);
 
-  const visibleLectures = useMemo(() => filteredLectures.slice(0, page * PAGE_SIZE), [filteredLectures, page]);
+  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
 
   const changeSearchOption = useAutoCallback((field: keyof SearchOption, value: SearchOption[typeof field]) => {
     setPage(1);
@@ -230,8 +230,10 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
 
             <Box>
               <TableHeader />
-              <LectureTable ref={loaderWrapperRef} visibleLectures={visibleLectures} onAddSchedule={addSchedule} />
-              <Box ref={loaderRef} h="20px" />
+              <Box ref={loaderWrapperRef} overflowY="auto" maxH="500px">
+                <LectureTable visibleLectures={visibleLectures} onAddSchedule={addSchedule} />
+                <Box ref={loaderRef} h="20px" />
+              </Box>
             </Box>
           </VStack>
         </ModalBody>
