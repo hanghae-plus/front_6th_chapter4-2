@@ -47,20 +47,22 @@ interface SearchOption {
 }
 
 const PAGE_SIZE = 100;
+const BASE_URL =
+  process.env.NODE_ENV === "production" ? "/front_6th_chapter4-2" : "";
 
 const apiCache = new ApiCache();
 
 const fetchMajors = () =>
   apiCache.get(
     "majors",
-    () => axios.get<Lecture[]>("/schedules-majors.json"),
+    () => axios.get<Lecture[]>(`${BASE_URL}/schedules-majors.json`),
     10 * 60 * 1000
   );
 
 const fetchLiberalArts = () =>
   apiCache.get(
     "liberalArts",
-    () => axios.get<Lecture[]>("/schedules-liberal-arts.json"),
+    () => axios.get<Lecture[]>(`${BASE_URL}/schedules-liberal-arts.json`),
     5 * 60 * 1000
   );
 // API 호출을 최적화: 각 API를 한 번씩만 병렬로 호출
