@@ -22,3 +22,8 @@ export interface SearchOption {
   majors: string[];
   credits?: number;
 }
+
+export interface TimeInfo {
+  day: string;
+  time: number;
+}
