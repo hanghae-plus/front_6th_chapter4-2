@@ -1,8 +1,8 @@
 import { CheckboxGroup, FormControl, FormLabel, HStack } from '@chakra-ui/react';
 import { memo, useCallback } from 'react';
-import { SearchOption } from '.';
-import { DAY_LABELS } from '../constants.ts';
+import { DAY_LABELS } from '../../constants.ts';
 import CheckboxItem from './CheckboxItem.tsx';
+import { SearchOption } from './index.tsx';
 
 interface Props {
   days: string[];

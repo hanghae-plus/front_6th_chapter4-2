@@ -1,7 +1,7 @@
 import { DndContext, Modifier, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { PropsWithChildren } from 'react';
-import { CellSize, DAY_LABELS } from './constants.ts';
-import { useScheduleContext } from './ScheduleContext.tsx';
+import { CellSize, DAY_LABELS } from '../constants.ts';
+import { useScheduleTableContext } from './ScheduleTableContext.tsx';
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -30,8 +30,9 @@ function createSnapModifier(): Modifier {
 
 const modifiers = [createSnapModifier()];
 
-export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+const ScheduleTableDndProvider = ({ children }: PropsWithChildren) => {
+  const { schedules, setSchedules } = useScheduleTableContext();
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -44,16 +45,18 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
   const handleDragEnd = (event: any) => {
     const { active, delta } = event;
     const { x, y } = delta;
-    const [tableId, index] = active.id.split(':');
-    const schedule = schedulesMap[tableId][index];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_, scheduleIndex] = active.id.split(':');
+    const schedule = schedules[Number(scheduleIndex)];
+
     const nowDayIndex = DAY_LABELS.indexOf(schedule.day as (typeof DAY_LABELS)[number]);
     const moveDayIndex = Math.floor(x / 80);
     const moveTimeIndex = Math.floor(y / 30);
 
-    setSchedulesMap({
-      ...schedulesMap,
-      [tableId]: schedulesMap[tableId].map((targetSchedule, targetIndex) => {
-        if (targetIndex !== Number(index)) {
+    setSchedules(prevSchedules =>
+      prevSchedules.map((targetSchedule, targetIndex) => {
+        console.log('target id, index: ', targetSchedule, targetIndex);
+        if (targetIndex !== Number(scheduleIndex)) {
           return { ...targetSchedule };
         }
         return {
@@ -61,8 +64,8 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
           day: DAY_LABELS[nowDayIndex + moveDayIndex],
           range: targetSchedule.range.map(time => time + moveTimeIndex),
         };
-      }),
-    });
+      })
+    );
   };
 
   return (
@@ -70,4 +73,6 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
       {children}
     </DndContext>
   );
-}
+};
+
+export default ScheduleTableDndProvider;

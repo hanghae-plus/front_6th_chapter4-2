@@ -9,9 +9,9 @@ import {
   Wrap,
 } from '@chakra-ui/react';
 import { memo, useCallback, useMemo } from 'react';
-import { SearchOption } from '.';
-import { Lecture } from '../types.ts';
+import { Lecture } from '../../types.ts';
 import CheckboxItem from './CheckboxItem.tsx';
+import { SearchOption } from './index.tsx';
 
 interface Props {
   majors: string[];

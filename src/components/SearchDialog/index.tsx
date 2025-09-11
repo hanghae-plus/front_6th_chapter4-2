@@ -17,10 +17,10 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useScheduleContext } from '../ScheduleContext.tsx';
-import { Lecture } from '../types.ts';
-import { createApiCache } from '../utils/apiCache.ts';
-import { parseSchedule } from '../utils/utils.ts';
+import { useScheduleContext } from '../../context/ScheduleContext.tsx';
+import { Lecture } from '../../types.ts';
+import { createApiCache } from '../../utils/apiCache.ts';
+import { parseSchedule } from '../../utils/utils.ts';
 import LectureRow from './LectureRow.tsx';
 import SearchInput from './SearchInput.tsx';
 import SelectCredit from './SelectCredit.tsx';
