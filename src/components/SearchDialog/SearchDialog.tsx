@@ -58,11 +58,17 @@ const createApiCache = () => {
 
 const apiCache = createApiCache();
 
+const getBasePath = () => {
+  return process.env.NODE_ENV === "production" ? "/front_6th_chapter4-2/" : "/";
+};
+
 const fetchMajors = () =>
-  apiCache.get("majors", () => axios.get<Lecture[]>("/schedules-majors.json"));
+  apiCache.get("majors", () =>
+    axios.get<Lecture[]>(`${getBasePath()}schedules-majors.json`)
+  );
 const fetchLiberalArts = () =>
   apiCache.get("liberal-arts", () =>
-    axios.get<Lecture[]>("/schedules-liberal-arts.json")
+    axios.get<Lecture[]>(`${getBasePath()}schedules-liberal-arts.json`)
   );
 
 const fetchAllLectures = async () => {
