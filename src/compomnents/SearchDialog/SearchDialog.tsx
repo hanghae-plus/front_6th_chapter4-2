@@ -247,26 +247,76 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, []);
 
   useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
+    console.log("useEffect 실행됨 - Observer 설정 시작");
 
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
+    // DOM이 렌더링될 때까지 잠시 기다림
+    const timer = setTimeout(() => {
+      const $loader = loaderRef.current;
+      const $loaderWrapper = loaderWrapperRef.current;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
+      console.log("loaderRef:", $loader);
+      console.log("loaderWrapperRef:", $loaderWrapper);
 
-    observer.observe($loader);
+      if (!$loader || !$loaderWrapper) {
+        console.log(
+          "loaderRef 또는 loaderWrapperRef가 없어서 Observer 설정 중단"
+        );
+        return;
+      }
 
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
+      console.log("IntersectionObserver 생성 중...");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          console.log(
+            "IntersectionObserver 트리거됨! isIntersecting:",
+            entries[0].isIntersecting
+          );
+          if (entries[0].isIntersecting) {
+            console.log("스크롤 감지! 페이지 증가 시작...");
+            setPage((prevPage) => {
+              const nextPage = prevPage + 1;
+
+              console.log(
+                "현재 페이지:",
+                prevPage,
+                "다음 페이지:",
+                nextPage,
+                "총 페이지:",
+                lastPage
+              );
+
+              if (nextPage > lastPage) {
+                console.log(
+                  "마지막 페이지에 도달했습니다! 현재 페이지:",
+                  prevPage,
+                  "총 페이지:",
+                  lastPage
+                );
+                return prevPage;
+              } else {
+                console.log(
+                  "무한스크롤 로딩 중... 현재 페이지:",
+                  nextPage,
+                  "총 페이지:",
+                  lastPage
+                );
+                return nextPage;
+              }
+            });
+          }
+        },
+        { threshold: 0, root: $loaderWrapper }
+      );
+
+      console.log("Observer 설정 완료, $loader 관찰 시작");
+      observer.observe($loader);
+    }, 100); // 100ms 후에 실행
+
+    return () => {
+      clearTimeout(timer);
+      console.log("Observer 정리 중...");
+    };
+  }, [searchInfo, lastPage]);
 
   useEffect(() => {
     setSearchOptions((prev) => ({
