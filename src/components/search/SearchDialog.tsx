@@ -167,7 +167,7 @@ export const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
         lecture,
       }));
 
-      setSchedulesMap((prev: Record<string, any[]>) => ({
+      setSchedulesMap((prev) => ({
         ...prev,
         [tableId]: [...prev[tableId], ...schedules],
       }));
