@@ -1,10 +1,13 @@
-import React, { createContext, PropsWithChildren, useContext, useState } from 'react';
+import { createContext, PropsWithChildren, useContext, useState, useCallback } from 'react';
 import { Schedule } from './types.ts';
 import dummyScheduleMap from './dummyScheduleMap.ts';
 
 interface ScheduleContextType {
-  schedulesMap: Record<string, Schedule[]>;
-  setSchedulesMap: React.Dispatch<React.SetStateAction<Record<string, Schedule[]>>>;
+  initialSchedulesMap: Record<string, Schedule[]>;
+  tableIds: string[];
+  addTable: () => string;
+  duplicateTable: (sourceTableId: string, schedules: Schedule[]) => string;
+  removeTable: (tableId: string) => void;
 }
 
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
@@ -18,10 +21,35 @@ export const useScheduleContext = () => {
 };
 
 export const ScheduleProvider = ({ children }: PropsWithChildren) => {
-  const [schedulesMap, setSchedulesMap] = useState<Record<string, Schedule[]>>(dummyScheduleMap);
+  const [initialSchedulesMap] = useState<Record<string, Schedule[]>>(dummyScheduleMap);
+  const [tableIds, setTableIds] = useState<string[]>(Object.keys(dummyScheduleMap));
+
+  const addTable = useCallback(() => {
+    const newId = `schedule-${Date.now()}`;
+    setTableIds(prev => [...prev, newId]);
+    return newId;
+  }, []);
+
+  const duplicateTable = useCallback(() => {
+    const newId = `schedule-${Date.now()}`;
+    setTableIds(prev => [...prev, newId]);
+    return newId;
+  }, []);
+
+  const removeTable = useCallback((tableId: string) => {
+    setTableIds(prev => prev.filter(id => id !== tableId));
+  }, []);
 
   return (
-    <ScheduleContext.Provider value={{ schedulesMap, setSchedulesMap }}>
+    <ScheduleContext.Provider
+      value={{
+        initialSchedulesMap,
+        tableIds,
+        addTable,
+        duplicateTable,
+        removeTable,
+      }}
+    >
       {children}
     </ScheduleContext.Provider>
   );
