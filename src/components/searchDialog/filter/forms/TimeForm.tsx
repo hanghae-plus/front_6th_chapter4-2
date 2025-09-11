@@ -12,8 +12,9 @@ import {
 } from "@chakra-ui/react";
 import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
 import { TIME_SLOTS } from "../../../../constants";
+import { memo } from "react";
 
-export const TimeForm = () => {
+export const TimeForm = memo(() => {
   const times = useSearchOptionsStore((state) => state.searchOptions.times);
   const setTimes = useSearchOptionsStore((state) => state.setTimes);
 
@@ -57,4 +58,4 @@ export const TimeForm = () => {
       </CheckboxGroup>
     </FormControl>
   );
-};
+});

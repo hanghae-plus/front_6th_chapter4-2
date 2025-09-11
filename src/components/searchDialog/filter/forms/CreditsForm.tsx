@@ -1,7 +1,8 @@
 import { FormControl, FormLabel, Select } from "@chakra-ui/react";
 import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
+import { memo } from "react";
 
-export const CreditsForm = () => {
+export const CreditsForm = memo(() => {
   const credits = useSearchOptionsStore((state) => state.searchOptions.credits);
   const setCredits = useSearchOptionsStore((state) => state.setCredits);
 
@@ -16,4 +17,4 @@ export const CreditsForm = () => {
       </Select>
     </FormControl>
   );
-};
+});

@@ -6,8 +6,9 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
+import { memo } from "react";
 
-export const GradeForm = () => {
+export const GradeForm = memo(() => {
   const grades = useSearchOptionsStore((state) => state.searchOptions.grades);
   const setGrades = useSearchOptionsStore((state) => state.setGrades);
 
@@ -28,4 +29,4 @@ export const GradeForm = () => {
       </CheckboxGroup>
     </FormControl>
   );
-};
+});

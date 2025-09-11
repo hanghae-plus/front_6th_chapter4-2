@@ -7,8 +7,9 @@ import {
 } from "@chakra-ui/react";
 import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
 import { DAY_LABELS } from "../../../../constants";
+import { memo } from "react";
 
-export const DayForm = () => {
+export const DayForm = memo(() => {
   const days = useSearchOptionsStore((state) => state.searchOptions.days);
   const setDays = useSearchOptionsStore((state) => state.setDays);
 
@@ -29,4 +30,4 @@ export const DayForm = () => {
       </CheckboxGroup>
     </FormControl>
   );
-};
+});

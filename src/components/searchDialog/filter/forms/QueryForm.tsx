@@ -1,7 +1,8 @@
 import { FormControl, FormLabel, Input } from "@chakra-ui/react";
 import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
+import { memo } from "react";
 
-export const QueryForm = () => {
+export const QueryForm = memo(() => {
   const query = useSearchOptionsStore((state) => state.searchOptions.query);
   const setQuery = useSearchOptionsStore((state) => state.setQuery);
 
@@ -15,4 +16,4 @@ export const QueryForm = () => {
       />
     </FormControl>
   );
-};
+});
