@@ -44,11 +44,14 @@ const ScheduleTable = ({
   onScheduleTimeClick,
   onDeleteButtonClick,
 }: Props) => {
-  const getColor = (lectureId: string): string => {
+  const getColor = useMemo(() => {
     const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
     const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
-    return colors[lectures.indexOf(lectureId) % colors.length];
-  };
+    
+    return (lectureId: string): string => {
+      return colors[lectures.indexOf(lectureId) % colors.length];
+    };
+  }, [schedules]);
 
   const dndContext = useDndContext();
 
