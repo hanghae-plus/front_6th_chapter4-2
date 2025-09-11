@@ -1,5 +1,6 @@
 import {
   Box,
+  HStack,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,11 +12,15 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import GradeDayFilters from "./components/SearchDialog/GradeDayFilters";
-import LectureTable from "./components/SearchDialog/LectureTable";
-import SearchInputFilters from "./components/SearchDialog/SearchInputFilters";
-import TableHeader from "./components/SearchDialog/TableHeader";
-import TimeMajorFilters from "./components/SearchDialog/TimeMajorFilters";
+import {
+  SearchInputFilter,
+  GradeFilter,
+  DayFilter,
+  TimeFilter,
+  MajorFilter,
+  LectureTable,
+  TableHeader,
+} from "./components/SearchDialog";
 import { useScheduleContext } from "./ScheduleContext.tsx";
 import type { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
@@ -101,7 +106,7 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const { filteredLectures, lastPage, allMajors } = useMemo(() => {
+  const { filteredLectures, allMajors } = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
     const filteredLectures = lectures
       .filter(
@@ -127,12 +132,10 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
         return schedules.some((s) => s.range.some((time) => times.includes(time)));
       });
 
-    const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
     const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
 
     return {
       filteredLectures,
-      lastPage,
       allMajors,
     };
   }, [lectures, searchOptions]);
@@ -173,26 +176,44 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
   }, []);
 
   useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
+    // 모달이 닫혀있으면 Observer 등록하지 않음
+    if (!searchInfo) return;
+    if (lectures.length === 0) return;
 
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
+    let timeoutId: NodeJS.Timeout | null = null;
+    let observer: IntersectionObserver | null = null;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
+    const setupObserver = () => {
+      const $loader = loaderRef.current;
+      const $loaderWrapper = loaderWrapperRef.current;
 
-    observer.observe($loader);
+      if (!$loader || !$loaderWrapper) {
+        timeoutId = setTimeout(setupObserver, 100);
+        return;
+      }
 
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setPage((prevPage) => {
+              const currentLastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
+              return Math.min(currentLastPage, prevPage + 1);
+            });
+          }
+        },
+        { threshold: 0, root: $loaderWrapper }
+      );
+
+      observer.observe($loader);
+    };
+
+    setupObserver();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (observer) observer.disconnect();
+    };
+  }, [searchInfo, lectures.length, filteredLectures.length]);
 
   useEffect(() => {
     setSearchOptions((prev) => ({
@@ -211,23 +232,23 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4} align="stretch">
-            <SearchInputFilters
+            <SearchInputFilter
               query={searchOptions.query}
               credits={searchOptions.credits}
               onChange={changeSearchOption}
             />
 
-            <GradeDayFilters grades={searchOptions.grades} days={searchOptions.days} onChange={changeSearchOption} />
+            <HStack spacing={4}>
+              <GradeFilter grades={searchOptions.grades} onChange={(grades) => changeSearchOption("grades", grades)} />
+              <DayFilter days={searchOptions.days} onChange={(days) => changeSearchOption("days", days)} />
+            </HStack>
 
-            <TimeMajorFilters
-              times={searchOptions.times}
-              majors={searchOptions.majors}
-              allMajors={allMajors}
-              onChange={changeSearchOption}
-            />
+            <HStack spacing={4}>
+              <TimeFilter times={searchOptions.times} onChange={changeSearchOption} />
+              <MajorFilter majors={searchOptions.majors} allMajors={allMajors} onChange={changeSearchOption} />
+            </HStack>
 
             <Text align="right">검색결과: {filteredLectures.length}개</Text>
-
             <Box>
               <TableHeader />
               <Box ref={loaderWrapperRef} overflowY="auto" maxH="500px">

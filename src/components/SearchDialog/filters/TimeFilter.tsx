@@ -4,7 +4,6 @@ import {
   CheckboxGroup,
   FormControl,
   FormLabel,
-  HStack,
   Stack,
   Tag,
   TagCloseButton,
@@ -12,7 +11,7 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { timeMajorComparison } from "../../utils/memoComparison";
+import { FilterChangeHandler } from "../types";
 
 const TIME_SLOTS = [
   { id: 1, label: "09:00~09:30" },
@@ -41,25 +40,16 @@ const TIME_SLOTS = [
   { id: 24, label: "22:35~23:25" },
 ];
 
-interface SearchOption {
-  query?: string;
-  grades: number[];
-  days: string[];
+interface TimeFilterProps {
   times: number[];
-  majors: string[];
-  credits?: number;
+  onChange: FilterChangeHandler;
 }
 
-interface TimeMajorFiltersProps {
-  times: number[];
-  majors: string[];
-  allMajors: string[];
-  onChange: (field: keyof SearchOption, value: SearchOption[keyof SearchOption]) => void;
-}
+const TimeFilter = memo(
+  ({ times, onChange }: TimeFilterProps) => {
+    console.log("TimeFilter 리렌더링");
 
-const TimeMajorFilters = memo(({ times, majors, allMajors, onChange }: TimeMajorFiltersProps) => {
-  return (
-    <HStack spacing={4}>
+    return (
       <FormControl>
         <FormLabel>시간</FormLabel>
         <CheckboxGroup colorScheme="green" value={times} onChange={(values) => onChange("times", values.map(Number))}>
@@ -99,48 +89,17 @@ const TimeMajorFilters = memo(({ times, majors, allMajors, onChange }: TimeMajor
           </Stack>
         </CheckboxGroup>
       </FormControl>
+    );
+  },
+  (prev, next) => {
+    return (
+      prev.times.length === next.times.length &&
+      prev.times.every((time, index) => time === next.times[index]) &&
+      prev.onChange === next.onChange
+    );
+  }
+);
 
-      <FormControl>
-        <FormLabel>전공</FormLabel>
-        <CheckboxGroup colorScheme="green" value={majors} onChange={(values) => onChange("majors", values as string[])}>
-          <Wrap spacing={1} mb={2}>
-            {majors.map((major) => (
-              <Tag key={major} size="sm" variant="outline" colorScheme="blue">
-                <TagLabel>{major.split("<p>").pop()}</TagLabel>
-                <TagCloseButton
-                  onClick={() =>
-                    onChange(
-                      "majors",
-                      majors.filter((v) => v !== major)
-                    )
-                  }
-                />
-              </Tag>
-            ))}
-          </Wrap>
-          <Stack
-            spacing={2}
-            overflowY="auto"
-            h="100px"
-            border="1px solid"
-            borderColor="gray.200"
-            borderRadius={5}
-            p={2}
-          >
-            {allMajors.map((major) => (
-              <Box key={major}>
-                <Checkbox key={major} size="sm" value={major}>
-                  {major.replace(/<p>/gi, " ")}
-                </Checkbox>
-              </Box>
-            ))}
-          </Stack>
-        </CheckboxGroup>
-      </FormControl>
-    </HStack>
-  );
-}, timeMajorComparison);
+TimeFilter.displayName = "TimeFilter";
 
-TimeMajorFilters.displayName = "TimeMajorFilters";
-
-export default TimeMajorFilters;
+export default TimeFilter;
