@@ -184,4 +184,4 @@ const DraggableSchedule = memo(
   }
 );
 
-export default ScheduleTable;
+export default memo(ScheduleTable);
