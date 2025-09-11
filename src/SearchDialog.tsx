@@ -31,10 +31,10 @@ import {
 } from "@chakra-ui/react";
 import { useScheduleContext } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
-import { parseSchedule } from "./utils.ts";
+import { parseSchedule } from "./utils/index.ts";
 import axios from "axios";
 import { DAY_LABELS } from "./constants.ts";
-import fetchWithCache from "./fetchWithCache.ts";
+import fetchWithCache from "./utils/fetchWithCache.ts";
 
 interface Props {
   searchInfo: {
