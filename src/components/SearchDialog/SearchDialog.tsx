@@ -104,27 +104,26 @@ const getCachedLiberalArts = () => {
 };
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
-// const fetchAllLectures = async () =>
-//   await Promise.all([
-//     (console.log("API Call 1", performance.now()), await fetchMajors()),
-//     (console.log("API Call 2", performance.now()), await fetchLiberalArts()),
-//     (console.log("API Call 3", performance.now()), await fetchMajors()),
-//     (console.log("API Call 4", performance.now()), await fetchLiberalArts()),
-//     (console.log("API Call 5", performance.now()), await fetchMajors()),
-//     (console.log("API Call 6", performance.now()), await fetchLiberalArts()),
-//   ]);
+// 최적화 전 (잘못된 코드 - 직렬 실행 + 중복 호출)
+// const fetchAllLectures = async () => await Promise.all([
+//   (console.log('API Call 1', performance.now()), await fetchMajors()),
+//   (console.log('API Call 2', performance.now()), await fetchLiberalArts()),
+//   (console.log('API Call 3', performance.now()), await fetchMajors()),
+//   (console.log('API Call 4', performance.now()), await fetchLiberalArts()),
+//   (console.log('API Call 5', performance.now()), await fetchMajors()),
+//   (console.log('API Call 6', performance.now()), await fetchLiberalArts()),
+// ]);
 
-// 이미 호출한 api는 다시 호출하지 않도록 - 클로저를 이용하여 캐시 구성
+// 최적화 후 (올바른 코드 - 병렬 실행 + 캐시 활용)
 const fetchAllLectures = async (): Promise<Lecture[]> => {
   console.log("API 호출 시작:", performance.now());
+
+  // Promise.all로 병렬 실행 - 각 API는 한 번씩만 호출
   const [majorsData, liberalData] = await Promise.all([
-    (console.log("API Call 1", performance.now()), getCachedMajors()),
-    (console.log("API Call 2", performance.now()), getCachedLiberalArts()),
-    (console.log("API Call 3", performance.now()), getCachedMajors()),
-    (console.log("API Call 4", performance.now()), getCachedLiberalArts()),
-    (console.log("API Call 5", performance.now()), getCachedMajors()),
-    (console.log("API Call 6", performance.now()), getCachedLiberalArts()),
+    getCachedMajors(), // 캐시된 전공 데이터
+    getCachedLiberalArts(), // 캐시된 교양 데이터
   ]);
+
   console.log("모든 API 호출 완료", performance.now());
   return [...majorsData, ...liberalData];
 };
@@ -463,59 +462,24 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, []);
 
   useEffect(() => {
-    console.log("useEffect 실행됨 - Observer 설정 시작");
-
     // DOM이 렌더링될 때까지 잠시 기다림
     const timer = setTimeout(() => {
       const $loader = loaderRef.current;
       const $loaderWrapper = loaderWrapperRef.current;
 
-      console.log("loaderRef:", $loader);
-      console.log("loaderWrapperRef:", $loaderWrapper);
-
       if (!$loader || !$loaderWrapper) {
-        console.log(
-          "loaderRef 또는 loaderWrapperRef가 없어서 Observer 설정 중단"
-        );
         return;
       }
 
-      console.log("IntersectionObserver 생성 중...");
       const observer = new IntersectionObserver(
         (entries) => {
-          console.log(
-            "IntersectionObserver 트리거됨! isIntersecting:",
-            entries[0].isIntersecting
-          );
           if (entries[0].isIntersecting) {
-            console.log("스크롤 감지! 페이지 증가 시작...");
             setPage((prevPage) => {
               const nextPage = prevPage + 1;
 
-              console.log(
-                "현재 페이지:",
-                prevPage,
-                "다음 페이지:",
-                nextPage,
-                "총 페이지:",
-                lastPage
-              );
-
               if (nextPage > lastPage) {
-                console.log(
-                  "마지막 페이지에 도달했습니다! 현재 페이지:",
-                  prevPage,
-                  "총 페이지:",
-                  lastPage
-                );
                 return prevPage;
               } else {
-                console.log(
-                  "무한스크롤 로딩 중... 현재 페이지:",
-                  nextPage,
-                  "총 페이지:",
-                  lastPage
-                );
                 return nextPage;
               }
             });
@@ -524,13 +488,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         { threshold: 0, root: $loaderWrapper }
       );
 
-      console.log("Observer 설정 완료, $loader 관찰 시작");
       observer.observe($loader);
     }, 100); // 100ms 후에 실행
 
     return () => {
       clearTimeout(timer);
-      console.log("Observer 정리 중...");
     };
   }, [searchInfo, lastPage]);
 
@@ -579,11 +541,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                   </Tr>
                 </Thead>
               </Table>
-
-              {/* 
-              - 컴포넌트 자체가 문제 , 스타일링 자체가 많은 비용을 소모, 테이블에 위임하면 줄어든다
-              - 디자인시스템 하는거 좋은데 필요한건지 생각해보자 
-              - 컴포넌트로 분리하면서 렝더링을 분리하쟈, 불필요한 분리는 하지 말자*/}
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>

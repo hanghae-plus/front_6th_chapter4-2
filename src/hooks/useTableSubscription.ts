@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Schedule } from "../types.ts";
 import { useScheduleContext } from "../ScheduleContext.tsx";
 
