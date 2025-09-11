@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -29,12 +29,12 @@ import {
   VStack,
   Wrap,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
-import { Lecture } from "./types.ts";
-import { parseSchedule } from "./utils.ts";
+import { useScheduleContext } from "../../ScheduleContext.tsx";
+import { Lecture } from "../../types.ts";
+import { parseSchedule } from "../../utils.ts";
 import axios from "axios";
-import { DAY_LABELS } from "./constants.ts";
-import { useAutoCallback } from "./hooks/useAutoCallback.ts";
+import { DAY_LABELS } from "../../constants.ts";
+import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
 
 interface Props {
   searchInfo: {
@@ -88,8 +88,6 @@ const fetchLiberalArts = () =>
   axios.get<Lecture[]>("/schedules-liberal-arts.json");
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
-// Promise.all([ promise1, promise2, ... ]) 의 형태로 사용되며, 배열로 받은 모든 프로미스가 fulfill 된 이후, 모든 프로미스의 반환 값을 배열에 넣어 반환한다.
-// 그런데 만약 배열에 있는 프로미스 중 하나라도 reject가 호출된다면, 성공한 프로미스 응답은 무시된채로 그냥 바로 catch로 빠져버리게 된다.
 // const fetchAllLectures = async () =>
 //   await Promise.all([
 //     (console.log("API Call 1", performance.now()), await fetchMajors()),
@@ -99,39 +97,17 @@ const fetchLiberalArts = () =>
 //     (console.log("API Call 5", performance.now()), await fetchMajors()),
 //     (console.log("API Call 6", performance.now()), await fetchLiberalArts()),
 //   ]);
-const fetchAllLectures = (() => {
-  const cache = new Map();
 
-  return async () => {
-    const start = performance.now();
-    console.log("API 호출 시작:", start);
-
-    const getCachedPromise = (
-      fetchFn: () => Promise<{ data: Lecture[] }>,
-      key: string
-    ) => {
-      if (cache.has(key)) {
-        console.log(`${key} 캐시에서 반환:`, performance.now());
-        return cache.get(key);
-      }
-      console.log(`${key} 새로 호출:`, performance.now());
-      const promise = fetchFn();
-      cache.set(key, promise);
-      return promise;
-    };
-
-    const results = await Promise.all([
-      getCachedPromise(fetchMajors, "majors"),
-      getCachedPromise(fetchLiberalArts, "liberal-arts"),
-    ]);
-
-    const end = performance.now();
-    console.log("모든 API 호출 완료:", end);
-    console.log("총 소요 시간:", end - start, "ms");
-
-    return results;
-  };
-})();
+// 이미 호출한 api는 다시 호출하지 않도록 - 클로저를 이용하여 캐시 구성
+const fetchAllLectures = async () =>
+  await Promise.all([
+    (console.log("API Call 1", performance.now()), fetchMajors()),
+    (console.log("API Call 2", performance.now()), fetchLiberalArts()),
+    (console.log("API Call 3", performance.now()), fetchMajors()),
+    (console.log("API Call 4", performance.now()), fetchLiberalArts()),
+    (console.log("API Call 5", performance.now()), fetchMajors()),
+    (console.log("API Call 6", performance.now()), fetchLiberalArts()),
+  ]);
 
 const SearchItem = memo(
   ({
@@ -178,7 +154,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  const filteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
     return lectures
       .filter(
@@ -215,12 +191,22 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
           s.range.some((time) => times.includes(time))
         );
       });
-  };
+  }, [lectures, searchOptions]);
 
-  const filteredLectures = getFilteredLectures();
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+  const lastPage = useMemo(
+    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
+    [filteredLectures.length]
+  );
+
+  const visibleLectures = useMemo(
+    () => filteredLectures.slice(0, page * PAGE_SIZE),
+    [filteredLectures, page]
+  );
+
+  const allMajors = useMemo(
+    () => [...new Set(lectures.map((lecture) => lecture.major))],
+    [lectures]
+  );
 
   const changeSearchOption = (
     field: keyof SearchOption,
