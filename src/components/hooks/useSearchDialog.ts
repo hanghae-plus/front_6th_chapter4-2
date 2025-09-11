@@ -61,7 +61,7 @@ export const useSearchDialog = () => {
       handleMajorsChange: (value: Array<string | number>) =>
         updateSearchOptions("majors", value),
       handleTimeTagClose: (value: number | string) =>
-        deleteSearchOption("times", value),
+        deleteSearchOption("times", Number(value)),
       handleMajorTagClose: (value: number | string) =>
         deleteSearchOption("majors", value),
     }),
