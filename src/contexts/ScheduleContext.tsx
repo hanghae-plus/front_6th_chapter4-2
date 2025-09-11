@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useMemo, useState } from "react";
-import { Schedule } from "./types";
-import { useAutoCallback } from "./hooks/useAutoCallback";
-import dummyScheduleMap from "./dummyScheduleMap";
+import { Schedule } from "../types";
+import { useAutoCallback } from "../hooks/useAutoCallback";
+import dummyScheduleMap from "../dummyScheduleMap";
 
 type TimeInfo = {
   day: string;

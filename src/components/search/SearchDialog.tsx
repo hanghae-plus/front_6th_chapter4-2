@@ -9,15 +9,15 @@ import {
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react";
-import { useSchedulesActions } from "./ScheduleContext.tsx";
-import { Lecture, SearchOption } from "./types.ts";
-import { parseSchedule } from "./utils.ts";
+import { useSchedulesActions } from "../../contexts";
+import { Lecture, SearchOption } from "../../types.ts";
+import { parseSchedule } from "../../utils.ts";
 import axios from "axios";
-import { DAY_LABELS } from "./constants.ts";
-import { createCachedFetch } from "./createCachedFetch.ts";
-import SearchFilter from "./components/SearchFilter";
-import SearchResultTable from "./components/SearchResultTable";
-import { SearchDialogContext } from "./components/SearchDialogContext";
+import { DAY_LABELS } from "../../constants.ts";
+import { createCachedFetch } from "../../createCachedFetch.ts";
+import SearchFilter from "../SearchFilter";
+import SearchResultTable from "../SearchResultTable";
+import { SearchDialogContext } from "../SearchDialogContext";
 
 interface Props {
   searchInfo: {
@@ -76,7 +76,7 @@ const fetchAllLectures = async () => {
 };
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
-const SearchDialog = ({ searchInfo, onClose }: Props) => {
+export const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useSchedulesActions();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
@@ -286,5 +286,3 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     </SearchDialogContext.Provider>
   );
 };
-
-export default SearchDialog;
