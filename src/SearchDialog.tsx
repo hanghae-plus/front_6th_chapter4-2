@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   FormControl,
@@ -21,7 +20,6 @@ import {
   TagCloseButton,
   TagLabel,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
@@ -35,13 +33,13 @@ import { parseSchedule } from "./utils.ts";
 import axios from "axios";
 import { DAY_LABELS } from "./constants.ts";
 import { ApiCache } from "./\bapi/apiCache.ts";
+import { LectureItem } from "./LectureItem.tsx";
 
 interface Props {
-  searchInfo: {
-    tableId: string;
-    day?: string;
-    time?: number;
-  } | null;
+  isOpen: boolean;
+  tableId: string | null;
+  initialDay?: string;
+  initialTime?: number;
   onClose: () => void;
 }
 
@@ -98,7 +96,7 @@ const fetchLiberalArts = () =>
     () => axios.get<Lecture[]>("/schedules-liberal-arts.json"),
     5 * 60 * 1000
   );
-// TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
+// API 호출을 최적화: 각 API를 한 번씩만 병렬로 호출
 const fetchAllLectures = async () =>
   await Promise.all([
     (console.log("API Call 1", performance.now()), fetchMajors()),
@@ -109,8 +107,19 @@ const fetchAllLectures = async () =>
     (console.log("API Call 6", performance.now()), fetchLiberalArts()),
   ]);
 
-// TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
-const SearchDialog = ({ searchInfo, onClose }: Props) => {
+// 성능 최적화 완료:
+// 1. API 호출 중복 제거 및 캐싱 적용
+// 2. 필터링 로직 최적화 (parseSchedule 캐싱, 조건 순서 최적화)
+// 3. useCallback/useMemo를 통한 불필요한 리렌더링 방지
+// 4. 컴포넌트 분리 (LectureItem)를 통한 렌더링 최적화
+// 5. 개별 이벤트 핸들러 최적화
+const SearchDialog = ({
+  isOpen,
+  tableId,
+  initialDay,
+  initialTime,
+  onClose,
+}: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
@@ -125,76 +134,169 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  // 강의 데이터에 파싱된 스케줄 정보를 캐시하여 성능 최적화
+  const lecturesWithParsedSchedules = useMemo(() => {
+    return lectures.map((lecture) => ({
+      ...lecture,
+      parsedSchedules: lecture.schedule ? parseSchedule(lecture.schedule) : [],
+    }));
+  }, [lectures]);
+
+  const getFilteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
-    return lectures
-      .filter(
-        (lecture) =>
-          lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-          lecture.id.toLowerCase().includes(query.toLowerCase())
-      )
-      .filter(
-        (lecture) => grades.length === 0 || grades.includes(lecture.grade)
-      )
-      .filter(
-        (lecture) => majors.length === 0 || majors.includes(lecture.major)
-      )
-      .filter(
-        (lecture) => !credits || lecture.credits.startsWith(String(credits))
-      )
-      .filter((lecture) => {
-        if (days.length === 0) {
-          return true;
+    const queryLower = query.toLowerCase();
+
+    return lecturesWithParsedSchedules.filter((lecture) => {
+      // 빠른 필터링을 위해 가장 제한적인 조건부터 확인
+      if (
+        query &&
+        !(
+          lecture.title.toLowerCase().includes(queryLower) ||
+          lecture.id.toLowerCase().includes(queryLower)
+        )
+      ) {
+        return false;
+      }
+
+      if (grades.length > 0 && !grades.includes(lecture.grade)) {
+        return false;
+      }
+
+      if (majors.length > 0 && !majors.includes(lecture.major)) {
+        return false;
+      }
+
+      if (credits && !lecture.credits.startsWith(String(credits))) {
+        return false;
+      }
+
+      if (days.length > 0) {
+        if (!lecture.parsedSchedules.some((s) => days.includes(s.day))) {
+          return false;
         }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) => days.includes(s.day));
-      })
-      .filter((lecture) => {
-        if (times.length === 0) {
-          return true;
+      }
+
+      if (times.length > 0) {
+        if (
+          !lecture.parsedSchedules.some((s) =>
+            s.range.some((time) => times.includes(time))
+          )
+        ) {
+          return false;
         }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) =>
-          s.range.some((time) => times.includes(time))
-        );
-      });
-  };
+      }
 
-  const filteredLectures = getFilteredLectures();
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
-  const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+      return true;
+    });
+  }, [lecturesWithParsedSchedules, searchOptions]);
 
-  const changeSearchOption = (
-    field: keyof SearchOption,
-    value: SearchOption[typeof field]
-  ) => {
-    setPage(1);
-    setSearchOptions({ ...searchOptions, [field]: value });
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  };
+  const filteredLectures = useMemo(
+    () => getFilteredLectures,
+    [getFilteredLectures]
+  );
+  const lastPage = useMemo(
+    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
+    [filteredLectures]
+  );
+  const visibleLectures = useMemo(
+    () => filteredLectures.slice(0, page * PAGE_SIZE),
+    [filteredLectures, page]
+  );
+  const allMajors = useMemo(
+    () => [...new Set(lectures.map((lecture) => lecture.major))],
+    [lectures]
+  );
 
-  const addSchedule = (lecture: Lecture) => {
-    if (!searchInfo) return;
+  const changeSearchOption = useCallback(
+    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
+      setSearchOptions((prev) => ({ ...prev, [field]: value }));
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    },
+    []
+  );
 
-    const { tableId } = searchInfo;
+  // 개별 핸들러들을 useCallback으로 최적화
+  const handleQueryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      changeSearchOption("query", e.target.value);
+    },
+    [changeSearchOption]
+  );
 
-    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-      ...schedule,
-      lecture,
-    }));
+  const handleCreditsChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      changeSearchOption("credits", e.target.value);
+    },
+    [changeSearchOption]
+  );
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+  const handleGradesChange = useCallback(
+    (value: (string | number)[]) => {
+      changeSearchOption("grades", value.map(Number));
+    },
+    [changeSearchOption]
+  );
 
-    onClose();
-  };
+  const handleDaysChange = useCallback(
+    (value: (string | number)[]) => {
+      changeSearchOption("days", value as string[]);
+    },
+    [changeSearchOption]
+  );
+
+  const handleTimesChange = useCallback(
+    (values: (string | number)[]) => {
+      changeSearchOption("times", values.map(Number));
+    },
+    [changeSearchOption]
+  );
+
+  const handleMajorsChange = useCallback(
+    (values: (string | number)[]) => {
+      changeSearchOption("majors", values as string[]);
+    },
+    [changeSearchOption]
+  );
+
+  const removeTimeFilter = useCallback(
+    (timeToRemove: number) => {
+      changeSearchOption(
+        "times",
+        searchOptions.times.filter((v) => v !== timeToRemove)
+      );
+    },
+    [changeSearchOption, searchOptions.times]
+  );
+
+  const removeMajorFilter = useCallback(
+    (majorToRemove: string) => {
+      changeSearchOption(
+        "majors",
+        searchOptions.majors.filter((v) => v !== majorToRemove)
+      );
+    },
+    [changeSearchOption, searchOptions.majors]
+  );
+
+  const addSchedule = useCallback(
+    (lecture: Lecture) => {
+      if (!tableId) return;
+
+      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+        ...schedule,
+        lecture,
+      }));
+
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: [...prev[tableId], ...schedules],
+      }));
+
+      onClose();
+    },
+    [tableId, setSchedulesMap, onClose]
+  );
 
   useEffect(() => {
     const start = performance.now();
@@ -232,14 +334,14 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   useEffect(() => {
     setSearchOptions((prev) => ({
       ...prev,
-      days: searchInfo?.day ? [searchInfo.day] : [],
-      times: searchInfo?.time ? [searchInfo.time] : [],
+      days: initialDay ? [initialDay] : [],
+      times: initialTime ? [initialTime] : [],
     }));
     setPage(1);
-  }, [searchInfo]);
+  }, [initialDay, initialTime]);
 
   return (
-    <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="6xl">
       <ModalOverlay />
       <ModalContent maxW="90vw" w="1000px">
         <ModalHeader>수업 검색</ModalHeader>
@@ -252,7 +354,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <Input
                   placeholder="과목명 또는 과목코드"
                   value={searchOptions.query}
-                  onChange={(e) => changeSearchOption("query", e.target.value)}
+                  onChange={handleQueryChange}
                 />
               </FormControl>
 
@@ -260,9 +362,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <FormLabel>학점</FormLabel>
                 <Select
                   value={searchOptions.credits}
-                  onChange={(e) =>
-                    changeSearchOption("credits", e.target.value)
-                  }
+                  onChange={handleCreditsChange}
                 >
                   <option value="">전체</option>
                   <option value="1">1학점</option>
@@ -277,9 +377,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <FormLabel>학년</FormLabel>
                 <CheckboxGroup
                   value={searchOptions.grades}
-                  onChange={(value) =>
-                    changeSearchOption("grades", value.map(Number))
-                  }
+                  onChange={handleGradesChange}
                 >
                   <HStack spacing={4}>
                     {[1, 2, 3, 4].map((grade) => (
@@ -295,9 +393,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <FormLabel>요일</FormLabel>
                 <CheckboxGroup
                   value={searchOptions.days}
-                  onChange={(value) =>
-                    changeSearchOption("days", value as string[])
-                  }
+                  onChange={handleDaysChange}
                 >
                   <HStack spacing={4}>
                     {DAY_LABELS.map((day) => (
@@ -316,9 +412,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <CheckboxGroup
                   colorScheme="green"
                   value={searchOptions.times}
-                  onChange={(values) =>
-                    changeSearchOption("times", values.map(Number))
-                  }
+                  onChange={handleTimesChange}
                 >
                   <Wrap spacing={1} mb={2}>
                     {searchOptions.times
@@ -332,12 +426,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                         >
                           <TagLabel>{time}교시</TagLabel>
                           <TagCloseButton
-                            onClick={() =>
-                              changeSearchOption(
-                                "times",
-                                searchOptions.times.filter((v) => v !== time)
-                              )
-                            }
+                            onClick={() => removeTimeFilter(time)}
                           />
                         </Tag>
                       ))}
@@ -367,9 +456,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <CheckboxGroup
                   colorScheme="green"
                   value={searchOptions.majors}
-                  onChange={(values) =>
-                    changeSearchOption("majors", values as string[])
-                  }
+                  onChange={handleMajorsChange}
                 >
                   <Wrap spacing={1} mb={2}>
                     {searchOptions.majors.map((major) => (
@@ -381,12 +468,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                       >
                         <TagLabel>{major.split("<p>").pop()}</TagLabel>
                         <TagCloseButton
-                          onClick={() =>
-                            changeSearchOption(
-                              "majors",
-                              searchOptions.majors.filter((v) => v !== major)
-                            )
-                          }
+                          onClick={() => removeMajorFilter(major)}
                         />
                       </Tag>
                     ))}
@@ -431,29 +513,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <Table size="sm" variant="striped">
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.major }}
-                        />
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-                        />
-                        <Td width="80px">
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() => addSchedule(lecture)}
-                          >
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
+                      <LectureItem
+                        key={`${lecture.id}-${index}`}
+                        {...lecture}
+                        addSchedule={addSchedule}
+                      />
                     ))}
                   </Tbody>
                 </Table>
@@ -472,4 +536,4 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   );
 };
 
-export default SearchDialog;
+export default memo(SearchDialog);
