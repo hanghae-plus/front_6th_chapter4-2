@@ -17,13 +17,10 @@ import { TIME_SLOTS } from "../../../constants";
 export const SearchTimesFilter = memo(
   ({
     searchOptions,
-    changeSearchOption,
+    onChange,
   }: {
     searchOptions: SearchOption["times"];
-    changeSearchOption: (
-      field: keyof SearchOption,
-      value: SearchOption[typeof field]
-    ) => void;
+    onChange: (value: SearchOption["times"]) => void;
   }) => {
     return (
       <FormControl>
@@ -31,7 +28,7 @@ export const SearchTimesFilter = memo(
         <CheckboxGroup
           colorScheme="green"
           value={searchOptions}
-          onChange={(values) => changeSearchOption("times", values.map(Number))}
+          onChange={(values) => onChange(values.map(Number))}
         >
           <Wrap
             spacing={1}
@@ -49,9 +46,10 @@ export const SearchTimesFilter = memo(
                   <TagLabel>{time}교시</TagLabel>
                   <TagCloseButton
                     onClick={() =>
-                      changeSearchOption(
-                        "times",
-                        searchOptions.filter((v) => v !== time)
+                      onChange(
+                        searchOptions.filter(
+                          (v) => v !== time
+                        ) as SearchOption["times"]
                       )
                     }
                   />
@@ -84,3 +82,5 @@ export const SearchTimesFilter = memo(
     );
   }
 );
+
+SearchTimesFilter.displayName = "SearchTimesFilter";

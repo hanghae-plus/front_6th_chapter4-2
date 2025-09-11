@@ -5,13 +5,10 @@ import { SearchOption } from "../../../types";
 export const SearchSubjectFilter = memo(
   ({
     searchOptions,
-    changeSearchOption,
+    onChange,
   }: {
     searchOptions: SearchOption["query"];
-    changeSearchOption: (
-      field: keyof SearchOption,
-      value: SearchOption[typeof field]
-    ) => void;
+    onChange: (value: SearchOption["query"]) => void;
   }) => {
     return (
       <FormControl>
@@ -19,9 +16,11 @@ export const SearchSubjectFilter = memo(
         <Input
           placeholder="과목명 또는 과목코드"
           value={searchOptions}
-          onChange={(e) => changeSearchOption("query", e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
         />
       </FormControl>
     );
   }
 );
+
+SearchSubjectFilter.displayName = "SearchSubjectFilter";

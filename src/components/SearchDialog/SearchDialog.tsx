@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   HStack,
@@ -27,6 +27,8 @@ import { SearchDaysFilter } from "./SearchFilter/SearchDaysFilter.tsx";
 import { SearchTimesFilter } from "./SearchFilter/SearchTimesFilter.tsx";
 import { SearchMajorsFilter } from "./SearchFilter/SearchMajorsFilter.tsx";
 import { SearchItem } from "./SearchItem.tsx";
+import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
+import { useSearchHandlers } from "../../hooks/useSearchHandlers.ts";
 
 interface Props {
   searchInfo: {
@@ -140,35 +142,40 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     [lectures]
   );
 
-  const changeSearchOption = useCallback(
+  const changeSearchOption = useAutoCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
       setPage(1);
       setSearchOptions({ ...searchOptions, [field]: value });
       loaderWrapperRef.current?.scrollTo(0, 0);
-    },
-    [searchOptions]
+    }
   );
 
-  const addSchedule = useCallback(
-    (lecture: Lecture) => {
-      if (!searchInfo) return;
+  const addSchedule = useAutoCallback((lecture: Lecture) => {
+    if (!searchInfo) return;
 
-      const { tableId } = searchInfo;
+    const { tableId } = searchInfo;
 
-      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-        ...schedule,
-        lecture,
-      }));
+    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+      ...schedule,
+      lecture,
+    }));
 
-      setSchedulesMap((prev) => ({
-        ...prev,
-        [tableId]: [...prev[tableId], ...schedules],
-      }));
+    setSchedulesMap((prev) => ({
+      ...prev,
+      [tableId]: [...prev[tableId], ...schedules],
+    }));
 
-      onClose();
-    },
-    [searchInfo, setSchedulesMap, onClose]
-  );
+    onClose();
+  });
+
+  const {
+    handleQueryChange,
+    handleCreditsChange,
+    handleDaysChange,
+    handleGradesChange,
+    handleTimesChange,
+    handleMajorsChange,
+  } = useSearchHandlers(changeSearchOption);
 
   useEffect(() => {
     const start = performance.now();
@@ -233,45 +240,33 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
             <HStack spacing={4}>
               <SearchSubjectFilter
                 searchOptions={searchOptions.query}
-                changeSearchOption={(field, value) =>
-                  changeSearchOption(field, value)
-                }
+                onChange={handleQueryChange}
               />
               <SearchCreditsFilter
                 searchOptions={searchOptions.credits}
-                changeSearchOption={(field, value) =>
-                  changeSearchOption(field, value)
-                }
+                onChange={handleCreditsChange}
               />
             </HStack>
 
             <HStack spacing={4}>
               <SearchGradesFilter
                 searchOptions={searchOptions.grades}
-                changeSearchOption={(field, value) =>
-                  changeSearchOption(field, value)
-                }
+                onChange={handleGradesChange}
               />
               <SearchDaysFilter
                 searchOptions={searchOptions.days}
-                changeSearchOption={(field, value) =>
-                  changeSearchOption(field, value)
-                }
+                onChange={handleDaysChange}
               />
             </HStack>
 
             <HStack spacing={4}>
               <SearchTimesFilter
                 searchOptions={searchOptions.times}
-                changeSearchOption={(field, value) =>
-                  changeSearchOption(field, value)
-                }
+                onChange={handleTimesChange}
               />
               <SearchMajorsFilter
                 searchOptions={searchOptions.majors}
-                changeSearchOption={(field, value) =>
-                  changeSearchOption(field, value)
-                }
+                onChange={handleMajorsChange}
                 allMajors={allMajors}
               />
             </HStack>

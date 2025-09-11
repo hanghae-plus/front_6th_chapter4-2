@@ -5,20 +5,17 @@ import { memo } from "react";
 export const SearchCreditsFilter = memo(
   ({
     searchOptions,
-    changeSearchOption,
+    onChange,
   }: {
     searchOptions: SearchOption["credits"];
-    changeSearchOption: (
-      field: keyof SearchOption,
-      value: SearchOption[typeof field]
-    ) => void;
+    onChange: (value: SearchOption["credits"]) => void;
   }) => {
     return (
       <FormControl>
         <FormLabel>학점</FormLabel>
         <Select
           value={searchOptions}
-          onChange={(e) => changeSearchOption("credits", e.target.value)}
+          onChange={(e) => onChange(e.target.value as unknown as number)}
         >
           <option value="">전체</option>
           <option value="1">1학점</option>
@@ -29,3 +26,5 @@ export const SearchCreditsFilter = memo(
     );
   }
 );
+
+SearchCreditsFilter.displayName = "SearchCreditsFilter";

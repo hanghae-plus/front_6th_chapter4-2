@@ -17,14 +17,12 @@ import { memo } from "react";
 export const SearchMajorsFilter = memo(
   ({
     searchOptions,
-    changeSearchOption,
+    onChange,
     allMajors,
   }: {
     searchOptions: SearchOption["majors"];
-    changeSearchOption: (
-      field: keyof SearchOption,
-      value: SearchOption[typeof field]
-    ) => void;
+    onChange: (value: SearchOption["majors"]) => void;
+
     allMajors: string[];
   }) => {
     return (
@@ -33,9 +31,7 @@ export const SearchMajorsFilter = memo(
         <CheckboxGroup
           colorScheme="green"
           value={searchOptions}
-          onChange={(values) =>
-            changeSearchOption("majors", values as string[])
-          }
+          onChange={(values) => onChange(values as string[])}
         >
           <Wrap
             spacing={1}
@@ -51,10 +47,7 @@ export const SearchMajorsFilter = memo(
                 <TagLabel>{major.split("<p>").pop()}</TagLabel>
                 <TagCloseButton
                   onClick={() =>
-                    changeSearchOption(
-                      "majors",
-                      searchOptions.filter((v) => v !== major)
-                    )
+                    onChange(searchOptions.filter((v) => v !== major))
                   }
                 />
               </Tag>
@@ -86,3 +79,5 @@ export const SearchMajorsFilter = memo(
     );
   }
 );
+
+SearchMajorsFilter.displayName = "SearchMajorsFilter";

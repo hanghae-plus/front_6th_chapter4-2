@@ -12,20 +12,17 @@ import { memo } from "react";
 export const SearchDaysFilter = memo(
   ({
     searchOptions,
-    changeSearchOption,
+    onChange,
   }: {
     searchOptions: SearchOption["days"];
-    changeSearchOption: (
-      field: keyof SearchOption,
-      value: SearchOption[typeof field]
-    ) => void;
+    onChange: (value: SearchOption["days"]) => void;
   }) => {
     return (
       <FormControl>
         <FormLabel>요일</FormLabel>
         <CheckboxGroup
           value={searchOptions}
-          onChange={(value) => changeSearchOption("days", value as string[])}
+          onChange={(value) => onChange(value as string[])}
         >
           <HStack spacing={4}>
             {DAY_LABELS.map((day) => (
@@ -42,3 +39,5 @@ export const SearchDaysFilter = memo(
     );
   }
 );
+
+SearchDaysFilter.displayName = "SearchDaysFilter";

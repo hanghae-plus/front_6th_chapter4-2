@@ -11,22 +11,17 @@ import { memo } from "react";
 export const SearchGradesFilter = memo(
   ({
     searchOptions,
-    changeSearchOption,
+    onChange,
   }: {
     searchOptions: SearchOption["grades"];
-    changeSearchOption: (
-      field: keyof SearchOption,
-      value: SearchOption[typeof field]
-    ) => void;
+    onChange: (value: SearchOption["grades"]) => void;
   }) => {
     return (
       <FormControl>
         <FormLabel>학년</FormLabel>
         <CheckboxGroup
           value={searchOptions}
-          onChange={(value) =>
-            changeSearchOption("grades", value.map(Number) as unknown as string)
-          }
+          onChange={(value) => onChange(value.map(Number))}
         >
           <HStack spacing={4}>
             {[1, 2, 3, 4].map((grade) => (
@@ -43,3 +38,5 @@ export const SearchGradesFilter = memo(
     );
   }
 );
+
+SearchGradesFilter.displayName = "SearchGradesFilter";
