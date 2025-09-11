@@ -1,7 +1,14 @@
-import { DndContext, Modifier, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { PropsWithChildren } from "react";
+import {
+  DndContext,
+  DragEndEvent,
+  Modifier,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { PropsWithChildren, useCallback, useRef } from "react";
 import { CellSize, DAY_LABELS } from "./constants.ts";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useTableContext } from "./contexts/TableContext.tsx";
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -17,19 +24,34 @@ function createSnapModifier(): Modifier {
     const maxX = containerRight - right;
     const maxY = containerBottom - bottom;
 
-
-    return ({
+    return {
       ...transform,
-      x: Math.min(Math.max(Math.round(transform.x / CellSize.WIDTH) * CellSize.WIDTH, minX), maxX),
-      y: Math.min(Math.max(Math.round(transform.y / CellSize.HEIGHT) * CellSize.HEIGHT, minY), maxY),
-    })
+      x: Math.min(
+        Math.max(
+          Math.round(transform.x / CellSize.WIDTH) * CellSize.WIDTH,
+          minX
+        ),
+        maxX
+      ),
+      y: Math.min(
+        Math.max(
+          Math.round(transform.y / CellSize.HEIGHT) * CellSize.HEIGHT,
+          minY
+        ),
+        maxY
+      ),
+    };
   };
 }
 
-const modifiers = [createSnapModifier()]
+const modifiers = [createSnapModifier()];
 
 export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const { schedules, updateSchedules } = useTableContext();
+
+  // schedules를 ref로 관리하여 의존성 제거
+  const schedulesRef = useRef(schedules);
+  schedulesRef.current = schedules;
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -38,33 +60,44 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
     })
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (event: any) => {
-    const { active, delta } = event;
-    const { x, y } = delta;
-    const [tableId, index] = active.id.split(':');
-    const schedule = schedulesMap[tableId][index];
-    const nowDayIndex = DAY_LABELS.indexOf(schedule.day as typeof DAY_LABELS[number])
-    const moveDayIndex = Math.floor(x / 80);
-    const moveTimeIndex = Math.floor(y / 30);
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, delta } = event;
+      const { x, y } = delta;
+      const [, index] = String(active.id).split(":");
+      const schedule = schedulesRef.current[Number(index)];
+      const nowDayIndex = DAY_LABELS.indexOf(
+        schedule.day as (typeof DAY_LABELS)[number]
+      );
+      const moveDayIndex = Math.floor(x / 80);
+      const moveTimeIndex = Math.floor(y / 30);
 
-    setSchedulesMap({
-      ...schedulesMap,
-      [tableId]: schedulesMap[tableId].map((targetSchedule, targetIndex) => {
-        if (targetIndex !== Number(index)) {
-          return { ...targetSchedule }
+      // 변경된 스케줄만 업데이트
+      const newSchedules = schedulesRef.current.map(
+        (targetSchedule, targetIndex) => {
+          if (targetIndex !== Number(index)) {
+            return targetSchedule; // 변경되지 않은 스케줄은 참조 유지
+          }
+          return {
+            ...targetSchedule,
+            day: DAY_LABELS[nowDayIndex + moveDayIndex],
+            range: targetSchedule.range.map((time) => time + moveTimeIndex),
+          };
         }
-        return {
-          ...targetSchedule,
-          day: DAY_LABELS[nowDayIndex + moveDayIndex],
-          range: targetSchedule.range.map(time => time + moveTimeIndex),
-        }
-      })
-    })
-  };
+      );
+
+      // 독립적인 테이블 업데이트
+      updateSchedules(newSchedules);
+    },
+    [updateSchedules] // schedules 의존성 제거
+  );
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd} modifiers={modifiers}>
+    <DndContext
+      sensors={sensors}
+      onDragEnd={handleDragEnd}
+      modifiers={modifiers}
+    >
       {children}
     </DndContext>
   );
