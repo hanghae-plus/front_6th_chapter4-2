@@ -1,20 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
-  Checkbox,
-  CheckboxGroup,
-  FormControl,
-  FormLabel,
-  HStack,
-  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Select,
-  Stack,
   Table,
   Tbody,
   Th,
@@ -23,18 +15,15 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
-import GradeCheckboxes from "./components/GradeCheckboxes.tsx";
-import SelectedTimeTags from "./components/SelectedTimeTags.tsx";
-import TimeSlotCheckboxes from "./components/TimeSlotCheckboxes.tsx";
-import SelectedMajorTags from "./components/SelectedMajorTags.tsx";
 import SearchResultCount from "./components/SearchResultCount.tsx";
 import LectureRow from "./components/LectureRow.tsx";
+
+import SearchFilters from "./layouts/SearchFilters.tsx";
 
 import { useScheduleContext } from "../ScheduleContext.tsx";
 
 import { parseSchedule } from "../utils.ts";
 import axios from "axios";
-import { DAY_LABELS } from "../constants.ts";
 import { cache } from "../libs/cache.ts";
 
 import type { Lecture } from "../types.ts";
@@ -123,14 +112,14 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const timesSet = useMemo(() => new Set(times), [times]);
   const majorsSet = useMemo(() => new Set(majors), [majors]);
 
-  // 검색어를 미리 소문자로 변환하여 반복 연산 방지
+  // 검색어를 미리 소문자로 변환하여 반복 연산 방지 (디바운싱된 쿼리 사용)
   const normalizedQuery = useMemo(() => debouncedQuery.toLowerCase().trim(), [debouncedQuery]);
 
-  // 디바운싱을 위한 useEffect
+  // 디바운싱을 위한 useEffect (300ms)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-    }, 300); // 300ms 디바운싱
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -197,13 +186,16 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   );
 
   // onChange 핸들러들 최적화
-  const handleQueryChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setQuery(e.target.value);
-      resetPage();
-    },
-    [resetPage],
-  );
+  const handleQueryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    // 디바운싱되므로 즉시 resetPage 하지 않음
+  }, []);
+
+  // 디바운싱된 쿼리가 변경될 때 페이지 리셋
+  useEffect(() => {
+    if (debouncedQuery !== query) return; // 초기 렌더링 스킵
+    resetPage();
+  }, [debouncedQuery, resetPage, query]);
 
   const handleCreditsChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -311,90 +303,23 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4} align="stretch">
-            <HStack spacing={4}>
-              <FormControl>
-                <FormLabel>검색어</FormLabel>
-                <Input placeholder="과목명 또는 과목코드" value={query} onChange={handleQueryChange} />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>학점</FormLabel>
-                <Select value={credits} onChange={handleCreditsChange}>
-                  <option value="">전체</option>
-                  <option value="1">1학점</option>
-                  <option value="2">2학점</option>
-                  <option value="3">3학점</option>
-                </Select>
-              </FormControl>
-            </HStack>
-
-            <HStack spacing={4}>
-              <FormControl>
-                <FormLabel>학년</FormLabel>
-                <CheckboxGroup value={grades} onChange={handleGradesChange}>
-                  <HStack spacing={4}>
-                    <GradeCheckboxes />
-                  </HStack>
-                </CheckboxGroup>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>요일</FormLabel>
-                <CheckboxGroup value={days} onChange={handleDaysChange}>
-                  <HStack spacing={4}>
-                    {DAY_LABELS.map((day) => (
-                      <Checkbox key={day} value={day}>
-                        {day}
-                      </Checkbox>
-                    ))}
-                  </HStack>
-                </CheckboxGroup>
-              </FormControl>
-            </HStack>
-
-            <HStack spacing={4}>
-              <FormControl>
-                <FormLabel>시간</FormLabel>
-                <CheckboxGroup colorScheme="green" value={times} onChange={handleTimesChange}>
-                  <SelectedTimeTags times={times} onRemove={handleRemoveTime} />
-                  <Stack
-                    spacing={2}
-                    overflowY="auto"
-                    h="100px"
-                    border="1px solid"
-                    borderColor="gray.200"
-                    borderRadius={5}
-                    p={2}
-                  >
-                    <TimeSlotCheckboxes />
-                  </Stack>
-                </CheckboxGroup>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>전공</FormLabel>
-                <CheckboxGroup colorScheme="green" value={majors} onChange={handleMajorsChange}>
-                  <SelectedMajorTags majors={majors} onRemove={handleRemoveMajor} />
-                  <Stack
-                    spacing={2}
-                    overflowY="auto"
-                    h="100px"
-                    border="1px solid"
-                    borderColor="gray.200"
-                    borderRadius={5}
-                    p={2}
-                  >
-                    {allMajors.map((major) => (
-                      <Box key={major}>
-                        <Checkbox key={major} size="sm" value={major}>
-                          {major.replace(/<p>/gi, " ")}
-                        </Checkbox>
-                      </Box>
-                    ))}
-                  </Stack>
-                </CheckboxGroup>
-              </FormControl>
-            </HStack>
+            <SearchFilters
+              query={query}
+              onQueryChange={handleQueryChange}
+              credits={credits}
+              onCreditsChange={handleCreditsChange}
+              grades={grades}
+              onGradesChange={handleGradesChange}
+              days={days}
+              onDaysChange={handleDaysChange}
+              times={times}
+              onTimesChange={handleTimesChange}
+              onRemoveTime={handleRemoveTime}
+              majors={majors}
+              onMajorsChange={handleMajorsChange}
+              onRemoveMajor={handleRemoveMajor}
+              allMajors={allMajors}
+            />
             <SearchResultCount count={filteredLectures.length} />
             <Box>
               <Table>
