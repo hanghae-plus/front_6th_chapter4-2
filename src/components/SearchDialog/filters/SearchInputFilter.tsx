@@ -1,11 +1,11 @@
 import { FormControl, FormLabel, HStack, Input, Select } from "@chakra-ui/react";
 import { memo } from "react";
-import { FilterChangeHandler } from "../types";
+import { SearchOption } from "../../../types";
 
 interface SearchInputFilterProps {
   query?: string;
   credits?: number;
-  onChange: FilterChangeHandler;
+  onChange: (field: keyof SearchOption, value: SearchOption[keyof SearchOption]) => void;
 }
 
 const SearchInputFilter = memo(

@@ -1,6 +1,3 @@
-// Types
-export * from "./types";
-
 // Filters
 export * from "./filters";
 

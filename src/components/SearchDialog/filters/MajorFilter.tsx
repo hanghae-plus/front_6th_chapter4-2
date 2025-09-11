@@ -11,12 +11,12 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { FilterChangeHandler } from "../types";
+import { SearchOption } from "../../../types";
 
 interface MajorFilterProps {
   majors: string[];
   allMajors: string[];
-  onChange: FilterChangeHandler;
+  onChange: (field: keyof SearchOption, value: SearchOption[keyof SearchOption]) => void;
 }
 
 const MajorFilter = memo(

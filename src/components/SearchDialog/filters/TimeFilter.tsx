@@ -11,7 +11,7 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { FilterChangeHandler } from "../types";
+import { SearchOption } from "../../../types";
 
 const TIME_SLOTS = [
   { id: 1, label: "09:00~09:30" },
@@ -42,7 +42,7 @@ const TIME_SLOTS = [
 
 interface TimeFilterProps {
   times: number[];
-  onChange: FilterChangeHandler;
+  onChange: (field: keyof SearchOption, value: SearchOption[keyof SearchOption]) => void;
 }
 
 const TimeFilter = memo(
