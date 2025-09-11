@@ -7,9 +7,6 @@ export default mergeConfig(
   defineConfig({
     plugins: [react()],
     base: baseUrl,
-    optimizeDeps: {
-      include: ['@chakra-ui/react'],
-    },
   }),
   defineTestConfig({
     test: {
