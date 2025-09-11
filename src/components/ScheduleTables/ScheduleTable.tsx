@@ -1,8 +1,9 @@
 import { Box } from "@chakra-ui/react";
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { useScheduleStore } from "../../store/scheduleStore.ts";
 import { TimeTableGrid } from "./TimeTableGrid.tsx";
 import { DraggableSchedule } from "./DraggableSchedule.tsx";
+import { Schedule } from "../../types/index.ts";
 
 interface Props {
   tableId: string;
@@ -23,6 +24,16 @@ const ScheduleTable = ({ tableId, onScheduleTimeClick, onDeleteButtonClick }: Pr
     return colorMap;
   }, [schedules]);
 
+  const handleDelete = useCallback(
+    (scheduleToDelete: Schedule) => {
+      onDeleteButtonClick(tableId, {
+        day: scheduleToDelete.day,
+        time: scheduleToDelete.range[0],
+      });
+    },
+    [tableId, onDeleteButtonClick]
+  );
+
   return (
     <Box position="relative">
       <TimeTableGrid onScheduleTimeClick={onScheduleTimeClick} />
@@ -33,7 +44,7 @@ const ScheduleTable = ({ tableId, onScheduleTimeClick, onDeleteButtonClick }: Pr
           id={`${tableId}:${index}`}
           data={schedule}
           bg={lectureColorMap.get(schedule.lecture.id)}
-          onDeleteButtonClick={onDeleteButtonClick}
+          onDeleteButtonClick={handleDelete}
         />
       ))}
     </Box>

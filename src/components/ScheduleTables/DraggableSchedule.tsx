@@ -23,7 +23,7 @@ export const DraggableSchedule = memo(
     bg,
     onDeleteButtonClick,
   }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
-      onDeleteButtonClick: (tableId: string, timeInfo: { day: string; time: number }) => void;
+      onDeleteButtonClick: (data: Schedule) => void;
     }) => {
     const { day, range, room, lecture } = data;
     const { isDragging, attributes, setNodeRef, listeners, transform } = useDraggable({
@@ -50,10 +50,9 @@ export const DraggableSchedule = memo(
     }, [day, range, transform, isDragging]);
 
     const handleDeleteButtonClick = useCallback(() => {
-      const [tableId] = id.split(":");
-      onDeleteButtonClick(tableId, { day: data.day, time: data.range[0] });
+      onDeleteButtonClick(data);
       onClose();
-    }, [id, data, onDeleteButtonClick]);
+    }, [data, onDeleteButtonClick, onClose]);
 
     return (
       <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
