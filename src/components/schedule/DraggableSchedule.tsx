@@ -1,20 +1,11 @@
-import {
-  Box,
-  Button,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverTrigger,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Popover, PopoverTrigger, Text } from "@chakra-ui/react";
 import { CellSize, DAY_LABELS } from "../../constants";
 import { Schedule } from "../../types";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { memo } from "react";
 import { useAutoCallback } from "../../hooks";
+import { DeleteConfirmation } from "./DeleteConfirmation";
 
 interface Props {
   id: string;
@@ -61,20 +52,7 @@ export const DraggableSchedule = memo(
             <Text fontSize="xs">{room}</Text>
           </Box>
         </PopoverTrigger>
-        <PopoverContent onClick={(event) => event.stopPropagation()}>
-          <PopoverArrow />
-          <PopoverCloseButton />
-          <PopoverBody>
-            <Text>강의를 삭제하시겠습니까?</Text>
-            <Button
-              colorScheme="red"
-              size="xs"
-              onClick={handleDeleteButtonClick}
-            >
-              삭제
-            </Button>
-          </PopoverBody>
-        </PopoverContent>
+        <DeleteConfirmation onConfirm={handleDeleteButtonClick} />
       </Popover>
     );
   }
