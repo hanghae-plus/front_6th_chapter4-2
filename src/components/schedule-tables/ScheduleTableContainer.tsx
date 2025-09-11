@@ -1,23 +1,25 @@
 import { memo } from 'react';
-import { useScheduleContext } from '../../ScheduleContext';
-import { useScheduleTable } from '../../hooks/useScheduleTable';
-import { TimeInfo } from '../../types';
+import { TimeInfo, Schedule } from '../../types';
+import { ScheduleActionsReturn } from '../../hooks/useScheduleActions';
 import { ScheduleDndProvider } from './ScheduleDndProvider';
 import { ScheduleTable } from './ScheduleTable';
 
 interface ScheduleTableContainerProps {
   tableId: string;
+  schedules: Schedule[];
+  actions: ScheduleActionsReturn;
   onScheduleTimeClick: (timeInfo: TimeInfo) => void;
 }
 
 export const ScheduleTableContainer = memo(
-  ({ tableId, onScheduleTimeClick }: ScheduleTableContainerProps) => {
-    const { schedulesMap, actions } = useScheduleContext();
-    const schedules = useScheduleTable(schedulesMap, tableId);
-
+  ({
+    tableId,
+    schedules,
+    actions,
+    onScheduleTimeClick,
+  }: ScheduleTableContainerProps) => {
     return (
-      <ScheduleDndProvider tableId={tableId}>
-        {/* ✅ tableId 전달 */}
+      <ScheduleDndProvider actions={actions}>
         <ScheduleTable
           schedules={schedules}
           tableId={tableId}
@@ -28,7 +30,12 @@ export const ScheduleTableContainer = memo(
         />
       </ScheduleDndProvider>
     );
-  }
+  },
+  (prev, next) =>
+    prev.tableId === next.tableId &&
+    prev.schedules === next.schedules &&
+    prev.actions === next.actions &&
+    prev.onScheduleTimeClick === next.onScheduleTimeClick
 );
 
 ScheduleTableContainer.displayName = 'ScheduleTableContainer';
