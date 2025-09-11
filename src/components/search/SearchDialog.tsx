@@ -58,9 +58,11 @@ const TIME_SLOTS = [
 
 const PAGE_SIZE = 100;
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
+const baseUrl = import.meta.env.BASE_URL || "/";
+const fetchMajors = () =>
+  axios.get<Lecture[]>(`${baseUrl}schedules-majors.json`);
 const fetchLiberalArts = () =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json");
+  axios.get<Lecture[]>(`${baseUrl}schedules-liberal-arts.json`);
 
 const cachedFetch = createCachedFetch();
 const fetchAllLectures = async () => {
