@@ -1,9 +1,8 @@
 import { Flex, Grid, GridItem, Text } from '@chakra-ui/react';
 import { memo, Fragment } from 'react';
 import { CellSize, DAY_LABELS, 분 } from '../../constants';
+import { TimeInfo } from '../../types';
 import { fill2, parseHnM } from '../../utils';
-
-type TimeInfo = { day: string; time: number };
 
 interface ScheduleTableGridProps {
   onScheduleTimeClick: (timeInfo: TimeInfo) => void;

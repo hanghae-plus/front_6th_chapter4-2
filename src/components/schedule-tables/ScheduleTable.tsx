@@ -1,12 +1,10 @@
 import { Box } from '@chakra-ui/react';
 import { useDndContext } from '@dnd-kit/core';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useAutoCallback } from '../../hooks/useAutoCallback';
-import { Schedule } from '../../types';
+import { Schedule, TimeInfo } from '../../types';
 import { DraggableSchedule } from './DraggableSchedule';
 import { ScheduleTableGrid } from './ScheduleTableGrid';
-
-type TimeInfo = { day: string; time: number };
 
 interface ScheduleTableProps {
   tableId: string;
@@ -22,23 +20,26 @@ export const ScheduleTable = memo(
     onScheduleTimeClick,
     onDeleteButtonClick,
   }: ScheduleTableProps) => {
-    const getColor = (lectureId: string): string => {
+    // 색상 매핑을 메모이제이션
+    const getColor = useMemo(() => {
       const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
       const colors = ['#fdd', '#ffd', '#dff', '#ddf', '#fdf', '#dfd'];
-      return colors[lectures.indexOf(lectureId) % colors.length];
-    };
+
+      return (lectureId: string): string => {
+        return colors[lectures.indexOf(lectureId) % colors.length];
+      };
+    }, [schedules]);
 
     const dndContext = useDndContext();
 
-    const getActiveTableId = () => {
+    // activeTableId 계산을 메모이제이션
+    const activeTableId = useMemo(() => {
       const activeId = dndContext.active?.id;
       if (activeId) {
         return String(activeId).split(':')[0];
       }
       return null;
-    };
-
-    const activeTableId = getActiveTableId();
+    }, [dndContext.active?.id]);
 
     const handleScheduleTimeClick = useAutoCallback((timeInfo: TimeInfo) => {
       onScheduleTimeClick?.(timeInfo);

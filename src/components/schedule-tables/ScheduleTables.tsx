@@ -1,11 +1,11 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from '@chakra-ui/react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useScheduleContext } from '../../ScheduleContext';
 import { SearchDialog } from '../search-dialog/SearchDialog';
 import { ScheduleTable } from './ScheduleTable';
 import { ScheduleDndProvider } from './ScheduleDndProvider';
 
-export const ScheduleTables = () => {
+export const ScheduleTables = memo(() => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
@@ -89,4 +89,6 @@ export const ScheduleTables = () => {
       />
     </>
   );
-};
+});
+
+ScheduleTables.displayName = 'ScheduleTables';
