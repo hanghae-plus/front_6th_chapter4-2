@@ -87,6 +87,31 @@ const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
 const fetchLiberalArts = () =>
   axios.get<Lecture[]>("/schedules-liberal-arts.json");
 
+// 전역 캐시 - 컴포넌트 외부에서 관리하여 함수 호출 시마다 새 캐시가 생성되지 않도록 함
+const apiCache = new Map<string, Promise<Lecture[]>>();
+
+const getCachedMajors = () => {
+  if (!apiCache.has("majors")) {
+    console.log("API Call majors start", performance.now());
+    apiCache.set(
+      "majors",
+      fetchMajors().then((res) => res.data)
+    );
+  }
+  return apiCache.get("majors")!;
+};
+
+const getCachedLiberalArts = () => {
+  if (!apiCache.has("liberal-arts")) {
+    console.log("API Call liberal-arts start", performance.now());
+    apiCache.set(
+      "liberal-arts",
+      fetchLiberalArts().then((res) => res.data)
+    );
+  }
+  return apiCache.get("liberal-arts")!;
+};
+
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 // const fetchAllLectures = async () =>
 //   await Promise.all([
@@ -100,13 +125,17 @@ const fetchLiberalArts = () =>
 
 // 이미 호출한 api는 다시 호출하지 않도록 - 클로저를 이용하여 캐시 구성
 const fetchAllLectures = async (): Promise<Lecture[]> => {
-  console.log("API Call majors start", performance.now());
-  console.log("API Call liberal-arts start", performance.now());
-  const [majorsRes, liberalRes] = await Promise.all([
-    fetchMajors(),
-    fetchLiberalArts(),
+  console.log("API 호출 시작:", performance.now());
+  const [majorsData, liberalData] = await Promise.all([
+    (console.log("API Call 1", performance.now()), getCachedMajors()),
+    (console.log("API Call 2", performance.now()), getCachedLiberalArts()),
+    (console.log("API Call 3", performance.now()), getCachedMajors()),
+    (console.log("API Call 4", performance.now()), getCachedLiberalArts()),
+    (console.log("API Call 5", performance.now()), getCachedMajors()),
+    (console.log("API Call 6", performance.now()), getCachedLiberalArts()),
   ]);
-  return [...majorsRes.data, ...liberalRes.data];
+  console.log("모든 API 호출 완료", performance.now());
+  return [...majorsData, ...liberalData];
 };
 
 const SearchItem = memo(
