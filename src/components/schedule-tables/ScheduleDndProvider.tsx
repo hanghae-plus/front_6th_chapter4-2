@@ -4,10 +4,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
-import { PropsWithChildren } from "react";
-import { CellSize, DAY_LABELS } from "./constants.ts";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+} from '@dnd-kit/core';
+import { PropsWithChildren } from 'react';
+import { CellSize, DAY_LABELS } from '../../constants';
+import { useScheduleContext } from '../../ScheduleContext';
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -28,16 +28,16 @@ function createSnapModifier(): Modifier {
       x: Math.min(
         Math.max(
           Math.round(transform.x / CellSize.WIDTH) * CellSize.WIDTH,
-          minX,
+          minX
         ),
-        maxX,
+        maxX
       ),
       y: Math.min(
         Math.max(
           Math.round(transform.y / CellSize.HEIGHT) * CellSize.HEIGHT,
-          minY,
+          minY
         ),
-        maxY,
+        maxY
       ),
     };
   };
@@ -45,24 +45,24 @@ function createSnapModifier(): Modifier {
 
 const modifiers = [createSnapModifier()];
 
-export default function ScheduleDndProvider({ children }: PropsWithChildren) {
+export const ScheduleDndProvider = ({ children }: PropsWithChildren) => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
       },
-    }),
+    })
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragEnd = (event: any) => {
     const { active, delta } = event;
     const { x, y } = delta;
-    const [tableId, index] = active.id.split(":");
+    const [tableId, index] = active.id.split(':');
     const schedule = schedulesMap[tableId][index];
     const nowDayIndex = DAY_LABELS.indexOf(
-      schedule.day as (typeof DAY_LABELS)[number],
+      schedule.day as (typeof DAY_LABELS)[number]
     );
     const moveDayIndex = Math.floor(x / 80);
     const moveTimeIndex = Math.floor(y / 30);
@@ -91,4 +91,4 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
       {children}
     </DndContext>
   );
-}
+};
