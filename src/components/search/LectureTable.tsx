@@ -1,11 +1,11 @@
 import { Box, Table, Thead, Tr, Th, Tbody, Td, Button } from '@chakra-ui/react';
 import { Lecture } from '../../types';
-import { memo } from 'react';
+import { memo, RefObject } from 'react';
 
 interface LectureTableProps {
   lectures: Lecture[];
-  loaderWrapperRef: React.RefObject<HTMLDivElement | null>;
-  loaderRef: React.RefObject<HTMLDivElement | null>;
+  loaderWrapperRef: RefObject<HTMLDivElement | null>;
+  loaderRef: (element: HTMLDivElement | null) => void;
   addSchedule: (lecture: Lecture) => void;
 }
 
