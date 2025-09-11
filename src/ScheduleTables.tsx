@@ -1,8 +1,8 @@
-import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "./ScheduleContext.tsx";
-import SearchDialog from "./SearchDialog.tsx";
-import { useState } from "react";
+import { Button, ButtonGroup, Flex, Heading, Stack } from '@chakra-ui/react';
+import ScheduleTable from './ScheduleTable.tsx';
+import { useScheduleContext } from './ScheduleContext.tsx';
+import { useState } from 'react';
+import { SearchDialog } from './components/search-dialog/SearchDialog.tsx';
 
 export const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
@@ -30,29 +30,29 @@ export const ScheduleTables = () => {
 
   return (
     <>
-      <Flex w="full" gap={6} p={6} flexWrap="wrap">
+      <Flex w='full' gap={6} p={6} flexWrap='wrap'>
         {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
-          <Stack key={tableId} width="600px">
-            <Flex justifyContent="space-between" alignItems="center">
-              <Heading as="h3" fontSize="lg">
+          <Stack key={tableId} width='600px'>
+            <Flex justifyContent='space-between' alignItems='center'>
+              <Heading as='h3' fontSize='lg'>
                 시간표 {index + 1}
               </Heading>
-              <ButtonGroup size="sm" isAttached>
+              <ButtonGroup size='sm' isAttached>
                 <Button
-                  colorScheme="green"
+                  colorScheme='green'
                   onClick={() => setSearchInfo({ tableId })}
                 >
                   시간표 추가
                 </Button>
                 <Button
-                  colorScheme="green"
-                  mx="1px"
+                  colorScheme='green'
+                  mx='1px'
                   onClick={() => duplicate(tableId)}
                 >
                   복제
                 </Button>
                 <Button
-                  colorScheme="green"
+                  colorScheme='green'
                   isDisabled={disabledRemoveButton}
                   onClick={() => remove(tableId)}
                 >
@@ -72,7 +72,7 @@ export const ScheduleTables = () => {
                   ...prev,
                   [tableId]: prev[tableId].filter(
                     (schedule) =>
-                      schedule.day !== day || !schedule.range.includes(time),
+                      schedule.day !== day || !schedule.range.includes(time)
                   ),
                 }))
               }
