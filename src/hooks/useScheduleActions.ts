@@ -1,6 +1,25 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Schedule, TimeInfo } from '../types';
-import { ScheduleAction } from '../reducers/scheduleReducer';
+
+export type ScheduleAction =
+  | {
+      type: 'UPDATE_SCHEDULE';
+      tableId: string;
+      scheduleIndex: number;
+      schedule: Schedule;
+    }
+  | {
+      type: 'MOVE_SCHEDULE';
+      tableId: string;
+      scheduleIndex: number;
+      moveDayIndex: number;
+      moveTimeIndex: number;
+    }
+  | { type: 'ADD_SCHEDULES'; tableId: string; schedules: Schedule[] }
+  | { type: 'DELETE_SCHEDULE'; tableId: string; timeInfo: TimeInfo }
+  | { type: 'DUPLICATE_TABLE'; sourceTableId: string; newTableId: string }
+  | { type: 'DELETE_TABLE'; tableId: string }
+  | { type: 'SET_SCHEDULES_MAP'; schedulesMap: Record<string, Schedule[]> };
 
 export interface ScheduleActionsReturn {
   updateSchedule: (
@@ -8,6 +27,12 @@ export interface ScheduleActionsReturn {
     scheduleIndex: number,
     schedule: Schedule
   ) => void;
+  moveSchedule: (
+    tableId: string,
+    scheduleIndex: number,
+    moveDayIndex: number,
+    moveTimeIndex: number
+  ) => void; // ✅ 새로운 액션
   addSchedules: (tableId: string, schedules: Schedule[]) => void;
   deleteSchedule: (tableId: string, timeInfo: TimeInfo) => void;
   duplicateTable: (sourceTableId: string) => void;
@@ -21,6 +46,25 @@ export const useScheduleActions = (
   const updateSchedule = useCallback(
     (tableId: string, scheduleIndex: number, schedule: Schedule) => {
       dispatch({ type: 'UPDATE_SCHEDULE', tableId, scheduleIndex, schedule });
+    },
+    [dispatch]
+  );
+
+  // ✅ 새로운 액션 함수
+  const moveSchedule = useCallback(
+    (
+      tableId: string,
+      scheduleIndex: number,
+      moveDayIndex: number,
+      moveTimeIndex: number
+    ) => {
+      dispatch({
+        type: 'MOVE_SCHEDULE',
+        tableId,
+        scheduleIndex,
+        moveDayIndex,
+        moveTimeIndex,
+      });
     },
     [dispatch]
   );
@@ -61,12 +105,24 @@ export const useScheduleActions = (
     [dispatch]
   );
 
-  return {
-    updateSchedule,
-    addSchedules,
-    deleteSchedule,
-    duplicateTable,
-    deleteTable,
-    setSchedulesMap,
-  };
+  return useMemo(
+    () => ({
+      updateSchedule,
+      moveSchedule,
+      addSchedules,
+      deleteSchedule,
+      duplicateTable,
+      deleteTable,
+      setSchedulesMap,
+    }),
+    [
+      updateSchedule,
+      moveSchedule,
+      addSchedules,
+      deleteSchedule,
+      duplicateTable,
+      deleteTable,
+      setSchedulesMap,
+    ]
+  );
 };
