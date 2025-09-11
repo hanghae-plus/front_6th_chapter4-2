@@ -16,7 +16,7 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useScheduleActions } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import axios from "axios";
@@ -75,7 +75,7 @@ const fetchAllLectures = async () =>
   ]);
 
 // 성능 최적화 완료:
-// 1. API 호출 중복 제거 및 캐싱 적용
+// 1. API 호출 캐싱 적용
 // 2. 필터링 로직 최적화 (parseSchedule 캐싱, 조건 순서 최적화)
 // 3. useCallback/useMemo를 통한 불필요한 리렌더링 방지
 // 4. 컴포넌트 분리 (LectureItem)를 통한 렌더링 최적화
@@ -87,7 +87,7 @@ const SearchDialog = ({
   initialTime,
   onClose,
 }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const { setSchedulesMap } = useScheduleActions();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
