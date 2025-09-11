@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import {useEffect, useRef, useState, useMemo, useCallback} from "react";
 import {
   Box,
   HStack,
@@ -26,6 +26,7 @@ import GradeFilter from "./GradeFilter.tsx";
 import PeriodTimeFilter from "./PeriodTimeFilter.tsx";
 import CreditFilter from "./CreditFilter.tsx";
 import QueryFilter from "./QueryFilter.tsx";
+import { useInfiniteScroll } from "./hooks/useInfiniteScroll.ts";
 
 interface Props {
   searchInfo: {
@@ -166,27 +167,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     })
   }, []);
 
-  useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
-
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setPage(prevPage => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
-
-    observer.observe($loader);
-
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
+    useInfiniteScroll({
+        onIntersect: useCallback(() => {
+            setPage((prev) => Math.min(lastPage, prev + 1));
+        }, [lastPage]),
+        loaderRef: loaderRef,
+        loaderWrapperRef: loaderWrapperRef,
+    });
 
   useEffect(() => {
     setSearchOptions(prev => ({
