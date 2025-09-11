@@ -60,9 +60,13 @@ const DAY_OPTIONS = DAY_LABELS.map((day) => ({
   value: day,
 }));
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
+const BASE_URL =
+  process.env.NODE_ENV === "production" ? "/front_6th_chapter4-2" : "";
+
+const fetchMajors = () =>
+  axios.get<Lecture[]>(`${BASE_URL}/schedules-majors.json`);
 const fetchLiberalArts = () =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json");
+  axios.get<Lecture[]>(`${BASE_URL}/schedules-liberal-arts.json`);
 
 const fetchAllLectures = async () =>
   await Promise.all([
