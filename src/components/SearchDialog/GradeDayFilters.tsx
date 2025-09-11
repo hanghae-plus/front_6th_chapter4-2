@@ -5,17 +5,16 @@ import { DAY_LABELS } from "../../constants";
 interface GradeDayFiltersProps {
   grades: number[];
   days: string[];
-  onGradesChange: (grades: number[]) => void;
-  onDaysChange: (days: string[]) => void;
+  onChange: (field: string, value: number[] | string[]) => void;
 }
 
 const GradeDayFilters = memo(
-  ({ grades, days, onGradesChange, onDaysChange }: GradeDayFiltersProps) => {
+  ({ grades, days, onChange }: GradeDayFiltersProps) => {
     return (
       <HStack spacing={4}>
         <FormControl>
           <FormLabel>학년</FormLabel>
-          <CheckboxGroup value={grades} onChange={(value) => onGradesChange(value.map(Number))}>
+          <CheckboxGroup value={grades} onChange={(value) => onChange("grades", value.map(Number))}>
             <HStack spacing={4}>
               {[1, 2, 3, 4].map((grade) => (
                 <Checkbox key={grade} value={grade}>
@@ -28,7 +27,7 @@ const GradeDayFilters = memo(
 
         <FormControl>
           <FormLabel>요일</FormLabel>
-          <CheckboxGroup value={days} onChange={(value) => onDaysChange(value as string[])}>
+          <CheckboxGroup value={days} onChange={(value) => onChange("days", value as string[])}>
             <HStack spacing={4}>
               {DAY_LABELS.map((day) => (
                 <Checkbox key={day} value={day}>
@@ -42,21 +41,7 @@ const GradeDayFilters = memo(
     );
   },
   (prevProps, nextProps) => {
-    // 배열 비교를 위한 커스텀 로직
-    const gradesEqual =
-      prevProps.grades.length === nextProps.grades.length &&
-      prevProps.grades.every((grade, index) => grade === nextProps.grades[index]);
-
-    const daysEqual =
-      prevProps.days.length === nextProps.days.length &&
-      prevProps.days.every((day, index) => day === nextProps.days[index]);
-
-    return (
-      gradesEqual &&
-      daysEqual &&
-      prevProps.onGradesChange === nextProps.onGradesChange &&
-      prevProps.onDaysChange === nextProps.onDaysChange
-    );
+    return JSON.stringify(prevProps) === JSON.stringify(nextProps);
   }
 );
 

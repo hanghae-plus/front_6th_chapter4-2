@@ -44,23 +44,29 @@ interface TimeMajorFiltersProps {
   times: number[];
   majors: string[];
   allMajors: string[];
-  onTimesChange: (times: number[]) => void;
-  onMajorsChange: (majors: string[]) => void;
+  onChange: (field: string, value: number[] | string[]) => void;
 }
 
-const TimeMajorFilters = memo(({ times, majors, allMajors, onTimesChange, onMajorsChange }: TimeMajorFiltersProps) => {
+const TimeMajorFilters = memo(({ times, majors, allMajors, onChange }: TimeMajorFiltersProps) => {
   return (
     <HStack spacing={4}>
       <FormControl>
         <FormLabel>시간</FormLabel>
-        <CheckboxGroup colorScheme="green" value={times} onChange={(values) => onTimesChange(values.map(Number))}>
+        <CheckboxGroup colorScheme="green" value={times} onChange={(values) => onChange("times", values.map(Number))}>
           <Wrap spacing={1} mb={2}>
             {times
               .sort((a, b) => a - b)
               .map((time) => (
                 <Tag key={time} size="sm" variant="outline" colorScheme="blue">
                   <TagLabel>{time}교시</TagLabel>
-                  <TagCloseButton onClick={() => onTimesChange(times.filter((v) => v !== time))} />
+                  <TagCloseButton
+                    onClick={() =>
+                      onChange(
+                        "times",
+                        times.filter((v) => v !== time)
+                      )
+                    }
+                  />
                 </Tag>
               ))}
           </Wrap>
@@ -86,12 +92,19 @@ const TimeMajorFilters = memo(({ times, majors, allMajors, onTimesChange, onMajo
 
       <FormControl>
         <FormLabel>전공</FormLabel>
-        <CheckboxGroup colorScheme="green" value={majors} onChange={(values) => onMajorsChange(values as string[])}>
+        <CheckboxGroup colorScheme="green" value={majors} onChange={(values) => onChange("majors", values as string[])}>
           <Wrap spacing={1} mb={2}>
             {majors.map((major) => (
               <Tag key={major} size="sm" variant="outline" colorScheme="blue">
                 <TagLabel>{major.split("<p>").pop()}</TagLabel>
-                <TagCloseButton onClick={() => onMajorsChange(majors.filter((v) => v !== major))} />
+                <TagCloseButton
+                  onClick={() =>
+                    onChange(
+                      "majors",
+                      majors.filter((v) => v !== major)
+                    )
+                  }
+                />
               </Tag>
             ))}
           </Wrap>

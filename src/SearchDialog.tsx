@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, memo, useCallback } from "react";
+import { useEffect, useRef, useState, memo, useMemo } from "react";
+import { useAutoCallback } from "./hooks/useAutoCallback";
 import {
   Box,
   Modal,
@@ -100,9 +101,9 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  const { filteredLectures, lastPage, allMajors } = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
-    return lectures
+    const filteredLectures = lectures
       .filter(
         (lecture) =>
           lecture.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -125,82 +126,42 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
         const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
         return schedules.some((s) => s.range.some((time) => times.includes(time)));
       });
-  };
 
-  const filteredLectures = getFilteredLectures();
-  const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
+    const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
+    const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
+
+    return {
+      filteredLectures,
+      lastPage,
+      allMajors,
+    };
+  }, [lectures, searchOptions]);
+
   const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map((lecture) => lecture.major))];
 
-  const changeSearchOption = useCallback((field: keyof SearchOption, value: SearchOption[typeof field]) => {
+  const changeSearchOption = useAutoCallback((field: keyof SearchOption, value: SearchOption[typeof field]) => {
     setPage(1);
     setSearchOptions((prev) => ({ ...prev, [field]: value }));
     loaderWrapperRef.current?.scrollTo(0, 0);
-  }, []);
+  });
 
-  const addSchedule = useCallback(
-    (lecture: Lecture) => {
-      if (!searchInfo) return;
+  const addSchedule = useAutoCallback((lecture: Lecture) => {
+    if (!searchInfo) return;
 
-      const { tableId } = searchInfo;
+    const { tableId } = searchInfo;
 
-      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-        ...schedule,
-        lecture,
-      }));
+    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+      ...schedule,
+      lecture,
+    }));
 
-      setSchedulesMap((prev) => ({
-        ...prev,
-        [tableId]: [...prev[tableId], ...schedules],
-      }));
+    setSchedulesMap((prev) => ({
+      ...prev,
+      [tableId]: [...prev[tableId], ...schedules],
+    }));
 
-      onClose();
-    },
-    [searchInfo, setSchedulesMap, onClose]
-  );
-
-  // 개별 필터 핸들러들
-  const handleQueryChange = useCallback(
-    (query: string) => {
-      changeSearchOption("query", query);
-    },
-    [changeSearchOption]
-  );
-
-  const handleCreditsChange = useCallback(
-    (credits: string) => {
-      changeSearchOption("credits", credits);
-    },
-    [changeSearchOption]
-  );
-
-  const handleGradesChange = useCallback(
-    (grades: number[]) => {
-      changeSearchOption("grades", grades);
-    },
-    [changeSearchOption]
-  );
-
-  const handleDaysChange = useCallback(
-    (days: string[]) => {
-      changeSearchOption("days", days);
-    },
-    [changeSearchOption]
-  );
-
-  const handleTimesChange = useCallback(
-    (times: number[]) => {
-      changeSearchOption("times", times);
-    },
-    [changeSearchOption]
-  );
-
-  const handleMajorsChange = useCallback(
-    (majors: string[]) => {
-      changeSearchOption("majors", majors);
-    },
-    [changeSearchOption]
-  );
+    onClose();
+  });
 
   useEffect(() => {
     fetchAllLectures().then((results) => {
@@ -248,25 +209,18 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <SearchInputFilters
-              query={searchOptions.query || ""}
+              query={searchOptions.query}
               credits={searchOptions.credits}
-              onQueryChange={handleQueryChange}
-              onCreditsChange={handleCreditsChange}
+              onChange={changeSearchOption}
             />
 
-            <GradeDayFilters
-              grades={searchOptions.grades}
-              days={searchOptions.days}
-              onGradesChange={handleGradesChange}
-              onDaysChange={handleDaysChange}
-            />
+            <GradeDayFilters grades={searchOptions.grades} days={searchOptions.days} onChange={changeSearchOption} />
 
             <TimeMajorFilters
               times={searchOptions.times}
               majors={searchOptions.majors}
               allMajors={allMajors}
-              onTimesChange={handleTimesChange}
-              onMajorsChange={handleMajorsChange}
+              onChange={changeSearchOption}
             />
 
             <Text align="right">검색결과: {filteredLectures.length}개</Text>
