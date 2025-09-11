@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { Schedule } from "../types";
 import dummyScheduleMap from "../data/dummySchedules.ts";
 
-interface ScheduleState {
+export interface ScheduleState {
   schedulesMap: Record<string, Schedule[]>;
   setSchedulesMap: React.Dispatch<React.SetStateAction<Record<string, Schedule[]>>>;
   duplicateTable: (targetId: string) => void;

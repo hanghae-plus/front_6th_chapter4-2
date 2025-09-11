@@ -1,13 +1,13 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import ScheduleTable from "./ScheduleTable.tsx";
-import SearchDialog from "./SearchDialog";
+import ScheduleTable from "./ScheduleTable";
+import SearchDialog from "../SearchDialog";
 import { useCallback, useState } from "react";
-import { useScheduleStore } from "../store/scheduleStore";
-import { useShallow } from "zustand/shallow";
-import ScheduleDndProvider from "../context/ScheduleDndProvider.tsx";
+import { useScheduleStore } from "../../store/scheduleStore";
+import ScheduleDndProvider from "../../context/ScheduleDndProvider.tsx";
+import { selectTableIds } from "../../store/scheduleSelectors.ts";
 
-export const ScheduleTables = () => {
-  const tableIds = useScheduleStore(useShallow((state) => Object.keys(state.schedulesMap)));
+const ScheduleTables = () => {
+  const tableIds = useScheduleStore(selectTableIds);
 
   const duplicate = useScheduleStore((state) => state.duplicateTable);
   const remove = useScheduleStore((state) => state.removeTable);
@@ -62,7 +62,7 @@ export const ScheduleTables = () => {
             <ScheduleDndProvider>
               <ScheduleTable
                 tableId={tableId}
-                key={`schedule-table-${index}`}
+                key={tableId}
                 onScheduleTimeClick={handleScheduleTimeClick}
                 onDeleteButtonClick={handleDeleteButtonClick}
               />
@@ -74,3 +74,5 @@ export const ScheduleTables = () => {
     </>
   );
 };
+
+export default ScheduleTables;
