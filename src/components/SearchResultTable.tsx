@@ -1,5 +1,5 @@
-import { memo } from "react";
-import { Box, Text, Table } from "@chakra-ui/react";
+import { memo, useMemo } from "react";
+import { Box, Text } from "@chakra-ui/react";
 import { Lecture } from "../types";
 import SearchResultTableHeader from "./SearchResultTableHeader";
 import SearchResultTableRow from "./SearchResultTableRow";
@@ -11,6 +11,13 @@ interface Props {
   loaderRef: React.RefObject<HTMLDivElement | null>;
 }
 
+// Chakra UI Table size="sm" 스타일
+const TABLE_STYLE = {
+  width: "100%",
+  borderCollapse: "collapse" as const,
+  fontSize: "var(--chakra-fontSizes-sm, 0.875rem)",
+};
+
 const SearchResultTable = memo(
   ({
     visibleLectures,
@@ -18,14 +25,15 @@ const SearchResultTable = memo(
     loaderWrapperRef,
     loaderRef,
   }: Props) => {
+    const tableStyle = useMemo(() => TABLE_STYLE, []);
+
     return (
       <>
         <Text align="right">검색결과: {filteredLectures.length}개</Text>
         <Box className="mt-4">
-          <SearchResultTableHeader />
-
           <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
-            <Table size="sm">
+            <table style={tableStyle}>
+              <SearchResultTableHeader />
               <tbody className="chakra-striped-table">
                 {visibleLectures.map((lecture, index) => (
                   <SearchResultTableRow
@@ -39,7 +47,7 @@ const SearchResultTable = memo(
                   />
                 ))}
               </tbody>
-            </Table>
+            </table>
             <Box ref={loaderRef} h="20px" />
           </Box>
         </Box>
