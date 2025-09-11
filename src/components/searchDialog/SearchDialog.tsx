@@ -48,11 +48,14 @@ const withCache = <T,>(
   };
 };
 
+const baseURL =
+  process.env.NODE_ENV === "production" ? "/front_6th_chapter4-2/" : "/";
+
 const fetchMajors = withCache("fetchMajors", () =>
-  axios.get<Lecture[]>("/schedules-majors.json")
+  axios.get<Lecture[]>(`${baseURL}/schedules-majors.json`)
 );
 const fetchLiberalArts = withCache("fetchLiberalArts", () =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json")
+  axios.get<Lecture[]>(`${baseURL}/schedules-liberal-arts.json`)
 );
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
