@@ -2,6 +2,7 @@
   "name": "10주차-성능최적화-2-심화과제",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://legitgoons.github.io/front_6th_chapter4-2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +13,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@chakra-ui/icons": "2.2.4",
@@ -44,6 +47,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
+    "gh-pages": "^6.3.0",
     "prettier": "^3.6.2",
     "tsx": "^4.17.0",
     "typescript": "^5.4.5",
