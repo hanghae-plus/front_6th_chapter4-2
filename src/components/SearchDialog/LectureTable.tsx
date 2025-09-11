@@ -2,6 +2,7 @@ import { memo, forwardRef } from "react";
 import { Box, Table, Tbody } from "@chakra-ui/react";
 import type { Lecture } from "../../types";
 import LectureRow from "./LectureRow";
+import { lectureTableComparison } from "../../utils/memoComparison";
 
 interface LectureTableProps {
   visibleLectures: Lecture[];
@@ -26,7 +27,8 @@ const LectureTable = memo(
         </Table>
       </Box>
     );
-  })
+  }),
+  lectureTableComparison
 );
 
 LectureTable.displayName = "LectureTable";

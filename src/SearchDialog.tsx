@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, memo, useMemo } from "react";
-import { useAutoCallback } from "./hooks/useAutoCallback";
 import {
   Box,
   Modal,
@@ -139,29 +138,35 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
 
   const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
 
-  const changeSearchOption = useAutoCallback((field: keyof SearchOption, value: SearchOption[typeof field]) => {
-    setPage(1);
-    setSearchOptions((prev) => ({ ...prev, [field]: value }));
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  });
+  const changeSearchOption = useMemo(
+    () => (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
+      setSearchOptions((prev) => ({ ...prev, [field]: value }));
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    },
+    []
+  );
 
-  const addSchedule = useAutoCallback((lecture: Lecture) => {
-    if (!searchInfo) return;
+  const addSchedule = useMemo(
+    () => (lecture: Lecture) => {
+      if (!searchInfo) return;
 
-    const { tableId } = searchInfo;
+      const { tableId } = searchInfo;
 
-    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-      ...schedule,
-      lecture,
-    }));
+      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+        ...schedule,
+        lecture,
+      }));
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: [...prev[tableId], ...schedules],
+      }));
 
-    onClose();
-  });
+      onClose();
+    },
+    [searchInfo, setSchedulesMap, onClose]
+  );
 
   useEffect(() => {
     fetchAllLectures().then((results) => {

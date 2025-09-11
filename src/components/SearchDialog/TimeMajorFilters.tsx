@@ -12,6 +12,7 @@ import {
   TagCloseButton,
   HStack,
 } from "@chakra-ui/react";
+import { timeMajorComparison } from "../../utils/memoComparison";
 
 const TIME_SLOTS = [
   { id: 1, label: "09:00~09:30" },
@@ -40,11 +41,20 @@ const TIME_SLOTS = [
   { id: 24, label: "22:35~23:25" },
 ];
 
+interface SearchOption {
+  query?: string;
+  grades: number[];
+  days: string[];
+  times: number[];
+  majors: string[];
+  credits?: number;
+}
+
 interface TimeMajorFiltersProps {
   times: number[];
   majors: string[];
   allMajors: string[];
-  onChange: (field: string, value: number[] | string[]) => void;
+  onChange: (field: keyof SearchOption, value: SearchOption[keyof SearchOption]) => void;
 }
 
 const TimeMajorFilters = memo(({ times, majors, allMajors, onChange }: TimeMajorFiltersProps) => {
@@ -129,7 +139,7 @@ const TimeMajorFilters = memo(({ times, majors, allMajors, onChange }: TimeMajor
       </FormControl>
     </HStack>
   );
-});
+}, timeMajorComparison);
 
 TimeMajorFilters.displayName = "TimeMajorFilters";
 

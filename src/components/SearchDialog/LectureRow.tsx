@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Tr, Td, Button } from "@chakra-ui/react";
 import type { Lecture } from "../../types";
+import { lectureRowComparison } from "../../utils/memoComparison";
 
 interface LectureRowProps {
   lecture: Lecture;
@@ -24,7 +25,7 @@ const LectureRow = memo(({ lecture, index, onAddSchedule }: LectureRowProps) => 
       </Td>
     </Tr>
   );
-});
+}, lectureRowComparison);
 
 LectureRow.displayName = "LectureRow";
 
