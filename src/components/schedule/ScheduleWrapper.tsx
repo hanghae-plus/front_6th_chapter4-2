@@ -1,21 +1,23 @@
-import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import { memo, useCallback } from "react";
-import ScheduleTable from "../../ScheduleTable";
-import { ScheduleDndProvider } from "../../ScheduleDndProvider";
-import { useSchedulesActions } from "../../contexts";
+import { Stack } from "@chakra-ui/react";
+import { memo } from "react";
 import { Schedule } from "../../types";
+import { useAutoCallback } from "../../hooks";
+import { useSchedulesActions } from "../../contexts";
+import { ScheduleDndProvider } from "../../contexts/ScheduleDndProvider";
+import { ScheduleTable } from "./ScheduleTable";
+import { ScheduleHeader } from "./ScheduleHeader";
 
 interface Props {
   tableId: string;
-  schedules: Schedule[];
   index: number;
+  schedules: Schedule[];
   setSearchInfo: (
-    info: { tableId: string; day?: string; time?: number } | null
+    searchInfo: { tableId: string; day?: string; time?: number } | null
   ) => void;
   disabledRemoveButton: boolean;
 }
 
-export const ScheduleWrapper = memo(
+const ScheduleWrapper = memo(
   ({
     tableId,
     schedules,
@@ -23,69 +25,42 @@ export const ScheduleWrapper = memo(
     setSearchInfo,
     disabledRemoveButton,
   }: Props) => {
-    const { setSchedulesMap, deleteSchedule } = useSchedulesActions();
+    const { setSchedulesMap } = useSchedulesActions();
 
-    const handleScheduleTimeClick = useCallback(
-      (day: string, time: number) => {
-        setSearchInfo({ tableId, day, time });
-      },
-      [tableId, setSearchInfo]
-    );
-
-    const handleAddSchedule = useCallback(() => {
-      setSearchInfo({ tableId });
-    }, [tableId, setSearchInfo]);
-
-    const handleDuplicate = useCallback(() => {
+    const handleDuplicateTable = useAutoCallback(() => {
       setSchedulesMap((prev) => ({
         ...prev,
         [`schedule-${Date.now()}`]: [...prev[tableId]],
       }));
-    }, [tableId, setSchedulesMap]);
+    });
 
-    const handleRemove = useCallback(() => {
-      setSchedulesMap((prev: Record<string, any[]>) => {
+    const handleRemoveTable = useAutoCallback(() => {
+      setSchedulesMap((prev) => {
         delete prev[tableId];
         return { ...prev };
       });
-    }, [tableId, setSchedulesMap]);
+    });
 
-    const handleDeleteSchedule = useCallback(
-      (day: string, time: number) => {
-        deleteSchedule({ tableId, day, time });
-      },
-      [tableId, deleteSchedule]
-    );
+    const handleAddButtonClick = useAutoCallback(() => {
+      setSearchInfo({ tableId });
+    });
 
     return (
-      <Stack width="600px">
-        <Flex justifyContent="space-between" alignItems="center">
-          <Heading as="h3" fontSize="lg">
-            시간표 {index + 1}
-          </Heading>
-          <ButtonGroup size="sm" isAttached>
-            <Button colorScheme="green" onClick={handleAddSchedule}>
-              시간표 추가
-            </Button>
-            <Button colorScheme="green" mx="1px" onClick={handleDuplicate}>
-              복제
-            </Button>
-            <Button
-              colorScheme="green"
-              isDisabled={disabledRemoveButton}
-              onClick={handleRemove}
-            >
-              삭제
-            </Button>
-          </ButtonGroup>
-        </Flex>
+      <Stack key={tableId} width="600px">
+        <ScheduleHeader
+          index={index}
+          onAddButtonClick={handleAddButtonClick}
+          onDuplicateTableClick={handleDuplicateTable}
+          onRemoveTableClick={handleRemoveTable}
+          disabledRemoveButton={disabledRemoveButton}
+        />
+
         <ScheduleDndProvider draggedTableId={tableId}>
           <ScheduleTable
-            key={`schedule-table-${tableId}`}
+            key={`schedule-table-${index}`}
             schedules={schedules}
             tableId={tableId}
-            onScheduleTimeClick={handleScheduleTimeClick}
-            onDeleteButtonClick={handleDeleteSchedule}
+            setSearchInfo={setSearchInfo}
           />
         </ScheduleDndProvider>
       </Stack>
@@ -94,3 +69,5 @@ export const ScheduleWrapper = memo(
 );
 
 ScheduleWrapper.displayName = "ScheduleWrapper";
+
+export { ScheduleWrapper };
