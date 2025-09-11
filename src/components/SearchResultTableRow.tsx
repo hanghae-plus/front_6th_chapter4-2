@@ -12,10 +12,10 @@ interface Props {
 }
 
 const BASE_CELL_STYLE = {
-  paddingInlineStart: "var(--chakra-space-3, 0.75rem)",
-  paddingInlineEnd: "var(--chakra-space-3, 0.75rem)",
-  paddingTop: "var(--chakra-space-1, 0.25rem)",
-  paddingBottom: "var(--chakra-space-1, 0.25rem)",
+  paddingInlineStart: "var(--chakra-space-4, 1rem)",
+  paddingInlineEnd: "var(--chakra-space-4, 1rem)",
+  paddingTop: "var(--chakra-space-2, 0.5rem)",
+  paddingBottom: "var(--chakra-space-2, 0.5rem)",
   fontSize: "var(--chakra-fontSizes-sm, 0.875rem)",
   verticalAlign: "middle" as const,
   textAlign: "left" as const,

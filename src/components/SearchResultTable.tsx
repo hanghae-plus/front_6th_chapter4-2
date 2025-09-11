@@ -3,7 +3,6 @@ import { Box, Text, Table } from "@chakra-ui/react";
 import { Lecture } from "../types";
 import SearchResultTableHeader from "./SearchResultTableHeader";
 import SearchResultTableRow from "./SearchResultTableRow";
-// CSS는 main.tsx에서 전역 import
 
 interface Props {
   visibleLectures: Lecture[];
