@@ -2,15 +2,14 @@ import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import { useDndContext } from "@dnd-kit/core";
 import { memo, useCallback } from "react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useScheduleActions, useScheduleState } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { useState } from "react";
 import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
-import { Schedule } from "./types.ts";
 import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
 export const ScheduleTables = () => {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const { schedulesMap } = useScheduleState();
   const dndContext = useDndContext();
 
   const getActiveTableId = () => {
@@ -35,34 +34,16 @@ export const ScheduleTables = () => {
     setSearchInfo({ tableId, day, time });
   });
 
-  const duplicate = useAutoCallback((targetId: string) => {
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [`schedule-${Date.now()}`]: [...prev[targetId]],
-    }));
-  });
-
-  const remove = useAutoCallback((targetId: string) => {
-    setSchedulesMap((prev) => {
-      delete prev[targetId];
-      return { ...prev };
-    });
-  });
-
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
-        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
+        {Object.keys(schedulesMap).map((tableId, index) => (
           <ScheduleCard
             key={tableId}
             index={index}
             tableId={tableId}
-            schedules={schedules}
             disabledRemoveButton={disabledRemoveButton}
             openSearch={openSearch}
-            duplicate={duplicate}
-            remove={remove}
-            setSchedulesMap={setSchedulesMap}
             isActive={activeTableId === tableId}
           />
         ))}
@@ -75,27 +56,16 @@ export const ScheduleTables = () => {
 interface ScheduleCardProps {
   index: number;
   tableId: string;
-  schedules: Schedule[];
   disabledRemoveButton: boolean;
   openSearch: (tableId: string, day?: string, time?: number) => void;
-  duplicate: (tableId: string) => void;
-  remove: (tableId: string) => void;
-  setSchedulesMap: ReturnType<typeof useScheduleContext>["setSchedulesMap"];
   isActive: boolean;
 }
 
 const ScheduleCard = memo(
-  ({
-    index,
-    tableId,
-    schedules,
-    disabledRemoveButton,
-    openSearch,
-    duplicate,
-    remove,
-    setSchedulesMap,
-    isActive,
-  }: ScheduleCardProps) => {
+  ({ index, tableId, disabledRemoveButton, openSearch, isActive }: ScheduleCardProps) => {
+    const { schedulesMap } = useScheduleState();
+    const { duplicate, remove, updateTable } = useScheduleActions();
+    const schedules = schedulesMap[tableId] ?? [];
     const onScheduleTimeClick = useCallback(
       (timeInfo: { day: string; time: number }) => openSearch(tableId, timeInfo.day, timeInfo.time),
       [openSearch, tableId],
@@ -103,13 +73,10 @@ const ScheduleCard = memo(
 
     const onDeleteButtonClick = useCallback(
       ({ day, time }: { day: string; time: number }) =>
-        setSchedulesMap((prev) => ({
-          ...prev,
-          [tableId]: prev[tableId].filter(
-            (schedule) => schedule.day !== day || !schedule.range.includes(time),
-          ),
-        })),
-      [setSchedulesMap, tableId],
+        updateTable(tableId, (prev) =>
+          prev.filter((s) => s.day !== day || !s.range.includes(time)),
+        ),
+      [updateTable, tableId],
     );
 
     return (
@@ -141,7 +108,7 @@ const ScheduleCard = memo(
         </Flex>
         <ScheduleDndProvider>
           <ScheduleTable
-            key={`schedule-table-${index}`}
+            key={`schedule-table-${tableId}`}
             schedules={schedules}
             tableId={tableId}
             onScheduleTimeClick={onScheduleTimeClick}
