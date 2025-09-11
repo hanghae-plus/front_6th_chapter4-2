@@ -1,7 +1,6 @@
 import { DndContext, Modifier, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { PropsWithChildren } from "react";
-import { CellSize, DAY_LABELS } from "./constants/index.ts";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import React from "react";
+import { CellSize } from "./constants/index.ts";
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -27,8 +26,7 @@ function createSnapModifier(): Modifier {
 
 const modifiers = [createSnapModifier()];
 
-export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+export default function ScheduleDndProvider({ children, handleDragStart, handleDragEnd }: {children: React.ReactNode, handleDragStart: () => void ,handleDragEnd: (event: any) => void}) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -37,33 +35,8 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (event: any) => {
-    const { active, delta } = event;
-    const { x, y } = delta;
-    const [tableId, index] = active.id.split(":");
-    const schedule = schedulesMap[tableId][index];
-    const nowDayIndex = DAY_LABELS.indexOf(schedule.day as (typeof DAY_LABELS)[number]);
-    const moveDayIndex = Math.floor(x / 80);
-    const moveTimeIndex = Math.floor(y / 30);
-
-    setSchedulesMap(prev => ({
-      ...prev,
-      [tableId]: prev[tableId].map((targetSchedule, targetIndex) => {
-        if (targetIndex !== Number(index)) {
-          return targetSchedule;
-        }
-        return {
-          ...targetSchedule,
-          day: DAY_LABELS[nowDayIndex + moveDayIndex],
-          range: targetSchedule.range.map((time) => time + moveTimeIndex),
-        };
-      }),
-    }));
-  };
-
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd} modifiers={modifiers}>
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} modifiers={modifiers}>
       {children}
     </DndContext>
   );

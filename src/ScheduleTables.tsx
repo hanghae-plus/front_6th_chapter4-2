@@ -48,7 +48,6 @@ export const ScheduleTables = () => {
                         onClick={() => remove(tableId)}>삭제</Button>
               </ButtonGroup>
             </Flex>
-            <ScheduleDndProvider>
               <ScheduleTable
                 key={`schedule-table-${index}`}
                 schedules={schedules}
@@ -59,7 +58,6 @@ export const ScheduleTables = () => {
                   [tableId]: prev[tableId].filter(schedule => schedule.day !== day || !schedule.range.includes(time))
                 }))}
               />
-            </ScheduleDndProvider>
           </Stack>
         ))}
       </Flex>
