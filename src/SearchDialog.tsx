@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Modal,
@@ -18,8 +18,10 @@ import { useScheduleContext } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import axios from "axios";
-import { SearchFilters } from "./SearchFilters.tsx";
-import { SearchResultTable } from "./SearchResultTable.tsx";
+import { SearchFilters } from "./components/filter/SearchFilters.tsx";
+import { SearchResultTable } from "./components/table/SearchResultTable.tsx";
+import { useSearchOptionsStore } from "./store/searchOptionsStore.ts";
+import { PAGE_SIZE } from "./constants.ts";
 
 interface Props {
   searchInfo: {
@@ -29,17 +31,6 @@ interface Props {
   } | null;
   onClose: () => void;
 }
-
-export interface SearchOption {
-  query?: string;
-  grades: number[];
-  days: string[];
-  times: number[];
-  majors: string[];
-  credits?: number;
-}
-
-const PAGE_SIZE = 100;
 
 const withCache = <T,>(
   key: string,
@@ -83,13 +74,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
-  const [searchOptions, setSearchOptions] = useState<SearchOption>({
-    query: "",
-    grades: [],
-    days: [],
-    times: [],
-    majors: [],
-  });
+  const searchOptions = useSearchOptionsStore((state) => state.searchOptions);
 
   const filteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
@@ -141,15 +126,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const allMajors = useMemo(
     () => [...new Set(lectures.map((lecture) => lecture.major))],
     [lectures]
-  );
-
-  const changeSearchOption = useCallback(
-    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
-      setPage(1);
-      setSearchOptions({ ...searchOptions, [field]: value });
-      loaderWrapperRef.current?.scrollTo(0, 0);
-    },
-    [loaderWrapperRef]
   );
 
   const addSchedule = (lecture: Lecture) => {
@@ -204,8 +180,8 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, [lastPage]);
 
   useEffect(() => {
-    setSearchOptions((prev) => ({
-      ...prev,
+    useSearchOptionsStore.setState((state) => ({
+      ...state,
       days: searchInfo?.day ? [searchInfo.day] : [],
       times: searchInfo?.time ? [searchInfo.time] : [],
     }));
@@ -220,11 +196,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4} align="stretch">
-            <SearchFilters
-              allMajors={allMajors}
-              searchOptions={searchOptions}
-              changeSearchOption={changeSearchOption}
-            />
+            <SearchFilters allMajors={allMajors} />
             <Text align="right">검색결과: {filteredLectures.length}개</Text>
             <Box>
               <Table>
