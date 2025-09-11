@@ -19,9 +19,9 @@ const createCachedFetcher = (
   };
 };
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
+const fetchMajors = () => axios.get<Lecture[]>("./schedules-majors.json");
 const fetchLiberalArts = () =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json");
+  axios.get<Lecture[]>("./schedules-liberal-arts.json");
 
 const fetchMajorsWithCache = createCachedFetcher(fetchMajors, "majors");
 const fetchLiberalArtsWithCache = createCachedFetcher(
