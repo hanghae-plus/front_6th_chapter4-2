@@ -80,13 +80,15 @@ export const ScheduleTables = () => {
           </Stack>
         ))}
       </Flex>
-      <SearchDialog
-        isOpen={Boolean(searchInfo)}
-        tableId={searchInfo?.tableId || null}
-        initialDay={searchInfo?.day}
-        initialTime={searchInfo?.time}
-        onClose={() => setSearchInfo(null)}
-      />
+      {searchInfo && (
+        <SearchDialog
+          isOpen={Boolean(searchInfo)}
+          tableId={searchInfo?.tableId || null}
+          initialDay={searchInfo?.day}
+          initialTime={searchInfo?.time}
+          onClose={() => setSearchInfo(null)}
+        />
+      )}
     </>
   );
 };
