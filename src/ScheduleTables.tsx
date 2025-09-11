@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import { useState, useCallback, memo, useMemo } from "react";
+import { useState, useCallback, memo, useMemo, startTransition } from "react";
 import { useScheduleContext, useScheduleTable } from "./ScheduleContext";
 import ScheduleTable from "./ScheduleTable";
 import ScheduleDndProvider from "./ScheduleDndProvider";
@@ -50,31 +50,39 @@ export const ScheduleTables = () => {
   );
 
   const duplicate = useCallback((targetId: string) => {
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [`schedule-${Date.now()}`]: [...prev[targetId]],
-    }));
+    startTransition(() => {
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [`schedule-${Date.now()}`]: [...prev[targetId]],
+      }));
+    });
   }, [setSchedulesMap]);
 
   const remove = useCallback((targetId: string) => {
-    setSchedulesMap((prev) => {
-      delete prev[targetId];
-      return { ...prev };
+    startTransition(() => {
+      setSchedulesMap((prev) => {
+        delete prev[targetId];
+        return { ...prev };
+      });
     });
   }, [setSchedulesMap]);
 
   const handleScheduleTimeClick = useCallback((tableId: string, timeInfo: { day: string; time: number }) => {
-    setSearchInfo({ tableId, ...timeInfo });
+    startTransition(() => {
+      setSearchInfo({ tableId, ...timeInfo });
+    });
   }, []);
 
   const handleDeleteButtonClick = useCallback((tableId: string, day: string, time: number) => {
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: prev[tableId].filter(
-        (schedule) =>
-          schedule.day !== day || !schedule.range.includes(time),
-      ),
-    }));
+    startTransition(() => {
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: prev[tableId].filter(
+          (schedule) =>
+            schedule.day !== day || !schedule.range.includes(time),
+        ),
+      }));
+    });
   }, [setSchedulesMap]);
 
   const tableIds = useMemo(() => Object.keys(schedulesMap), [schedulesMap]);
