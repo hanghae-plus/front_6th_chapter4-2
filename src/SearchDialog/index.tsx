@@ -78,7 +78,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
-  // const [visibleLectures, setVisibleLectures] = useState<Lecture[]>([]);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
     query: '',
     grades: [],
@@ -86,6 +85,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     times: [],
     majors: [],
   });
+  const [visibleLectures, setVisibleLectures] = useState<Lecture[]>([]);
 
   const filteredLectures = useMemo(() => {
     console.log('getFilteredLectures');
@@ -122,12 +122,8 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
           return schedules.some(s => s.range.some(time => times.includes(time)));
         })
     );
-  }, [lectures, searchOptions]);
-
-  const visibleLectures = useMemo(() => {
-    console.log('getVisibleLectures');
-    return filteredLectures.slice(0, page * PAGE_SIZE);
-  }, [filteredLectures, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lectures, ...Object.values(searchOptions)]);
 
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
 
@@ -160,22 +156,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     [searchInfo, setSchedulesMap, onClose]
   );
 
-  // const addPage = useCallback(
-  //   (nextPage: number) => {
-  //     console.log('addPage', nextPage);
-  //     setVisibleLectures(prev => [
-  //       ...prev,
-  //       ...filteredLectures.slice(nextPage * PAGE_SIZE, (nextPage + 1) * PAGE_SIZE),
-  //     ]);
-  //   },
-  //   [filteredLectures]
-  // );
-
-  // useEffect(() => {
-  //   console.log('init addPage', page);
-  //   addPage(1);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [filteredLectures]);
+  useEffect(() => {
+    setVisibleLectures(filteredLectures.slice(0, PAGE_SIZE));
+    setPage(1);
+  }, [filteredLectures]);
 
   useEffect(() => {
     const start = performance.now();
@@ -203,10 +187,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
-          const nextPage = Math.min(lastPage, page + 1);
-          // addPage(nextPage);
-          setPage(nextPage);
-          console.log('nextPage', nextPage);
+          setPage(prevPage => Math.min(lastPage, prevPage + 1));
         }
       },
       { threshold: 0, root: $loaderWrapper }
@@ -215,7 +196,14 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     observer.observe($loader);
 
     return () => observer.unobserve($loader);
-  }, [lastPage, page]);
+  }, [lastPage]);
+
+  useEffect(() => {
+    if (page > 1) {
+      const newItems = filteredLectures.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+      setVisibleLectures(prev => [...prev, ...newItems]);
+    }
+  }, [page, filteredLectures]);
 
   useEffect(() => {
     setSearchOptions(prev => ({
@@ -225,9 +213,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     }));
     setPage(1);
   }, [searchInfo]);
-
-  console.log('filteredLectures.length', filteredLectures.length);
-  console.log('visibleLectures.length', visibleLectures.length);
 
   return (
     <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">

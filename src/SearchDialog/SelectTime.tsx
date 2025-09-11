@@ -46,8 +46,8 @@ const TIME_SLOTS = [
 
 const SelectTime = memo(({ times, changeSearchOption }: Props) => {
   const handleTimeChange = useCallback(
-    (value: number[]) => {
-      changeSearchOption('times', value);
+    (values: number[]) => {
+      changeSearchOption('times', values.map(Number));
     },
     [changeSearchOption]
   );

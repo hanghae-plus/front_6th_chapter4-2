@@ -1,13 +1,13 @@
 import { Button } from '@chakra-ui/react';
+import { memo } from 'react';
 import { Lecture } from '../types';
 
-const LectureRow = ({
-  lecture,
-  onAdd,
-}: {
+interface Props {
   lecture: Lecture;
   onAdd: (lecture: Lecture) => void;
-}) => {
+}
+
+const LectureRow = memo(({ lecture, onAdd }: Props) => {
   return (
     <tr>
       <td width="100px">{lecture.id}</td>
@@ -23,6 +23,8 @@ const LectureRow = ({
       </td>
     </tr>
   );
-};
+});
+
+LectureRow.displayName = 'LectureRow';
 
 export default LectureRow;
