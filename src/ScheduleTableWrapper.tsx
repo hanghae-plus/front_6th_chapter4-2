@@ -3,30 +3,27 @@ import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
 import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
 import { memo } from "react";
+import { useSchedulesStore } from "./store/schedulesStore.ts";
 
 export const ScheduleTableWrapper = memo(
   ({
     tableId,
     schedules,
     index,
-    schedulesMap,
     setSearchInfo,
-    setSchedulesMap,
+    disabledRemoveButton,
   }: {
     tableId: string;
     schedules: Schedule[];
     index: number;
-    schedulesMap: Record<string, Schedule[]>;
     setSearchInfo: (info: {
       tableId: string;
       day?: string;
       time?: number;
     }) => void;
-    setSchedulesMap: React.Dispatch<
-      React.SetStateAction<Record<string, Schedule[]>>
-    >;
+    disabledRemoveButton: boolean;
   }) => {
-    const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
+    const setSchedulesMap = useSchedulesStore((state) => state.setSchedulesMap);
 
     const duplicate = (targetId: string) => {
       setSchedulesMap((prev) => ({

@@ -14,7 +14,6 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import axios from "axios";
@@ -22,6 +21,7 @@ import { SearchFilters } from "./components/filter/SearchFilters.tsx";
 import { SearchResultTable } from "./components/table/SearchResultTable.tsx";
 import { useSearchOptionsStore } from "./store/searchOptionsStore.ts";
 import { PAGE_SIZE } from "./constants.ts";
+import { useSchedulesStore } from "./store/schedulesStore.ts";
 
 interface Props {
   searchInfo: {
@@ -68,7 +68,7 @@ const fetchAllLectures = async () =>
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const setSchedulesMap = useSchedulesStore((state) => state.setSchedulesMap);
 
   const loaderRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);

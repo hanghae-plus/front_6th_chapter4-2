@@ -23,7 +23,7 @@ export const DraggableSchedule = memo(
     bg,
     onDeleteButtonClick,
   }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
-      onDeleteButtonClick: () => void;
+      onDeleteButtonClick: (day: string, time: number) => void;
     }) => {
     const { day, range, room, lecture } = data;
     const { attributes, setNodeRef, listeners, transform } = useDraggable({
@@ -62,7 +62,11 @@ export const DraggableSchedule = memo(
           <PopoverCloseButton />
           <PopoverBody>
             <Text>강의를 삭제하시겠습니까?</Text>
-            <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
+            <Button
+              colorScheme="red"
+              size="xs"
+              onClick={() => onDeleteButtonClick(day, range[0])}
+            >
               삭제
             </Button>
           </PopoverBody>

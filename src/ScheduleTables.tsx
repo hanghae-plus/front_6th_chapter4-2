@@ -1,16 +1,18 @@
 import { Flex } from "@chakra-ui/react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { useState } from "react";
 import { ScheduleTableWrapper } from "./ScheduleTableWrapper.tsx";
+import { useSchedulesStore } from "./store/schedulesStore.ts";
 
 export const ScheduleTables = () => {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const schedulesMap = useSchedulesStore((state) => state.schedulesMap);
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
     time?: number;
   } | null>(null);
+
+  const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
 
   return (
     <>
@@ -21,9 +23,8 @@ export const ScheduleTables = () => {
             tableId={tableId}
             schedules={schedules}
             index={index}
-            schedulesMap={schedulesMap}
             setSearchInfo={setSearchInfo}
-            setSchedulesMap={setSchedulesMap}
+            disabledRemoveButton={disabledRemoveButton}
           />
         ))}
       </Flex>

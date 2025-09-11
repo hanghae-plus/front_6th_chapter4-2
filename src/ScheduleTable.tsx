@@ -3,6 +3,7 @@ import { Schedule } from "./types.ts";
 import { useDndContext } from "@dnd-kit/core";
 import { ScheduleTableGrid } from "./ScheduleTableGrid.tsx";
 import { DraggableSchedule } from "./DraggableSchedule.tsx";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
 export type TimeInfo = { day: string; time: number };
 
@@ -37,25 +38,35 @@ const ScheduleTable = ({
 
   const activeTableId = getActiveTableId();
 
+  const handleScheduleTimeClick = useAutoCallback(
+    (timeInfo: { day: string; time: number }) => {
+      onScheduleTimeClick?.(timeInfo);
+    }
+  );
+
+  const handleDeleteButtonClick = useAutoCallback(
+    (day: string, time: number) => {
+      onDeleteButtonClick?.({
+        day,
+        time,
+      });
+    }
+  );
+
   return (
     <Box
       position="relative"
       outline={activeTableId === tableId ? "5px dashed" : undefined}
       outlineColor="blue.300"
     >
-      <ScheduleTableGrid onScheduleTimeClick={onScheduleTimeClick} />
+      <ScheduleTableGrid onScheduleTimeClick={handleScheduleTimeClick} />
       {schedules.map((schedule, index) => (
         <DraggableSchedule
           key={`${schedule.lecture.title}-${index}`}
           id={`${tableId}:${index}`}
           data={schedule}
           bg={getColor(schedule.lecture.id)}
-          onDeleteButtonClick={() =>
-            onDeleteButtonClick?.({
-              day: schedule.day,
-              time: schedule.range[0],
-            })
-          }
+          onDeleteButtonClick={handleDeleteButtonClick}
         />
       ))}
     </Box>
