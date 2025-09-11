@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Box,
-  Button,
   HStack,
   Modal,
   ModalBody,
@@ -11,7 +10,6 @@ import {
   ModalOverlay,
   Table,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
@@ -28,6 +26,7 @@ import { SearchGradesFilter } from "./SearchFilter/SearchGradesFilter.tsx";
 import { SearchDaysFilter } from "./SearchFilter/SearchDaysFilter.tsx";
 import { SearchTimesFilter } from "./SearchFilter/SearchTimesFilter.tsx";
 import { SearchMajorsFilter } from "./SearchFilter/SearchMajorsFilter.tsx";
+import { SearchItem } from "./SearchItem.tsx";
 
 interface Props {
   searchInfo: {
@@ -276,29 +275,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <Table size="sm" variant="striped">
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.major }}
-                        />
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-                        />
-                        <Td width="80px">
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() => addSchedule(lecture)}
-                          >
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
+                      <SearchItem
+                        key={`${lecture.id}-${index}`}
+                        addSchedule={addSchedule}
+                        lecture={lecture}
+                      />
                     ))}
                   </Tbody>
                 </Table>
