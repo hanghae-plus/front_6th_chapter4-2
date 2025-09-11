@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import { PropsWithChildren } from "react";
 import { ScheduleStateProvider } from "./context/ScheduleStateContext.tsx";
 import { ScheduleActionsProvider } from "./context/ScheduleActionsContext.tsx";
 
