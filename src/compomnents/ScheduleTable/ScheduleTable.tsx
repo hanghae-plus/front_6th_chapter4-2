@@ -19,7 +19,7 @@ import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { ComponentProps, Fragment, memo, useMemo } from "react";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
-import { useTableSchedules } from "../../hooks/useTableSchedules.ts";
+import { useTableContext } from "../../contexts/TableContext.tsx";
 
 type TimeInfo = {
   day: string;
@@ -187,8 +187,8 @@ MemoizedPopoverContent.displayName = "MemoizedPopoverContent";
 
 const ScheduleTable = memo(
   ({ tableId, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
-    // 해당 테이블의 스케줄만 구독 - 다른 테이블 변경 시 리렌더링되지 않음
-    const { schedules } = useTableSchedules(tableId);
+    // 독립적인 TableContext에서 스케줄 구독
+    const { schedules } = useTableContext();
 
     const getColor = useMemo(() => {
       const uniqueIds = [

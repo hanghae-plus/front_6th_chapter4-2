@@ -8,7 +8,7 @@ import {
 } from "@dnd-kit/core";
 import { PropsWithChildren, useCallback, useRef } from "react";
 import { CellSize, DAY_LABELS } from "./constants.ts";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useTableContext } from "./contexts/TableContext.tsx";
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -47,11 +47,11 @@ function createSnapModifier(): Modifier {
 const modifiers = [createSnapModifier()];
 
 export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-  const { schedulesMap, updateTableSchedules } = useScheduleContext();
+  const { schedules, updateSchedules } = useTableContext();
 
-  // schedulesMap을 ref로 관리하여 의존성 제거
-  const schedulesMapRef = useRef(schedulesMap);
-  schedulesMapRef.current = schedulesMap;
+  // schedules를 ref로 관리하여 의존성 제거
+  const schedulesRef = useRef(schedules);
+  schedulesRef.current = schedules;
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -64,8 +64,8 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
     (event: DragEndEvent) => {
       const { active, delta } = event;
       const { x, y } = delta;
-      const [tableId, index] = String(active.id).split(":");
-      const schedule = schedulesMapRef.current[tableId][Number(index)];
+      const [, index] = String(active.id).split(":");
+      const schedule = schedulesRef.current[Number(index)];
       const nowDayIndex = DAY_LABELS.indexOf(
         schedule.day as (typeof DAY_LABELS)[number]
       );
@@ -73,7 +73,7 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
       const moveTimeIndex = Math.floor(y / 30);
 
       // 변경된 스케줄만 업데이트
-      const newSchedules = schedulesMapRef.current[tableId].map(
+      const newSchedules = schedulesRef.current.map(
         (targetSchedule, targetIndex) => {
           if (targetIndex !== Number(index)) {
             return targetSchedule; // 변경되지 않은 스케줄은 참조 유지
@@ -86,10 +86,10 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
         }
       );
 
-      // 개별 테이블 업데이트 함수 사용 - 더 효율적인 업데이트
-      updateTableSchedules(tableId, newSchedules);
+      // 독립적인 테이블 업데이트
+      updateSchedules(newSchedules);
     },
-    [updateTableSchedules] // schedulesMap 의존성 제거
+    [updateSchedules] // schedules 의존성 제거
   );
 
   return (

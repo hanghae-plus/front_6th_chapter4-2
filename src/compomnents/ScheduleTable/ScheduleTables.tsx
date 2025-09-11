@@ -1,15 +1,18 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import ScheduleTable from "../ScheduleTable/ScheduleTable.tsx";
+import ScheduleTable from "./ScheduleTable.tsx";
 import { useScheduleContext } from "../../ScheduleContext.tsx";
 import SearchDialog from "../SearchDialog/SearchDialog.tsx";
 import { useState, memo, useCallback } from "react";
 import ScheduleDndProvider from "../../ScheduleDndProvider.tsx";
 import { useTableKeys } from "../../hooks/useTableKeys.ts";
+import { TableProvider } from "../../contexts/TableContext.tsx";
+import { Schedule } from "../../types.ts";
 
 const ScheduleTableWrapper = memo(
   ({
     tableId,
     index,
+    schedules,
     setSearchInfo,
     duplicate,
     remove,
@@ -17,6 +20,7 @@ const ScheduleTableWrapper = memo(
   }: {
     tableId: string;
     index: number;
+    schedules: Schedule[];
     setSearchInfo: (info: {
       tableId: string;
       day?: string;
@@ -77,14 +81,16 @@ const ScheduleTableWrapper = memo(
             </Button>
           </ButtonGroup>
         </Flex>
-        <ScheduleDndProvider>
-          <ScheduleTable
-            key={`schedule-table-${index}`}
-            tableId={tableId}
-            onScheduleTimeClick={handleScheduleTimeClick}
-            onDeleteButtonClick={handleDeleteButtonClick}
-          />
-        </ScheduleDndProvider>
+        <TableProvider tableId={tableId} initialSchedules={schedules}>
+          <ScheduleDndProvider>
+            <ScheduleTable
+              key={`schedule-table-${index}`}
+              tableId={tableId}
+              onScheduleTimeClick={handleScheduleTimeClick}
+              onDeleteButtonClick={handleDeleteButtonClick}
+            />
+          </ScheduleDndProvider>
+        </TableProvider>
       </Stack>
     );
   },
@@ -102,8 +108,8 @@ const ScheduleTableWrapper = memo(
 );
 ScheduleTableWrapper.displayName = "ScheduleTableWrapper";
 
-export const ScheduleTables = () => {
-  const { setSchedulesMap } = useScheduleContext();
+export const ScheduleTables = memo(() => {
+  const { schedulesMap, setSchedulesMap } = useScheduleContext();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
@@ -150,6 +156,7 @@ export const ScheduleTables = () => {
             key={tableId}
             tableId={tableId}
             index={index}
+            schedules={schedulesMap[tableId] || []}
             setSearchInfo={setSearchInfoCallback}
             duplicate={duplicate}
             remove={remove}
@@ -163,4 +170,5 @@ export const ScheduleTables = () => {
       />
     </>
   );
-};
+});
+ScheduleTables.displayName = "ScheduleTables";
