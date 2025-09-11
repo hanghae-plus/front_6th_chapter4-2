@@ -212,7 +212,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 
   return (
     <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
-      <ModalOverlay />
+      <ModalOverlay bg="blackAlpha.300" />
       <ModalContent maxW="90vw" w="1000px">
         <ModalHeader>수업 검색</ModalHeader>
         <ModalCloseButton />
