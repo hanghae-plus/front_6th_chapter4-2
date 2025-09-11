@@ -63,22 +63,19 @@ const ScheduleTableWrapper = memo(
           <ButtonGroup size="sm" isAttached>
             <Button
               colorScheme="green"
-              onClick={() => setSearchInfo({ tableId })}
-            >
+              onClick={() => setSearchInfo({ tableId })}>
               시간표 추가
             </Button>
             <Button
               colorScheme="green"
               mx="1px"
-              onClick={() => duplicate(tableId)}
-            >
+              onClick={() => duplicate(tableId)}>
               복제
             </Button>
             <Button
               colorScheme="green"
               isDisabled={disabledRemoveButton}
-              onClick={() => remove(tableId)}
-            >
+              onClick={() => remove(tableId)}>
               삭제
             </Button>
           </ButtonGroup>
