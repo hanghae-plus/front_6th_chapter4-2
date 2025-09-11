@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   FormControl,
@@ -21,7 +20,6 @@ import {
   TagCloseButton,
   TagLabel,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
@@ -36,6 +34,7 @@ import axios from 'axios';
 import { DAY_LABELS } from './constants.ts';
 import { useAutoCallback } from './hooks/useAutoCallback.ts';
 import { SearchItem } from './components/SearchItem.tsx';
+import { TimeSlotDisplay } from './components/TimeSlotDisplay.tsx';
 
 interface Props {
   searchInfo: {
@@ -204,6 +203,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     }
   );
 
+  const handleRemoveTime = useAutoCallback((time: number) => {
+    changeSearchOption(
+      'times',
+      searchOptions.times.filter((v) => v !== time)
+    );
+  });
+
   const addSchedule = useAutoCallback((lecture: Lecture) => {
     if (!searchInfo) return;
 
@@ -346,28 +352,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                     changeSearchOption('times', values.map(Number))
                   }
                 >
-                  <Wrap spacing={1} mb={2}>
-                    {searchOptions.times
-                      .sort((a, b) => a - b)
-                      .map((time) => (
-                        <Tag
-                          key={time}
-                          size="sm"
-                          variant="outline"
-                          colorScheme="blue"
-                        >
-                          <TagLabel>{time}교시</TagLabel>
-                          <TagCloseButton
-                            onClick={() =>
-                              changeSearchOption(
-                                'times',
-                                searchOptions.times.filter((v) => v !== time)
-                              )
-                            }
-                          />
-                        </Tag>
-                      ))}
-                  </Wrap>
+                  <TimeSlotDisplay
+                    selectedTimes={searchOptions.times}
+                    onRemoveTime={handleRemoveTime}
+                  />
                   <Stack
                     spacing={2}
                     overflowY="auto"
