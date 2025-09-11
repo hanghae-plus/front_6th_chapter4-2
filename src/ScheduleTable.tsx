@@ -79,7 +79,7 @@ const DraggableSchedule = React.memo(
     const size = range.length;
 
     return (
-      <Popover>
+      <Popover isLazy>
         <PopoverTrigger>
           <Box
             position="absolute"
