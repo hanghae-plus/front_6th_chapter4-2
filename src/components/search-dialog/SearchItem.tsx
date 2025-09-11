@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Button, Td, Tr } from "@chakra-ui/react";
+import { Button} from "@chakra-ui/react";
 import { Lecture } from "../../types";
 
 interface SearchItemProps extends Lecture {
