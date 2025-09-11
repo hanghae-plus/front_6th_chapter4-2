@@ -22,8 +22,11 @@ type ScheduleMap = Record<string, Schedule[]>;
 // 시간표 데이터 전체를 구독
 export function useSchedulesMap(): ScheduleMap {
   return useSyncExternalStore(
-    scheduleStore.subscribe,
-    scheduleStore.getScheduleMap,
+    (onStoreChange) =>
+      scheduleStore.subscribe((changedId) => {
+        if (changedId === "*") onStoreChange();
+      }),
+    () => scheduleStore.getScheduleMap(),
     () => dummyScheduleMap
   );
 }

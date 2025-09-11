@@ -4,6 +4,7 @@ import { ScheduleTableHeader } from "./ScheduleTableHeader";
 import ScheduleTable from "./ScheduleTable";
 
 import { useSchedule } from "./store/useSchedules";
+import ScheduleDndProvider from "./ScheduleDndProvider";
 
 interface ScheduleTableContainerProps {
   index: number;
@@ -38,18 +39,20 @@ export const ScheduleTableContainer = memo(
 
     return (
       <Stack>
-        <ScheduleTableHeader
-          index={index}
-          setSearchInfo={setSearchInfo}
-          disabledRemoveButton={disabledRemoveButton}
-          tableId={tableId}
-        />
-        <ScheduleTable
-          tableId={tableId}
-          schedules={schedules}
-          active={isActive}
-          onScheduleTimeClick={handleScheduleTimeClick}
-        />
+        <ScheduleDndProvider>
+          <ScheduleTableHeader
+            index={index}
+            setSearchInfo={setSearchInfo}
+            disabledRemoveButton={disabledRemoveButton}
+            tableId={tableId}
+          />
+          <ScheduleTable
+            tableId={tableId}
+            schedules={schedules}
+            active={isActive}
+            onScheduleTimeClick={handleScheduleTimeClick}
+          />
+        </ScheduleDndProvider>
       </Stack>
     );
   }

@@ -14,12 +14,12 @@ class ScheduleStore {
   private schedulesMap: ScheduleMap = dummyScheduleMap;
   private listeners = new Set<Listener>();
 
-  /**
-   * subscribe
-   * 시간표 데이터 변경 시 호출되는 리스너를 등록
-   * @param listener 리스너
-   * @returns 해제 함수
-   */
+  // /**
+  //  * subscribe
+  //  * 시간표 데이터 변경 시 호출되는 리스너를 등록
+  //  * @param listener 리스너
+  //  * @returns 해제 함수
+  //  */
   subscribe = (listener: Listener) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener); // unsubscribe
@@ -74,7 +74,7 @@ class ScheduleStore {
     const copy = { ...this.schedulesMap };
     delete copy[tableId];
     this.schedulesMap = copy;
-    this.emit(tableId);
+    this.emit("*");
   };
 
   /**
@@ -85,7 +85,7 @@ class ScheduleStore {
     const copy = { ...this.schedulesMap };
     copy[`${tableId}-${Date.now()}`] = [...copy[tableId]];
     this.schedulesMap = copy;
-    this.emit(tableId);
+    this.emit("*");
   };
 
   /**
@@ -98,6 +98,13 @@ class ScheduleStore {
     );
     this.emit(tableId);
   };
+
+  /**
+   * getScheduleIds
+   * 시간표 데이터의 테이블 아이디 목록을 반환
+   * @returns 테이블 아이디 목록
+   */
+  getScheduleIds = () => Object.keys(this.schedulesMap);
 
   /**
    * emit
