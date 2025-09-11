@@ -17,7 +17,7 @@ import { Schedule } from "../../types.ts";
 import { fill2, parseHnM } from "../../utils.ts";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { ComponentProps, Fragment } from "react";
+import { ComponentProps, Fragment, useMemo } from "react";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
 
 type TimeInfo = {
@@ -113,11 +113,16 @@ const ScheduleTable = ({
   onScheduleTimeClick,
   onDeleteButtonClick,
 }: Props) => {
-  const getColor = (lectureId: string): string => {
-    const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
+  const getColor = useMemo(() => {
+    const uniqueIds = [...new Set(schedules.map(({ lecture }) => lecture.id))];
     const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
-    return colors[lectures.indexOf(lectureId) % colors.length];
-  };
+    const lectureColor = new Map<string, string>();
+    uniqueIds.forEach((id, idx) => {
+      lectureColor.set(id, colors[idx % colors.length]);
+    });
+    return (lectureId: string): string =>
+      lectureColor.get(lectureId) ?? colors[0];
+  }, [schedules]);
 
   const dndContext = useDndContext();
 

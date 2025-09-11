@@ -99,15 +99,15 @@ const fetchLiberalArts = () =>
 //   ]);
 
 // 이미 호출한 api는 다시 호출하지 않도록 - 클로저를 이용하여 캐시 구성
-const fetchAllLectures = async () =>
-  await Promise.all([
-    (console.log("API Call 1", performance.now()), fetchMajors()),
-    (console.log("API Call 2", performance.now()), fetchLiberalArts()),
-    (console.log("API Call 3", performance.now()), fetchMajors()),
-    (console.log("API Call 4", performance.now()), fetchLiberalArts()),
-    (console.log("API Call 5", performance.now()), fetchMajors()),
-    (console.log("API Call 6", performance.now()), fetchLiberalArts()),
+const fetchAllLectures = async (): Promise<Lecture[]> => {
+  console.log("API Call majors start", performance.now());
+  console.log("API Call liberal-arts start", performance.now());
+  const [majorsRes, liberalRes] = await Promise.all([
+    fetchMajors(),
+    fetchLiberalArts(),
   ]);
+  return [...majorsRes.data, ...liberalRes.data];
+};
 
 const SearchItem = memo(
   ({
@@ -242,7 +242,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       const end = performance.now();
       console.log("모든 API 호출 완료 ", end);
       console.log("API 호출에 걸린 시간(ms): ", end - start);
-      setLectures(results.flatMap((result) => result.data));
+      setLectures(results);
     });
   }, []);
 
