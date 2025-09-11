@@ -221,7 +221,6 @@ const DraggableSchedule = memo(
       id,
     });
 
-    // 포지션 계산 메모이제이션 - schedule이 변경될 때만 재계산
     const position = useMemo(() => {
       const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
       const topIndex = range[0] - 1;
@@ -233,15 +232,10 @@ const DraggableSchedule = memo(
         width: CellSize.WIDTH - 1 + "px",
         height: CellSize.HEIGHT * size - 1 + "px",
       };
-    }, [day, range]); // day와 range가 변경될 때만 재계산
+    }, [day, range]);
 
-    // lecture과 room 메모이제이션 - 값이 변경되지 않으면 리렌더링 방지
-    const scheduleInfo = useMemo(
-      () => ({ lecture, room }),
-      [lecture, room] // lecture 객체와 room이 변경될 때만 재생성
-    );
+    const scheduleInfo = useMemo(() => ({ lecture, room }), [lecture, room]);
 
-    // Box 스타일 메모이제이션 - bg가 변경될 때만 재생성
     const boxStyle = useMemo(
       () => ({
         position: "absolute" as const,
@@ -258,7 +252,7 @@ const DraggableSchedule = memo(
     );
 
     return (
-      <Popover>
+      <Popover isLazy>
         <PopoverTrigger>
           <Box
             {...boxStyle}

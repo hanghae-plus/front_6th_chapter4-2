@@ -24,7 +24,6 @@ export const SearchMajorsInput = memo(
     onChangeCheckbox: (value: Array<string | number>) => void;
     onCloseTag: (major: string) => void;
   }) => {
-    console.log(selectedMajors);
     return (
       <FormControl>
         <FormLabel>전공</FormLabel>
