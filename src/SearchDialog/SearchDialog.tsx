@@ -39,20 +39,57 @@ const PAGE_SIZE = 100;
 const baseURL =
   process.env.NODE_ENV === "production" ? "/front_6th_chapter4-2/" : "/";
 
-const cachedFetchMajors = cacheManager.createCachedFunction(
-  () => axios.get<Lecture[]>(baseURL + "schedules-majors.json"),
-  {
-    ttl: 5000,
-    prefix: "schedules-majors",
-  }
+// 디버그 로그를 위한 헬퍼 함수
+function withDebugTiming<T>(
+  functionName: string,
+  fn: () => Promise<T>
+): () => Promise<T> {
+  return async () => {
+    const startTime = performance.now();
+    console.log(`[DEBUG] ${functionName} 호출 시작`);
+
+    try {
+      const result = await fn();
+      const endTime = performance.now();
+      console.log(
+        `[DEBUG] ${functionName} 완료 - 소요시간: ${(
+          endTime - startTime
+        ).toFixed(2)}ms`
+      );
+      return result;
+    } catch (error) {
+      const endTime = performance.now();
+      console.log(
+        `[DEBUG] ${functionName} 에러 - 소요시간: ${(
+          endTime - startTime
+        ).toFixed(2)}ms`,
+        error
+      );
+      throw error;
+    }
+  };
+}
+
+const cachedFetchMajors = withDebugTiming(
+  "cachedFetchMajors",
+  cacheManager.createCachedFunction(
+    () => axios.get<Lecture[]>(baseURL + "schedules-majors.json"),
+    {
+      ttl: 5000,
+      prefix: "schedules-majors",
+    }
+  )
 );
 
-const cachedFetchLiberalArts = cacheManager.createCachedFunction(
-  () => axios.get<Lecture[]>(baseURL + "schedules-liberal-arts.json"),
-  {
-    ttl: 5000,
-    prefix: "schedules-liberal-arts",
-  }
+const cachedFetchLiberalArts = withDebugTiming(
+  "cachedFetchLiberalArts",
+  cacheManager.createCachedFunction(
+    () => axios.get<Lecture[]>(baseURL + "schedules-liberal-arts.json"),
+    {
+      ttl: 5000,
+      prefix: "schedules-liberal-arts",
+    }
+  )
 );
 
 const fetchAllLectures = async () => {
