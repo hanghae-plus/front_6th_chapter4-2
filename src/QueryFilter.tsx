@@ -20,4 +20,6 @@ const QueryFilter = ({ query, changeSearchOption }: QueryFilterProps) => {
     )
 }
 
+QueryFilter.displayName="QueryFilter";
+
 export default memo(QueryFilter);

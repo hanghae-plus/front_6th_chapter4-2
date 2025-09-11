@@ -25,4 +25,6 @@ const CreditFilter = ({ credits, changeSearchOption }: CreditFilterProps) => {
     )
 }
 
+CreditFilter.displayName = "CreditFilter";
+
 export default memo(CreditFilter);

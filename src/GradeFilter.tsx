@@ -26,4 +26,6 @@ const GradeFilter = ({ grades, changeSearchOption }: GradeFilterProps) => {
     )
 }
 
+GradeFilter.displayName="GradeFilter";
+
 export default memo(GradeFilter);

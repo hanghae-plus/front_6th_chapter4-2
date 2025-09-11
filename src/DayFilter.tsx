@@ -26,4 +26,6 @@ const DayFilter = ({ days, changeSearchOption }: DayFilterProps) => {
     )
 }
 
+DayFilter.displayName="DayFilter";
+
 export default memo(DayFilter);

@@ -5,6 +5,7 @@ type useInfiniteScrollProps = {
     loaderRef: React.RefObject<HTMLDivElement | null>;
     loaderWrapperRef: React.RefObject<HTMLDivElement | null>;
     options?: IntersectionObserverInit;
+    enabled?: boolean;
 };
 
 export function useInfiniteScroll({
@@ -12,8 +13,10 @@ export function useInfiniteScroll({
                                           loaderRef,
                                           loaderWrapperRef,
                                           options = {},
+                                      enabled = true,
                                       }: useInfiniteScrollProps) {
     useEffect(() => {
+        if (!enabled) return;
         const $loader = loaderRef.current;
         const $loaderWrapper = loaderWrapperRef.current;
 
@@ -32,5 +35,5 @@ export function useInfiniteScroll({
 
         observer.observe($loader);
         return () => observer.unobserve($loader);
-    }, [onIntersect, loaderRef, loaderWrapperRef, options]);
+    }, [ enabled, onIntersect, loaderRef, loaderWrapperRef, options ]);
 }

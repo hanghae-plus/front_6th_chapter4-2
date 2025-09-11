@@ -53,4 +53,6 @@ const PeriodTimeFilter = ({ times, changeSearchOption }: PeriodTimeFilterProps) 
     )
 }
 
+PeriodTimeFilter.displayName="PeriodTimeFilter";
+
 export default memo(PeriodTimeFilter);

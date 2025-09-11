@@ -27,6 +27,7 @@ import PeriodTimeFilter from "./PeriodTimeFilter.tsx";
 import CreditFilter from "./CreditFilter.tsx";
 import QueryFilter from "./QueryFilter.tsx";
 import { useInfiniteScroll } from "./hooks/useInfiniteScroll.ts";
+import { SearchOption } from "./types.ts";
 
 interface Props {
   searchInfo: {
@@ -35,15 +36,6 @@ interface Props {
     time?: number;
   } | null;
   onClose: () => void;
-}
-
-interface SearchOption {
-  query?: string,
-  grades: number[],
-  days: string[],
-  times: number[],
-  majors: string[],
-  credits?: number,
 }
 
 const PAGE_SIZE = 100;
@@ -173,6 +165,8 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         }, [lastPage]),
         loaderRef: loaderRef,
         loaderWrapperRef: loaderWrapperRef,
+        options: { threshold: 0 },
+        enabled: page < lastPage,
     });
 
   useEffect(() => {
