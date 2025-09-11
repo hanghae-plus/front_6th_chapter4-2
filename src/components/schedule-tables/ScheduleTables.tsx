@@ -1,38 +1,22 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from '@chakra-ui/react';
 import { memo, useState } from 'react';
 import { useScheduleContext } from '../../ScheduleContext';
+import { useScheduleTableIds } from '../../hooks/useScheduleTable';
+import { SearchInfo } from '../../types';
 import { SearchDialog } from '../search-dialog/SearchDialog';
-import { ScheduleTable } from './ScheduleTable';
-import { ScheduleDndProvider } from './ScheduleDndProvider';
+import { ScheduleTableContainer } from './ScheduleTableContainer';
 
 export const ScheduleTables = memo(() => {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
-  const [searchInfo, setSearchInfo] = useState<{
-    tableId: string;
-    day?: string;
-    time?: number;
-  } | null>(null);
+  const { schedulesMap, actions } = useScheduleContext();
+  const tableIds = useScheduleTableIds(schedulesMap);
+  const [searchInfo, setSearchInfo] = useState<SearchInfo | null>(null);
 
-  const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
-
-  const duplicate = (targetId: string) => {
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [`schedule-${Date.now()}`]: [...prev[targetId]],
-    }));
-  };
-
-  const remove = (targetId: string) => {
-    setSchedulesMap((prev) => {
-      delete prev[targetId];
-      return { ...prev };
-    });
-  };
+  const disabledRemoveButton = tableIds.length === 1;
 
   return (
     <>
       <Flex w='full' gap={6} p={6} flexWrap='wrap'>
-        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
+        {tableIds.map((tableId, index) => (
           <Stack key={tableId} width='600px'>
             <Flex justifyContent='space-between' alignItems='center'>
               <Heading as='h3' fontSize='lg'>
@@ -48,38 +32,25 @@ export const ScheduleTables = memo(() => {
                 <Button
                   colorScheme='green'
                   mx='1px'
-                  onClick={() => duplicate(tableId)}
+                  onClick={() => actions.duplicateTable(tableId)}
                 >
                   복제
                 </Button>
                 <Button
                   colorScheme='green'
                   isDisabled={disabledRemoveButton}
-                  onClick={() => remove(tableId)}
+                  onClick={() => actions.deleteTable(tableId)}
                 >
                   삭제
                 </Button>
               </ButtonGroup>
             </Flex>
-            <ScheduleDndProvider>
-              <ScheduleTable
-                key={`schedule-table-${index}`}
-                schedules={schedules}
-                tableId={tableId}
-                onScheduleTimeClick={(timeInfo) =>
-                  setSearchInfo({ tableId, ...timeInfo })
-                }
-                onDeleteButtonClick={({ day, time }) =>
-                  setSchedulesMap((prev) => ({
-                    ...prev,
-                    [tableId]: prev[tableId].filter(
-                      (schedule) =>
-                        schedule.day !== day || !schedule.range.includes(time)
-                    ),
-                  }))
-                }
-              />
-            </ScheduleDndProvider>
+            <ScheduleTableContainer
+              tableId={tableId}
+              onScheduleTimeClick={(timeInfo) =>
+                setSearchInfo({ tableId, ...timeInfo })
+              }
+            />
           </Stack>
         ))}
       </Flex>
