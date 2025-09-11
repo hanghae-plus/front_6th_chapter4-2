@@ -37,11 +37,12 @@ export const ScheduleTables = () => {
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
-        {Object.keys(schedulesMap).map((tableId, index) => (
+        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
           <ScheduleCard
             key={tableId}
             index={index}
             tableId={tableId}
+            schedules={schedules}
             disabledRemoveButton={disabledRemoveButton}
             openSearch={openSearch}
             isActive={activeTableId === tableId}
@@ -56,16 +57,22 @@ export const ScheduleTables = () => {
 interface ScheduleCardProps {
   index: number;
   tableId: string;
+  schedules: ReturnType<typeof Object.values>[number];
   disabledRemoveButton: boolean;
   openSearch: (tableId: string, day?: string, time?: number) => void;
   isActive: boolean;
 }
 
 const ScheduleCard = memo(
-  ({ index, tableId, disabledRemoveButton, openSearch, isActive }: ScheduleCardProps) => {
-    const { schedulesMap } = useScheduleState();
+  ({
+    index,
+    tableId,
+    schedules,
+    disabledRemoveButton,
+    openSearch,
+    isActive,
+  }: ScheduleCardProps) => {
     const { duplicate, remove, updateTable } = useScheduleActions();
-    const schedules = schedulesMap[tableId] ?? [];
     const onScheduleTimeClick = useCallback(
       (timeInfo: { day: string; time: number }) => openSearch(tableId, timeInfo.day, timeInfo.time),
       [openSearch, tableId],
@@ -118,6 +125,12 @@ const ScheduleCard = memo(
       </Stack>
     );
   },
+  (prev, next) =>
+    prev.tableId === next.tableId &&
+    prev.isActive === next.isActive &&
+    prev.disabledRemoveButton === next.disabledRemoveButton &&
+    prev.openSearch === next.openSearch &&
+    prev.schedules === next.schedules,
 );
 
 ScheduleCard.displayName = "ScheduleCard";
