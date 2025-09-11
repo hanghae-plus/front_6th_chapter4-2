@@ -1,6 +1,5 @@
 import { Box, Popover, PopoverTrigger, Text } from "@chakra-ui/react";
 import { CellSize, DAY_LABELS } from "../../constants";
-import { Schedule } from "../../types";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { memo } from "react";
@@ -9,14 +8,16 @@ import { DeleteConfirmation } from "./DeleteConfirmation";
 
 interface Props {
   id: string;
-  data: Schedule;
+  day: string;
+  range: number[];
+  room?: string;
+  lectureTitle: string;
   bg?: string;
   onDeleteButtonClick: ({ day, time }: { day: string; time: number }) => void;
 }
 
 export const DraggableSchedule = memo(
-  ({ id, data, bg, onDeleteButtonClick }: Props) => {
-    const { day, range, room, lecture } = data;
+  ({ id, day, range, room, lectureTitle, bg, onDeleteButtonClick }: Props) => {
     const { attributes, setNodeRef, listeners, transform } = useDraggable({
       id,
     });
@@ -47,9 +48,9 @@ export const DraggableSchedule = memo(
             {...attributes}
           >
             <Text fontSize="sm" fontWeight="bold">
-              {lecture.title}
+              {lectureTitle}
             </Text>
-            <Text fontSize="xs">{room}</Text>
+            <Text fontSize="xs">{room ?? ""}</Text>
           </Box>
         </PopoverTrigger>
         <DeleteConfirmation onConfirm={handleDeleteButtonClick} />

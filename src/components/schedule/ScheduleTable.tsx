@@ -59,9 +59,12 @@ export const ScheduleTable = memo(
 
         {schedules.map((schedule, index) => (
           <DraggableSchedule
-            key={`${schedule.lecture.title}-${index}`}
+            key={`${tableId}-${schedule.lecture.id}-${schedule.day}-${schedule.range[0]}`}
             id={`${tableId}:${index}`}
-            data={schedule}
+            day={schedule.day}
+            range={schedule.range}
+            room={schedule.room}
+            lectureTitle={schedule.lecture.title}
             bg={colorMap[schedule.lecture.id]}
             onDeleteButtonClick={handleDeleteButtonClick}
           />
