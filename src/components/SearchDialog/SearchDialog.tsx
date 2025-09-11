@@ -33,7 +33,7 @@ import { Lecture } from "../../types.ts";
 import { parseSchedule } from "../../utils.ts";
 import axios from "axios";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
-import { useScheduleContext } from "../../ScheduleContext.tsx";
+import { useScheduleContext } from "../../contexts/ScheduleContext.tsx";
 import { DAY_LABELS } from "../../constants.ts";
 
 interface Props {

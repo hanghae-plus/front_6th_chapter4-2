@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Schedule } from "../types.ts";
-import { useScheduleContext } from "../ScheduleContext.tsx";
+import { useScheduleContext } from "../contexts/ScheduleContext.tsx";
 import { useTableSubscription } from "./useTableSubscription.ts";
 
 /**

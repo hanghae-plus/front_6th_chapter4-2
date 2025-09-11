@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useScheduleContext } from "../ScheduleContext.tsx";
+import { useScheduleContext } from "../contexts/ScheduleContext.tsx";
 
 /**
  * 테이블 키들만 구독하는 커스텀 훅

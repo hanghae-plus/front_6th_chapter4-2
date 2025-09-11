@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Schedule } from "../types.ts";
-import { useScheduleContext } from "../ScheduleContext.tsx";
+import { useScheduleContext } from "../contexts/ScheduleContext.tsx";
 
 /**
  * 특정 테이블의 스케줄만 구독하는 커스텀 훅
