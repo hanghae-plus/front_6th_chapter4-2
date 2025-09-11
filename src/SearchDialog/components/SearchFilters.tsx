@@ -1,8 +1,9 @@
-import { VStack } from "@chakra-ui/react";
+import { VStack, HStack } from "@chakra-ui/react";
 import SearchQueryCreditsFilter from "./filters/SearchQueryCreditsFilter";
-import SearchGradeDayFilter from "./filters/SearchGradeDayFilter";
 import SearchTimeMajorFilter from "./filters/SearchTimeMajorFilter";
 import { SearchOption } from "../types.ts";
+import SearchDayFilter from "./filters/SearchDayFilter.tsx";
+import SearchGradeFilter from "./filters/SearchGradeFilter.tsx";
 
 interface SearchFiltersProps {
   searchOptions: SearchOption;
@@ -25,13 +26,16 @@ const SearchFilters = ({
         credits={searchOptions.credits}
         onSearchOptionChange={onSearchOptionChange}
       />
-
-      <SearchGradeDayFilter
-        grades={searchOptions.grades}
-        days={searchOptions.days}
-        onSearchOptionChange={onSearchOptionChange}
-      />
-
+      <HStack spacing={4}>
+        <SearchGradeFilter
+          grades={searchOptions.grades}
+          onSearchOptionChange={onSearchOptionChange}
+        />
+        <SearchDayFilter
+          days={searchOptions.days}
+          onSearchOptionChange={onSearchOptionChange}
+        />
+      </HStack>
       <SearchTimeMajorFilter
         times={searchOptions.times}
         majors={searchOptions.majors}
