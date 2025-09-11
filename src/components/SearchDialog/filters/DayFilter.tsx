@@ -32,15 +32,14 @@ const DayFilter = memo(
     if (prev.days === next.days && prev.onChange === next.onChange) {
       return true;
     }
-    
+
     // 길이가 다르면 다름
     if (prev.days.length !== next.days.length) {
       return false;
     }
-    
+
     // 각 요소 비교
-    return prev.days.every((day, index) => day === next.days[index]) &&
-           prev.onChange === next.onChange;
+    return prev.days.every((day, index) => day === next.days[index]) && prev.onChange === next.onChange;
   }
 );
 

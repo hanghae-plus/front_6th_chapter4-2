@@ -31,15 +31,14 @@ const GradeFilter = memo(
     if (prev.grades === next.grades && prev.onChange === next.onChange) {
       return true;
     }
-    
+
     // 길이가 다르면 다름
     if (prev.grades.length !== next.grades.length) {
       return false;
     }
-    
+
     // 각 요소 비교
-    return prev.grades.every((grade, index) => grade === next.grades[index]) &&
-           prev.onChange === next.onChange;
+    return prev.grades.every((grade, index) => grade === next.grades[index]) && prev.onChange === next.onChange;
   }
 );
 
