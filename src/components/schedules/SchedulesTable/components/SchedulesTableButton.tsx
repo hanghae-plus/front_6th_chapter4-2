@@ -1,43 +1,47 @@
 import { memo, useCallback } from 'react';
 import { Button, ButtonGroup } from '@chakra-ui/react/button';
+import { store } from '../../../../store/schedules.store.ts';
 export const SchedulesTableButton = memo(
   ({
     tableId,
     disabled,
     onSearch,
-    onDuplicate,
-    onRemove,
   }: {
     tableId: string;
     disabled: boolean;
     onSearch: (tableId: string) => void;
-    onDuplicate: (tableId: string) => void;
-    onRemove: (tableId: string) => void;
   }) => {
     const handleSearch = useCallback(
       () => onSearch(tableId),
       [tableId, onSearch]
     );
-    const handleDuplicate = useCallback(
-      () => onDuplicate(tableId),
-      [tableId, onDuplicate]
-    );
-    const handleRemove = useCallback(
-      () => onRemove(tableId),
-      [tableId, onRemove]
-    );
+
+    const duplicate = useCallback((targetId: string) => {
+      store.duplicateTable(targetId); // ← store 메서드 사용
+    }, []);
+    // const handleDuplicate = useCallback(
+    //   () => onDuplicate(tableId),
+    //   [tableId, onDuplicate]
+    // );
+    // const handleRemove = useCallback(
+    //   () => onRemove(tableId),
+    //   [tableId, onRemove]
+    // );
+    const remove = useCallback((targetId: string) => {
+      store.removeTable(targetId);
+    }, []);
     return (
       <ButtonGroup size="sm" isAttached>
         <Button colorScheme="green" onClick={handleSearch}>
           시간표 추가
         </Button>
-        <Button colorScheme="green" mx="1px" onClick={handleDuplicate}>
+        <Button colorScheme="green" mx="1px" onClick={() => duplicate(tableId)}>
           복제
         </Button>
         <Button
           colorScheme="green"
           isDisabled={disabled}
-          onClick={handleRemove}
+          onClick={() => remove(tableId)}
         >
           삭제
         </Button>

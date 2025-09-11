@@ -20,7 +20,6 @@ const TimeCell = memo(
     const handleClick = () => {
       onTimeClick(day, timeNumber);
     };
-    console.log('TIME CELL RERENDER');
     return (
       <GridItem
         borderWidth="1px 0 0 1px"

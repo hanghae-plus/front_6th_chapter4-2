@@ -1,4 +1,4 @@
-import { memo, useSyncExternalStore } from 'react';
+import { memo, useCallback, useSyncExternalStore } from 'react';
 import { Schedule } from '../../../../types.ts';
 import { DragStateProvider } from '../../../../SchedulesDragStateProvider.tsx';
 import ScheduleDndProvider from '../../../../ScheduleDndProvider.tsx';
@@ -8,37 +8,38 @@ import { Heading } from '@chakra-ui/react/typography';
 import ScheduleTable from '../ScheduleTable.tsx';
 import { SchedulesTableButton } from './SchedulesTableButton.tsx';
 import { store } from '../../../../store/schedules.store.ts';
+import { searchInfoStore } from '../../../../store/searchInfo.store.ts';
+
+interface ScheduleTableContainerProps {
+  tableId: string;
+  index: number;
+  disabledRemoveButton: boolean;
+}
 
 export const ScheduleTableContainer = memo(
-  ({
-    tableId,
-
-    index,
-    disabledRemoveButton,
-    onSearchOpen,
-    onDuplicate,
-    onRemove,
-    onScheduleTimeClick,
-
-    onScheduleUpdate,
-  }: {
-    tableId: string;
-
-    index: number;
-    disabledRemoveButton: boolean;
-    onSearchOpen: (tableId: string) => void;
-    onDuplicate: (tableId: string) => void;
-    onRemove: (tableId: string) => void;
-    onScheduleTimeClick: (timeInfo: { day?: string; time?: number }) => void; // 변경!
-    // onDeleteButtonClick: ({ day, time }: { day: string; time: number }) => void; // 변경!
-    onScheduleUpdate: (tableId: string, schedules: Schedule[]) => void;
-  }) => {
-    // const { schedulesMap } = useScheduleContext();
-    //
+  ({ tableId, index, disabledRemoveButton }: ScheduleTableContainerProps) => {
     const schedules = useSyncExternalStore(
       callback => store.subscribe(tableId, callback),
       () => store.getTableSchedules(tableId),
       () => store.getTableSchedules(tableId)
+    );
+
+    const handleSearchOpen = useCallback(() => {
+      searchInfoStore.setSearchInfo({ tableId });
+    }, [tableId]);
+
+    const handleScheduleUpdate = useCallback(
+      (tableId: string, updatedSchedules: Schedule[]) => {
+        store.updateTable(tableId, updatedSchedules);
+      },
+      []
+    );
+
+    const handleScheduleTimeClick = useCallback(
+      (timeInfo: { day?: string; time?: number }) => {
+        searchInfoStore.setSearchInfo({ tableId, ...timeInfo });
+      },
+      [tableId]
     );
 
     return (
@@ -46,7 +47,7 @@ export const ScheduleTableContainer = memo(
         <ScheduleDndProvider
           tableId={tableId}
           schedules={schedules}
-          onScheduleUpdate={onScheduleUpdate}
+          onScheduleUpdate={handleScheduleUpdate}
         >
           <Stack width="600px">
             <Flex justifyContent="space-between" alignItems="center">
@@ -56,20 +57,25 @@ export const ScheduleTableContainer = memo(
               <SchedulesTableButton
                 tableId={tableId}
                 disabled={disabledRemoveButton}
-                onSearch={onSearchOpen}
-                onDuplicate={onDuplicate}
-                onRemove={onRemove}
+                onSearch={handleSearchOpen}
               />
             </Flex>
             <ScheduleTable
               schedules={schedules}
               tableId={tableId}
-              onScheduleTimeClick={onScheduleTimeClick}
-              // onDeleteButtonClick={onDeleteButtonClick}
+              onScheduleTimeClick={handleScheduleTimeClick}
             />
           </Stack>
         </ScheduleDndProvider>
       </DragStateProvider>
+    );
+  },
+  // memo 비교 함수: tableId, index, disabledRemoveButton만 비교
+  (prevProps, nextProps) => {
+    return (
+      prevProps.tableId === nextProps.tableId &&
+      prevProps.index === nextProps.index &&
+      prevProps.disabledRemoveButton === nextProps.disabledRemoveButton
     );
   }
 );
