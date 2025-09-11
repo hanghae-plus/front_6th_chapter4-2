@@ -95,7 +95,7 @@ const DraggableSchedule = ({
   const size = range.length;
 
   return (
-    <Popover>
+    <Popover isLazy>
       <PopoverTrigger>
         <Box
           position="absolute"
