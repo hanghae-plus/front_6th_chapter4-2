@@ -1,7 +1,7 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "./ScheduleContext.tsx";
-import SearchDialog from "./SearchDialog/SearchDialog.tsx";
+import { useScheduleContext } from "../../ScheduleContext.tsx";
+import SearchDialog from "../SearchDialog/SearchDialog.tsx";
 import { useCallback, useState } from "react";
 
 export const ScheduleTables = () => {
@@ -36,14 +36,31 @@ export const ScheduleTables = () => {
 
   return (
     <>
-      <Flex w="full" gap={6} p={6} flexWrap="wrap">
+      <Flex
+        w="full"
+        gap={6}
+        p={6}
+        flexWrap="wrap"
+      >
         {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
-          <Stack key={tableId} width="600px">
-            <Flex justifyContent="space-between" alignItems="center">
-              <Heading as="h3" fontSize="lg">
+          <Stack
+            key={tableId}
+            width="600px"
+          >
+            <Flex
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Heading
+                as="h3"
+                fontSize="lg"
+              >
                 시간표 {index + 1}
               </Heading>
-              <ButtonGroup size="sm" isAttached>
+              <ButtonGroup
+                size="sm"
+                isAttached
+              >
                 <Button
                   colorScheme="green"
                   onClick={() => setSearchInfo({ tableId })}

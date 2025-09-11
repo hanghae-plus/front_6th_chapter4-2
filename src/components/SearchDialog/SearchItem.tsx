@@ -1,5 +1,5 @@
 import { Button, Td, Tr } from "@chakra-ui/react";
-import { Lecture } from "../types";
+import { Lecture } from "../../types";
 import { memo } from "react";
 
 export const SearchItem = memo(
@@ -16,7 +16,10 @@ export const SearchItem = memo(
         <Td width="50px">{lecture.grade}</Td>
         <Td width="200px">{lecture.title}</Td>
         <Td width="50px">{lecture.credits}</Td>
-        <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
+        <Td
+          width="150px"
+          dangerouslySetInnerHTML={{ __html: lecture.major }}
+        />
         <Td
           width="150px"
           dangerouslySetInnerHTML={{ __html: lecture.schedule }}

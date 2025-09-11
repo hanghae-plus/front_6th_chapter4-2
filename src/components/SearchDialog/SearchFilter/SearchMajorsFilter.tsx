@@ -11,7 +11,7 @@ import {
   Box,
 } from "@chakra-ui/react";
 
-import { SearchOption } from "../../types";
+import { SearchOption } from "../../../types";
 import { memo } from "react";
 
 export const SearchMajorsFilter = memo(
@@ -37,9 +37,17 @@ export const SearchMajorsFilter = memo(
             changeSearchOption("majors", values as string[])
           }
         >
-          <Wrap spacing={1} mb={2}>
+          <Wrap
+            spacing={1}
+            mb={2}
+          >
             {searchOptions.map((major) => (
-              <Tag key={major} size="sm" variant="outline" colorScheme="blue">
+              <Tag
+                key={major}
+                size="sm"
+                variant="outline"
+                colorScheme="blue"
+              >
                 <TagLabel>{major.split("<p>").pop()}</TagLabel>
                 <TagCloseButton
                   onClick={() =>
@@ -63,7 +71,11 @@ export const SearchMajorsFilter = memo(
           >
             {allMajors.map((major) => (
               <Box key={major}>
-                <Checkbox key={major} size="sm" value={major}>
+                <Checkbox
+                  key={major}
+                  size="sm"
+                  value={major}
+                >
                   {major.replace(/<p>/gi, " ")}
                 </Checkbox>
               </Box>

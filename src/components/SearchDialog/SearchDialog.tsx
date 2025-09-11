@@ -16,9 +16,9 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "../ScheduleContext.tsx";
-import { Lecture, SearchOption } from "../types.ts";
-import { parseSchedule } from "../utils.ts";
+import { useScheduleContext } from "../../ScheduleContext.tsx";
+import { Lecture, SearchOption } from "../../types.ts";
+import { parseSchedule } from "../../utils.ts";
 import axios, { AxiosResponse } from "axios";
 import { SearchSubjectFilter } from "./SearchFilter/SearchSubjectFilter.tsx";
 import { SearchCreditsFilter } from "./SearchFilter/SearchCreditsFilter.tsx";
@@ -213,13 +213,23 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, [searchInfo]);
 
   return (
-    <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
+    <Modal
+      isOpen={Boolean(searchInfo)}
+      onClose={onClose}
+      size="6xl"
+    >
       <ModalOverlay />
-      <ModalContent maxW="90vw" w="1000px">
+      <ModalContent
+        maxW="90vw"
+        w="1000px"
+      >
         <ModalHeader>수업 검색</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <VStack spacing={4} align="stretch">
+          <VStack
+            spacing={4}
+            align="stretch"
+          >
             <HStack spacing={4}>
               <SearchSubjectFilter
                 searchOptions={searchOptions.query}
@@ -282,8 +292,15 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 </Thead>
               </Table>
 
-              <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
-                <Table size="sm" variant="striped">
+              <Box
+                overflowY="auto"
+                maxH="500px"
+                ref={loaderWrapperRef}
+              >
+                <Table
+                  size="sm"
+                  variant="striped"
+                >
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
                       <SearchItem
@@ -294,7 +311,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                     ))}
                   </Tbody>
                 </Table>
-                <Box ref={loaderRef} h="20px" />
+                <Box
+                  ref={loaderRef}
+                  h="20px"
+                />
               </Box>
             </Box>
           </VStack>

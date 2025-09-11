@@ -1,19 +1,20 @@
-import { Checkbox } from "@chakra-ui/react";
-import { SearchOption } from "../../types";
 import {
+  Checkbox,
   CheckboxGroup,
   HStack,
-  FormControl,
   FormLabel,
+  FormControl,
 } from "@chakra-ui/react";
+import { DAY_LABELS } from "../../../constants";
+import { SearchOption } from "../../../types";
 import { memo } from "react";
 
-export const SearchGradesFilter = memo(
+export const SearchDaysFilter = memo(
   ({
     searchOptions,
     changeSearchOption,
   }: {
-    searchOptions: SearchOption["grades"];
+    searchOptions: SearchOption["days"];
     changeSearchOption: (
       field: keyof SearchOption,
       value: SearchOption[typeof field]
@@ -21,17 +22,18 @@ export const SearchGradesFilter = memo(
   }) => {
     return (
       <FormControl>
-        <FormLabel>학년</FormLabel>
+        <FormLabel>요일</FormLabel>
         <CheckboxGroup
           value={searchOptions}
-          onChange={(value) =>
-            changeSearchOption("grades", value.map(Number) as unknown as string)
-          }
+          onChange={(value) => changeSearchOption("days", value as string[])}
         >
           <HStack spacing={4}>
-            {[1, 2, 3, 4].map((grade) => (
-              <Checkbox key={grade} value={grade}>
-                {grade}학년
+            {DAY_LABELS.map((day) => (
+              <Checkbox
+                key={day}
+                value={day}
+              >
+                {day}
               </Checkbox>
             ))}
           </HStack>

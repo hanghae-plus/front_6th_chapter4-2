@@ -12,9 +12,9 @@ import {
   PopoverTrigger,
   Text,
 } from "@chakra-ui/react";
-import { CellSize, DAY_LABELS, 분 } from "./constants.ts";
-import { Schedule } from "./types.ts";
-import { fill2, parseHnM } from "./utils.ts";
+import { CellSize, DAY_LABELS, 분 } from "../../constants.ts";
+import { Schedule } from "../../types.ts";
+import { fill2, parseHnM } from "../../utils.ts";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { ComponentProps, Fragment, memo, useCallback, useMemo } from "react";
@@ -76,8 +76,17 @@ const ScheduleTable = ({
         outline="1px solid"
         outlineColor="gray.300"
       >
-        <GridItem key="교시" borderColor="gray.300" bg="gray.100">
-          <Flex justifyContent="center" alignItems="center" h="full" w="full">
+        <GridItem
+          key="교시"
+          borderColor="gray.300"
+          bg="gray.100"
+        >
+          <Flex
+            justifyContent="center"
+            alignItems="center"
+            h="full"
+            w="full"
+          >
             <Text fontWeight="bold">교시</Text>
           </Flex>
         </GridItem>
@@ -88,7 +97,11 @@ const ScheduleTable = ({
             borderColor="gray.300"
             bg="gray.100"
           >
-            <Flex justifyContent="center" alignItems="center" h="full">
+            <Flex
+              justifyContent="center"
+              alignItems="center"
+              h="full"
+            >
               <Text fontWeight="bold">{day}</Text>
             </Flex>
           </GridItem>
@@ -100,7 +113,11 @@ const ScheduleTable = ({
               borderColor="gray.300"
               bg={timeIndex > 17 ? "gray.200" : "gray.100"}
             >
-              <Flex justifyContent="center" alignItems="center" h="full">
+              <Flex
+                justifyContent="center"
+                alignItems="center"
+                h="full"
+              >
                 <Text fontSize="xs">
                   {fill2(timeIndex + 1)} ({time})
                 </Text>
@@ -176,7 +193,10 @@ const DraggableSchedule = memo(
             {...listeners}
             {...attributes}
           >
-            <Text fontSize="sm" fontWeight="bold">
+            <Text
+              fontSize="sm"
+              fontWeight="bold"
+            >
               {lecture.title}
             </Text>
             <Text fontSize="xs">{room}</Text>
@@ -187,7 +207,11 @@ const DraggableSchedule = memo(
           <PopoverCloseButton />
           <PopoverBody>
             <Text>강의를 삭제하시겠습니까?</Text>
-            <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
+            <Button
+              colorScheme="red"
+              size="xs"
+              onClick={onDeleteButtonClick}
+            >
               삭제
             </Button>
           </PopoverBody>

@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { FormControl, FormLabel, Input } from "@chakra-ui/react";
-import { SearchOption } from "../../types";
+import { SearchOption } from "../../../types";
 
 export const SearchSubjectFilter = memo(
   ({

@@ -10,9 +10,9 @@ import {
   TagCloseButton,
   TagLabel,
 } from "@chakra-ui/react";
-import { SearchOption } from "../../types";
+import { SearchOption } from "../../../types";
 import { memo } from "react";
-import { TIME_SLOTS } from "../../constants";
+import { TIME_SLOTS } from "../../../constants";
 
 export const SearchTimesFilter = memo(
   ({
@@ -33,11 +33,19 @@ export const SearchTimesFilter = memo(
           value={searchOptions}
           onChange={(values) => changeSearchOption("times", values.map(Number))}
         >
-          <Wrap spacing={1} mb={2}>
+          <Wrap
+            spacing={1}
+            mb={2}
+          >
             {searchOptions
               .sort((a, b) => a - b)
               .map((time) => (
-                <Tag key={time} size="sm" variant="outline" colorScheme="blue">
+                <Tag
+                  key={time}
+                  size="sm"
+                  variant="outline"
+                  colorScheme="blue"
+                >
                   <TagLabel>{time}교시</TagLabel>
                   <TagCloseButton
                     onClick={() =>
@@ -61,7 +69,11 @@ export const SearchTimesFilter = memo(
           >
             {TIME_SLOTS.map(({ id, label }) => (
               <Box key={id}>
-                <Checkbox key={id} size="sm" value={id}>
+                <Checkbox
+                  key={id}
+                  size="sm"
+                  value={id}
+                >
                   {id}교시({label})
                 </Checkbox>
               </Box>
