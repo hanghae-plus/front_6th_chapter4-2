@@ -22,7 +22,7 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { Lecture, SearchOption } from "../../types";
+import { Lecture, ProcessedLecture, SearchOption } from "../../types";
 import { parseSchedule } from "../../lib/utils";
 import { DAY_LABELS, PAGE_SIZE } from "../../constants";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
@@ -41,6 +41,19 @@ interface Props {
   onClose: () => void;
 }
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
+
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const setSchedulesMap = useScheduleStore((state) => state.setSchedulesMap);
 
@@ -48,6 +61,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
 
   const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [processedLectures, setProcessedLectures] = useState<ProcessedLecture[]>([]);
   const [page, setPage] = useState(1);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
     query: "",
@@ -57,9 +71,21 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
+  const debouncedSearchOptions = useDebounce(searchOptions, 300);
+
+  useEffect(() => {
+    if (lectures && lectures.length > 0) {
+      const parsedData = lectures.map((lecture) => ({
+        ...lecture,
+        parsedSchedule: lecture.schedule ? parseSchedule(lecture.schedule) : [],
+      }));
+      setProcessedLectures(parsedData);
+    }
+  }, [lectures]);
+
   const filteredLectures = useMemo(() => {
-    const { query = "", credits, grades, days, times, majors } = searchOptions;
-    return lectures
+    const { query = "", credits, grades, days, times, majors } = debouncedSearchOptions;
+    return processedLectures
       .filter(
         (lecture) =>
           lecture.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -70,15 +96,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       .filter((lecture) => !credits || lecture.credits.startsWith(String(credits)))
       .filter((lecture) => {
         if (days.length === 0) return true;
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some((s) => days.includes(s.day));
+        return lecture.parsedSchedule.some((s) => days.includes(s.day));
       })
       .filter((lecture) => {
         if (times.length === 0) return true;
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some((s) => s.range.some((time) => times.includes(time)));
+        return lecture.parsedSchedule.some((s) => s.range.some((t) => times.includes(t)));
       });
-  }, [lectures, searchOptions]);
+  }, [processedLectures, debouncedSearchOptions]);
 
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
   const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
