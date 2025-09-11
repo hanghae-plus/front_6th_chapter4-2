@@ -64,20 +64,19 @@ interface ScheduleCardProps {
 
 const ScheduleCard = memo(
   ({ index, tableId, schedules, disabledRemoveButton, openSearch, isActive }: ScheduleCardProps) => {
-    const { duplicate, remove, updateTable } = useScheduleActions();
+    const { duplicate, remove, removeSchedule, updateSchedules } = useScheduleActions();
     const onScheduleTimeClick = useCallback(
       (timeInfo: { day: string; time: number }) => openSearch(tableId, timeInfo.day, timeInfo.time),
       [openSearch, tableId]
     );
 
     const onDeleteButtonClick = useCallback(
-      ({ day, time }: { day: string; time: number }) =>
-        updateTable(tableId, (prev) => prev.filter((s) => s.day !== day || !s.range.includes(time))),
-      [updateTable, tableId]
+      ({ day, time }: { day: string; time: number }) => removeSchedule(tableId, day, time),
+      [removeSchedule, tableId]
     );
 
     const handleSchedulesChange = useAutoCallback((newSchedules: Schedule[]) => {
-      updateTable(tableId, () => newSchedules);
+      updateSchedules(tableId, newSchedules);
     });
 
     return (

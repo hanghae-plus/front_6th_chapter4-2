@@ -13,7 +13,9 @@ interface ScheduleActionsContextType {
   setSchedulesMap: React.Dispatch<React.SetStateAction<SchedulesMap>>;
   duplicate: (tableId: string) => void;
   remove: (tableId: string) => void;
-  updateTable: (tableId: string, updater: (prev: Schedule[]) => Schedule[]) => void;
+  addSchedules: (tableId: string, schedules: Schedule[]) => void;
+  removeSchedule: (tableId: string, day: string, time: number) => void;
+  updateSchedules: (tableId: string, schedules: Schedule[]) => void;
 }
 
 const ScheduleStateContext = createContext<ScheduleStateContextType | undefined>(undefined);
@@ -47,23 +49,35 @@ export const ScheduleProvider = ({ children }: PropsWithChildren) => {
 
   const remove = useAutoCallback((tableId: string) => {
     setSchedulesMap((prev) => {
-      const copy = { ...prev } as SchedulesMap;
-      delete copy[tableId];
-      return copy;
+      return Object.fromEntries(Object.entries(prev).filter(([key]) => key !== tableId));
     });
   });
 
-  const updateTable = useAutoCallback((tableId: string, updater: (prev: Schedule[]) => Schedule[]) => {
+  const addSchedules = useAutoCallback((tableId: string, schedules: Schedule[]) => {
     setSchedulesMap((prev) => ({
       ...prev,
-      [tableId]: updater(prev[tableId] ?? []),
+      [tableId]: [...(prev[tableId] ?? []), ...schedules],
+    }));
+  });
+
+  const removeSchedule = useAutoCallback((tableId: string, day: string, time: number) => {
+    setSchedulesMap((prev) => ({
+      ...prev,
+      [tableId]: (prev[tableId] ?? []).filter((s) => s.day !== day || !s.range.includes(time)),
+    }));
+  });
+
+  const updateSchedules = useAutoCallback((tableId: string, schedules: Schedule[]) => {
+    setSchedulesMap((prev) => ({
+      ...prev,
+      [tableId]: schedules,
     }));
   });
 
   const stateValue = useMemo<ScheduleStateContextType>(() => ({ schedulesMap }), [schedulesMap]);
   const actionsValue = useMemo<ScheduleActionsContextType>(
-    () => ({ setSchedulesMap, duplicate, remove, updateTable }),
-    [duplicate, remove, updateTable]
+    () => ({ setSchedulesMap, duplicate, remove, addSchedules, removeSchedule, updateSchedules }),
+    [duplicate, remove, addSchedules, removeSchedule, updateSchedules]
   );
 
   return (

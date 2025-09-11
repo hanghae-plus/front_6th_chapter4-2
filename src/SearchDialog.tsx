@@ -92,7 +92,7 @@ const fetchAllLectures = async () => {
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
-  const { updateTable } = useScheduleActions();
+  const { addSchedules } = useScheduleActions();
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -158,12 +158,12 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
 
       // Context를 통해 직접 스케줄 추가
       if (searchInfo?.tableId) {
-        updateTable(searchInfo.tableId, (prev) => [...prev, ...schedules]);
+        addSchedules(searchInfo.tableId, schedules);
       }
 
       onClose();
     },
-    [searchInfo, updateTable, onClose]
+    [searchInfo, addSchedules, onClose]
   );
 
   useEffect(() => {
