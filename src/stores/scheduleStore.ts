@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { useShallow } from "zustand/react/shallow";
 import { Schedule } from "../types";
 import dummyScheduleMap from "../data/dummyScheduleMap";
 
@@ -31,6 +32,8 @@ export const useScheduleStore = create<ScheduleState>()(
       const state = get();
       const currentSchedules = state.schedulesMap[tableId];
 
+      if (!currentSchedules || !currentSchedules[scheduleIndex]) return;
+
       // 실제로 변경이 있는지 확인
       const currentSchedule = currentSchedules[scheduleIndex];
       const hasChanges = Object.keys(updates).some(
@@ -41,9 +44,9 @@ export const useScheduleStore = create<ScheduleState>()(
 
       if (!hasChanges) return; // 변경사항이 없으면 업데이트하지 않음
 
-      const updatedSchedules = currentSchedules.map((schedule, index) =>
-        index === scheduleIndex ? { ...schedule, ...updates } : schedule
-      );
+      // 불변성을 유지하면서 해당 스케줄만 업데이트
+      const updatedSchedules = [...currentSchedules];
+      updatedSchedules[scheduleIndex] = { ...currentSchedule, ...updates };
 
       // 해당 테이블의 스케줄만 업데이트 (변경 감지 최적화)
       set((state) => ({
@@ -114,5 +117,7 @@ export const useScheduleStore = create<ScheduleState>()(
 
 // 특정 테이블의 스케줄만 구독하는 커스텀 훅 (성능 최적화)
 export const useTableSchedules = (tableId: string) => {
-  return useScheduleStore((state) => state.schedulesMap[tableId] || []);
+  return useScheduleStore(
+    useShallow((state) => state.schedulesMap[tableId] || [])
+  );
 };
