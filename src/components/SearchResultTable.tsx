@@ -11,7 +11,6 @@ interface Props {
   loaderRef: React.RefObject<HTMLDivElement | null>;
 }
 
-// Chakra UI Table size="sm" 스타일
 const TABLE_STYLE = {
   width: "100%",
   borderCollapse: "collapse" as const,
