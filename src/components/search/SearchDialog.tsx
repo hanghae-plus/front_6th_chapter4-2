@@ -10,7 +10,7 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import { useSchedulesActions } from "../../contexts";
-import { useInfiniteScroll } from "../../hooks";
+import { useInfiniteScroll, usePagination } from "../../hooks";
 import { Lecture, SearchOption } from "../../types.ts";
 import { parseSchedule } from "../../utils.ts";
 import axios from "axios";
@@ -83,7 +83,6 @@ export const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [page, setPage] = useState(1);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
     query: "",
     grades: [],
@@ -131,14 +130,18 @@ export const SearchDialog = ({ searchInfo, onClose }: Props) => {
       });
   }, [lectures, searchOptions]);
 
-  const lastPage = useMemo(
-    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
-    [filteredLectures.length]
-  );
-  const visibleLectures = useMemo(
-    () => filteredLectures.slice(0, page * PAGE_SIZE),
-    [filteredLectures, page]
-  );
+  const {
+    page,
+    lastPage,
+    visibleItems: visibleLectures,
+    handleLoadMore,
+    resetPage,
+  } = usePagination({
+    items: filteredLectures,
+    pageSize: PAGE_SIZE,
+    initialPage: 1,
+  });
+
   const allMajors = useMemo(
     () => [...new Set(lectures.map((lecture) => lecture.major))],
     [lectures]
@@ -146,11 +149,11 @@ export const SearchDialog = ({ searchInfo, onClose }: Props) => {
 
   const changeSearchOption = useCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
-      setPage(1);
+      resetPage();
       setSearchOptions((prev) => ({ ...prev, [field]: value }));
       loaderWrapperRef.current?.scrollTo(0, 0);
     },
-    []
+    [resetPage]
   );
 
   const addSchedule = useCallback(
@@ -225,10 +228,6 @@ export const SearchDialog = ({ searchInfo, onClose }: Props) => {
     });
   }, []);
 
-  const handleLoadMore = useCallback((nextPage: number) => {
-    setPage(nextPage);
-  }, []);
-
   useInfiniteScroll({
     loaderRef,
     containerRef: loaderWrapperRef,
@@ -244,8 +243,8 @@ export const SearchDialog = ({ searchInfo, onClose }: Props) => {
       days: searchInfo?.day ? [searchInfo.day] : [],
       times: searchInfo?.time ? [searchInfo.time] : [],
     }));
-    setPage(1);
-  }, [searchInfo]);
+    resetPage();
+  }, [searchInfo, resetPage]);
 
   return (
     <SearchDialogContext.Provider value={contextValue}>
