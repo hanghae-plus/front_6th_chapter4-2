@@ -1,4 +1,10 @@
-import { Box, Popover, PopoverTrigger, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Popover,
+  PopoverTrigger,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { CellSize, DAY_LABELS } from "../../constants";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
@@ -25,12 +31,21 @@ export const DraggableSchedule = memo(
     const topIndex = range[0] - 1;
     const size = range.length;
 
+    const { isOpen, onOpen, onClose } = useDisclosure();
+
     const handleDeleteButtonClick = useAutoCallback(() => {
       onDeleteButtonClick({ day, time: range[0] });
+      onClose();
     });
 
     return (
-      <Popover>
+      <Popover
+        isOpen={isOpen}
+        onOpen={onOpen}
+        onClose={onClose}
+        isLazy
+        lazyBehavior="unmount"
+      >
         <PopoverTrigger>
           <Box
             position="absolute"
@@ -53,7 +68,7 @@ export const DraggableSchedule = memo(
             <Text fontSize="xs">{room ?? ""}</Text>
           </Box>
         </PopoverTrigger>
-        <DeleteConfirmation onConfirm={handleDeleteButtonClick} />
+        {isOpen && <DeleteConfirmation onConfirm={handleDeleteButtonClick} />}
       </Popover>
     );
   }
