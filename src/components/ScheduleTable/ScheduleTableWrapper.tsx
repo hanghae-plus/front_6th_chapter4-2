@@ -4,6 +4,7 @@ import { Schedule } from "../../types.ts";
 import ScheduleTable from "./ScheduleTable.tsx";
 import { memo } from "react";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
+import { useInternalScheduleState } from "../../context/ScheduleStateContext.tsx";
 
 interface ScheduleTableWrapperProps {
   tableId: string;
@@ -14,9 +15,6 @@ interface ScheduleTableWrapperProps {
     day?: string;
     time?: number;
   }) => void;
-  setSchedulesMap: React.Dispatch<
-    React.SetStateAction<Record<string, Schedule[]>>
-  >;
   disabledRemoveButton: boolean;
 }
 
@@ -26,10 +24,10 @@ export const ScheduleTableWrapper = memo(
     index,
     schedules,
     setSearchInfo,
-    setSchedulesMap,
-
     disabledRemoveButton,
   }: ScheduleTableWrapperProps) => {
+    const setSchedulesMap = useInternalScheduleState();
+
     const duplicate = useAutoCallback((targetId: string) => {
       setSchedulesMap((prev) => ({
         ...prev,
@@ -93,15 +91,9 @@ export const ScheduleTableWrapper = memo(
             onScheduleTimeClick={(timeInfo) =>
               setSearchInfo({ tableId, ...timeInfo })
             }
-            onDeleteButtonClick={({ day, time }) =>
-              setSchedulesMap((prev) => ({
-                ...prev,
-                [tableId]: prev[tableId].filter(
-                  (schedule) =>
-                    schedule.day !== day || !schedule.range.includes(time)
-                ),
-              }))
-            }
+            onDeleteButtonClick={() => {
+              // deleteSchedule는 ScheduleTable 컴포넌트 내부에서 처리됨
+            }}
           />
         </ScheduleDndProvider>
       </Stack>

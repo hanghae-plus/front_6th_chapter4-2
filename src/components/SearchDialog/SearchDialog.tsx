@@ -16,7 +16,7 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "../../ScheduleContext.tsx";
+import { useScheduleActions } from "../../context/ScheduleActionsContext.tsx";
 import { Lecture, SearchOption } from "../../types.ts";
 import { parseSchedule } from "../../utils.ts";
 import axios, { AxiosResponse } from "axios";
@@ -76,7 +76,7 @@ const fetchAllLectures = async () => {
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const { addSchedule: addScheduleAction } = useScheduleActions();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -160,10 +160,9 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       lecture,
     }));
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+    schedules.forEach((schedule) => {
+      addScheduleAction(tableId, schedule);
+    });
 
     onClose();
   });
