@@ -10,10 +10,8 @@ import {
 import { useScheduleContext } from '../../ScheduleContext';
 import { Lecture } from '../../types';
 import { parseSchedule } from '../../utils';
-import { useSearchOptions } from '../../hooks/useSearchOptions';
 import { useLectureData } from '../../hooks/useLectureData';
-import { useFilteredLectures } from '../../hooks/useFilteredLectures';
-import { usePagination } from '../../hooks/usePagination';
+import { useSearchWithPagination } from '../../hooks/useSearchWithPagination';
 import { useAutoCallback } from '../../hooks/useAutoCallback';
 import { SearchForm } from './SearchForm';
 import { SearchResults } from './SearchResults';
@@ -31,30 +29,21 @@ export const SearchDialog = ({ searchInfo, onClose }: SearchDialogProps) => {
   const { setSchedulesMap } = useScheduleContext();
   const { lectures, isLoading } = useLectureData();
 
-  // 1. 콜백 함수들만 가져오기 위한 임시 pagination
-  const tempPagination = usePagination<Lecture>([]);
-
-  // 2. searchOptions 정의 (resetPage, scrollToTop 사용)
-  const { searchOptions, changeSearchOption } = useSearchOptions({
-    searchInfo,
-    onPageReset: tempPagination.resetPage,
-    onScrollToTop: tempPagination.scrollToTop,
-  });
-
-  // 3. searchOptions를 사용해서 filteredLectures 계산
-  const { filteredLectures, allMajors } = useFilteredLectures(
-    lectures,
-    searchOptions
-  );
-
-  // 4. 실제 filteredLectures로 pagination
+  // 통합된 검색 + 페이지네이션 훅
   const {
-    visibleItems: visibleLectures,
+    searchOptions,
+    changeSearchOption,
+    filteredLectures,
+    allMajors,
+    visibleLectures,
     loaderWrapperRef,
     loaderRef,
-  } = usePagination<Lecture>(filteredLectures);
+  } = useSearchWithPagination({
+    searchInfo,
+    lectures,
+  });
 
-  // 5. addSchedule 함수 정의
+  // addSchedule 함수 정의
   const addSchedule = useAutoCallback((lecture: Lecture) => {
     if (!searchInfo) return;
 

@@ -15,7 +15,7 @@ import {
   VStack,
   Wrap,
 } from '@chakra-ui/react';
-import { SearchOption } from '../../hooks/useSearchOptions';
+import { SearchOption } from '../../hooks/useSearchWithPagination';
 import { DAY_LABELS, TIME_SLOTS } from '../../constants';
 
 interface SearchFormProps {
