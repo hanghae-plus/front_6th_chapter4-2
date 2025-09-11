@@ -1,5 +1,5 @@
 import { FormControl, FormLabel, Input } from "@chakra-ui/react";
-import { SearchOption } from "./types.ts";
+import { SearchOption } from "../../../types.ts";
 import { memo } from "react";
 
 type QueryFilterProps = {

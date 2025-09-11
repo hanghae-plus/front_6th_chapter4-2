@@ -10,9 +10,9 @@ import {
     TagLabel,
     Wrap
 } from "@chakra-ui/react";
-import { SearchOption } from "./types.ts";
+import { SearchOption } from "../../../types.ts";
 import { memo } from "react";
-import { TIME_SLOTS } from "./constants.ts";
+import { TIME_SLOTS } from "../../../constants.ts";
 
 
 type PeriodTimeFilterProps = {

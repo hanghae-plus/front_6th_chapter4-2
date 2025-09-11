@@ -1,6 +1,6 @@
 import { Button, Td, Tr } from "@chakra-ui/react";
 import { memo } from "react";
-import { Lecture } from "./types.ts";
+import { Lecture } from "../../types.ts";
 
 const SearchItem = memo(({ lecture, addSchedule }: { lecture: Lecture; addSchedule: (lecture: Lecture) => void }) => {
     return (

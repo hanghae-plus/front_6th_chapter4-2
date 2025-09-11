@@ -11,7 +11,7 @@ import {
     Wrap
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { SearchOption } from "./types.ts";
+import { SearchOption } from "../../../types.ts";
 
 type MajorFilterProps = {
     majors: SearchOption['majors'];

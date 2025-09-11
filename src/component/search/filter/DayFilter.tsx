@@ -1,6 +1,6 @@
 import { Checkbox, CheckboxGroup, FormControl, FormLabel, HStack } from "@chakra-ui/react";
-import { DAY_LABELS } from "./constants.ts";
-import { SearchOption } from "./types.ts";
+import { DAY_LABELS } from "../../../constants.ts";
+import { SearchOption } from "../../../types.ts";
 import { memo } from "react";
 
 type DayFilterProps = {

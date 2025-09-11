@@ -13,20 +13,20 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
-import { Lecture } from "./types.ts";
-import { parseSchedule } from "./utils.ts";
+import { useScheduleContext } from "../../provider/ScheduleContext.tsx";
+import { Lecture } from "../../types.ts";
+import { parseSchedule } from "../../utils.ts";
 import axios, {AxiosResponse} from "axios";
 import SearchItem from "./SearchItem.tsx";
-import { useAutoCallback } from "./hooks/useAutoCallback.ts";
+import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
 import SearchTableHead from "./SearchTableHead.tsx";
-import MajorFilter from "./MajorFilter.tsx";
-import DayFilter from "./DayFilter.tsx";
-import GradeFilter from "./GradeFilter.tsx";
-import PeriodTimeFilter from "./PeriodTimeFilter.tsx";
-import CreditFilter from "./CreditFilter.tsx";
-import QueryFilter from "./QueryFilter.tsx";
-import { SearchOption } from "./types.ts";
+import MajorFilter from "./filter/MajorFilter.tsx";
+import DayFilter from "./filter/DayFilter.tsx";
+import GradeFilter from "./filter/GradeFilter.tsx";
+import PeriodTimeFilter from "./filter/PeriodTimeFilter.tsx";
+import CreditFilter from "./filter/CreditFilter.tsx";
+import QueryFilter from "./filter/QueryFilter.tsx";
+import { SearchOption } from "../../types.ts";
 
 interface Props {
   searchInfo: {

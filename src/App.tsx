@@ -1,7 +1,7 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import { ScheduleProvider } from "./ScheduleContext.tsx";
-import { ScheduleTables } from "./ScheduleTables.tsx";
-import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
+import { ScheduleProvider } from "./provider/ScheduleContext.tsx";
+import { ScheduleTables } from "./component/schedule/ScheduleTables.tsx";
+import ScheduleDndProvider from "./provider/ScheduleDndProvider.tsx";
 
 function App() {
 
