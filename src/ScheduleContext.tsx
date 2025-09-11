@@ -26,6 +26,24 @@ export const useScheduleContext = () => {
   return context;
 };
 
+export const useScheduleTable = (tableId: string) => {
+  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  
+  const schedules = schedulesMap[tableId] || [];
+  
+  const updateSchedules = (updater: Schedule[] | ((prev: Schedule[]) => Schedule[])) => {
+    setSchedulesMap(prev => ({
+      ...prev,
+      [tableId]: typeof updater === 'function' ? updater(prev[tableId] || []) : updater
+    }));
+  };
+
+  return {
+    schedules,
+    updateSchedules
+  };
+};
+
 export const ScheduleProvider = ({ children }: PropsWithChildren) => {
   const [schedulesMap, setSchedulesMap] =
     useState<Record<string, Schedule[]>>(dummyScheduleMap);

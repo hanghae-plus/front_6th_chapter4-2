@@ -1,8 +1,28 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import { useState } from "react";
-import { useScheduleContext } from "./ScheduleContext";
+import { useScheduleContext, useScheduleTable } from "./ScheduleContext";
 import ScheduleTable from "./ScheduleTable";
+import ScheduleDndProvider from "./ScheduleDndProvider";
 import SearchDialog from "./SearchDialog";
+
+const ScheduleTableWithDnd = ({ tableId, onScheduleTimeClick, onDeleteButtonClick }: { 
+  tableId: string;
+  onScheduleTimeClick: (timeInfo: { day: string; time: number }) => void;
+  onDeleteButtonClick: (timeInfo: { day: string; time: number }) => void;
+}) => {
+  const { schedules } = useScheduleTable(tableId);
+
+  return (
+    <ScheduleDndProvider tableId={tableId}>
+      <ScheduleTable
+        schedules={schedules}
+        tableId={tableId}
+        onScheduleTimeClick={onScheduleTimeClick}
+        onDeleteButtonClick={onDeleteButtonClick}
+      />
+    </ScheduleDndProvider>
+  );
+};
 
 export const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
@@ -31,7 +51,7 @@ export const ScheduleTables = () => {
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
-        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
+        {Object.entries(schedulesMap).map(([tableId], index) => (
           <Stack key={tableId} width="600px">
             <Flex justifyContent="space-between" alignItems="center">
               <Heading as="h3" fontSize="lg">
@@ -60,10 +80,8 @@ export const ScheduleTables = () => {
                 </Button>
               </ButtonGroup>
             </Flex>
-            <ScheduleTable
-              key={`schedule-table-${index}`}
-              schedules={schedules}
-              tableId={tableId}
+            <ScheduleTableWithDnd 
+              tableId={tableId} 
               onScheduleTimeClick={(timeInfo) =>
                 setSearchInfo({ tableId, ...timeInfo })
               }

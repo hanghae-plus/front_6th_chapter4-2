@@ -1,4 +1,4 @@
-import { ComponentProps, Fragment } from "react";
+import { ComponentProps, Fragment, memo, useMemo } from "react";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -52,15 +52,13 @@ const ScheduleTable = ({
 
   const dndContext = useDndContext();
 
-  const getActiveTableId = () => {
+  const activeTableId = useMemo(() => {
     const activeId = dndContext.active?.id;
     if (activeId) {
       return String(activeId).split(":")[0];
     }
     return null;
-  };
-
-  const activeTableId = getActiveTableId();
+  }, [dndContext.active?.id]);
 
   return (
     <Box
@@ -142,7 +140,7 @@ const ScheduleTable = ({
   );
 };
 
-const DraggableSchedule = ({
+const DraggableSchedule = memo(({
   id,
   data,
   bg,
@@ -192,6 +190,6 @@ const DraggableSchedule = ({
       </PopoverContent>
     </Popover>
   );
-};
+});
 
-export default ScheduleTable;
+export default memo(ScheduleTable);
