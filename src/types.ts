@@ -13,3 +13,14 @@ export interface Schedule {
   range: number[];
   room?: string;
 }
+
+export interface TimeInfo {
+  day: string;
+  time: number;
+}
+
+export interface SearchInfo {
+  tableId: string;
+  day?: string;
+  time?: number;
+}
