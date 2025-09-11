@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   FormControl,
@@ -19,8 +18,6 @@ import {
   Tag,
   TagCloseButton,
   TagLabel,
-  Tbody,
-  Td,
   Text,
   Th,
   Thead,
@@ -357,24 +354,47 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
               </Table>
 
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
-                <Table size="sm" variant="striped">
-                  <Tbody>
+                <Table
+                  size="sm"
+                  variant="striped"
+                  sx={{
+                    "& tbody tr:nth-of-type(odd)": {
+                      backgroundColor: "gray.100",
+                    },
+                    "& td": {
+                      fontSize: "sm",
+                      padding: "8px 12px",
+                    },
+                    "& button": {
+                      fontSize: "sm",
+                      backgroundColor: "green.500",
+                      color: "white",
+                      padding: "4px 12px",
+                      borderRadius: "md",
+                      border: "none",
+                      cursor: "pointer",
+                      transition: "background-color 0.2s",
+                      "&:hover": {
+                        backgroundColor: "green.600",
+                      },
+                    },
+                  }}
+                >
+                  <tbody>
                     {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
-                        <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
-                        <Td width="80px">
-                          <Button size="sm" colorScheme="green" onClick={() => addSchedule(lecture)}>
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
+                      <tr key={`${lecture.id}-${index}`}>
+                        <td style={{ width: "100px" }}>{lecture.id}</td>
+                        <td style={{ width: "50px" }}>{lecture.grade}</td>
+                        <td style={{ width: "200px" }}>{lecture.title}</td>
+                        <td style={{ width: "50px" }}>{lecture.credits}</td>
+                        <td style={{ width: "150px" }} dangerouslySetInnerHTML={{ __html: lecture.major }} />
+                        <td style={{ width: "150px" }} dangerouslySetInnerHTML={{ __html: lecture.schedule }} />
+                        <td style={{ width: "80px" }}>
+                          <button onClick={() => addSchedule(lecture)}>추가</button>
+                        </td>
+                      </tr>
                     ))}
-                  </Tbody>
+                  </tbody>
                 </Table>
                 <Box ref={loaderRef} h="20px" />
               </Box>
