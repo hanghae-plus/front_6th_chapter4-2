@@ -1,40 +1,37 @@
-import { memo, useCallback } from "react";
-import { Button, Td, Tr } from "@chakra-ui/react";
-import { Lecture } from "../../types.ts";
+import React from "react";
+import { Tr, Td, Button } from "@chakra-ui/react";
+import { useAutoCallback } from "../../hooks/useAutoCallback";
+import { Lecture } from "../../types";
 
-interface LectureRowProps {
+interface Props {
   lecture: Lecture;
-  index: number;
   onAddSchedule: (lecture: Lecture) => void;
 }
 
-// 강의 행 컴포넌트 - 개별 행의 불필요한 리렌더링 방지
-const LectureRow = memo(
-  ({ lecture, index, onAddSchedule }: LectureRowProps) => {
-    const handleAddClick = useCallback(() => {
-      onAddSchedule(lecture);
-    }, [lecture, onAddSchedule]);
+const LectureRow = React.memo(({ lecture, onAddSchedule }: Props) => {
+  const handleAdd = useAutoCallback(() => {
+    onAddSchedule(lecture);
+  });
 
-    return (
-      <Tr key={`${lecture.id}-${index}`}>
-        <Td width="100px">{lecture.id}</Td>
-        <Td width="50px">{lecture.grade}</Td>
-        <Td width="200px">{lecture.title}</Td>
-        <Td width="50px">{lecture.credits}</Td>
-        <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
-        <Td
-          width="150px"
-          dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-        />
-        <Td width="80px">
-          <Button size="sm" colorScheme="green" onClick={handleAddClick}>
-            추가
-          </Button>
-        </Td>
-      </Tr>
-    );
-  }
-);
+  return (
+    <Tr>
+      <Td width="100px">{lecture.id}</Td>
+      <Td width="50px">{lecture.grade}</Td>
+      <Td width="200px">{lecture.title}</Td>
+      <Td width="50px">{lecture.credits}</Td>
+      <Td width="150px" dangerouslySetInnerHTML={{ __html: lecture.major }} />
+      <Td
+        width="150px"
+        dangerouslySetInnerHTML={{ __html: lecture.schedule }}
+      />
+      <Td width="80px">
+        <Button size="sm" colorScheme="green" onClick={handleAdd}>
+          추가
+        </Button>
+      </Td>
+    </Tr>
+  );
+});
 
 LectureRow.displayName = "LectureRow";
 

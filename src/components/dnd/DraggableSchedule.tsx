@@ -1,6 +1,4 @@
-import { memo, useCallback, useMemo } from "react";
-import { useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
+import React, { useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -12,70 +10,80 @@ import {
   PopoverTrigger,
   Text,
 } from "@chakra-ui/react";
-import { ComponentProps } from "react";
+import { useDraggable, useDndContext } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import { Schedule } from "../../types";
-import { CellSize, DAY_LABELS } from "../../data/constants";
+import { CellSize, DAY_LABELS } from "../../constants";
+import { useAutoCallback } from "../../hooks/useAutoCallback";
 
-interface DraggableScheduleProps {
+interface Props {
   id: string;
   data: Schedule;
-  bg?: string;
-  onDeleteButtonClick?: (timeInfo: { day: string; time: number }) => void;
-  scheduleDay: string;
-  scheduleTime: number;
+  bg: string;
+  onDeleteButtonClick: () => void;
 }
 
-const DraggableSchedule = memo(
-  ({
-    id,
-    data,
-    bg,
-    onDeleteButtonClick,
-    scheduleDay,
-    scheduleTime,
-    ...boxProps
-  }: DraggableScheduleProps & ComponentProps<typeof Box>) => {
+const DraggableSchedule = React.memo(
+  ({ id, data, bg, onDeleteButtonClick }: Props) => {
     const { day, range, room, lecture } = data;
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false); // 🔥 최적화: 팝업 상태 관리
     const { attributes, setNodeRef, listeners, transform } = useDraggable({
       id,
     });
 
-    // 메모이제이션된 계산
+    // 🔥 최적화: 계산값들을 useMemo로 메모이제이션
     const leftIndex = useMemo(
       () => DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]),
       [day]
     );
+
     const topIndex = useMemo(() => range[0] - 1, [range]);
     const size = useMemo(() => range.length, [range]);
 
-    // 메모이제이션된 스타일 계산
-    const position = useMemo(
+    // 🔥 최적화: 스타일 계산을 useMemo로 메모이제이션
+    const style = useMemo(
       () => ({
         left: `${120 + CellSize.WIDTH * leftIndex + 1}px`,
         top: `${40 + (topIndex * CellSize.HEIGHT + 1)}px`,
-        width: CellSize.WIDTH - 1 + "px",
-        height: CellSize.HEIGHT * size - 1 + "px",
+        width: `${CellSize.WIDTH - 1}px`,
+        height: `${CellSize.HEIGHT * size - 1}px`,
       }),
       [leftIndex, topIndex, size]
     );
 
-    const handleDeleteClick = useCallback(
-      (event: React.MouseEvent) => {
-        event.stopPropagation();
-        onDeleteButtonClick?.({ day: scheduleDay, time: scheduleTime });
-      },
-      [onDeleteButtonClick, scheduleDay, scheduleTime]
-    );
+    // 🔥 최적화: 드래그 상태 감지로 팝업 렌더링 최적화
+    const dndContext = useDndContext();
+    const isCurrentlyDragging = dndContext.active?.id === id && transform;
+
+    // 🔥 최적화: 팝업 열기/닫기 핸들러
+    const handlePopoverOpen = useAutoCallback(() => {
+      setIsPopoverOpen(true);
+    });
+
+    const handlePopoverClose = useAutoCallback(() => {
+      setIsPopoverOpen(false);
+    });
+
+    // 🔥 최적화: 이벤트 핸들러를 useAutoCallback으로 최적화
+    const handlePopoverClick = useAutoCallback((event: React.MouseEvent) => {
+      event.stopPropagation();
+    });
 
     return (
-      <Popover isLazy>
+      <Popover
+        isOpen={isPopoverOpen}
+        onOpen={handlePopoverOpen}
+        onClose={handlePopoverClose}
+        closeOnBlur={!isCurrentlyDragging} // 🔥 최적화: 드래그 중에는 blur로 닫히지 않음
+        closeOnEsc={!isCurrentlyDragging} // 🔥 최적화: 드래그 중에는 ESC로 닫히지 않음
+      >
         <PopoverTrigger>
           <Box
             position="absolute"
-            left={position.left}
-            top={position.top}
-            width={position.width}
-            height={position.height}
+            left={style.left}
+            top={style.top}
+            width={style.width}
+            height={style.height}
             bg={bg}
             p={1}
             boxSizing="border-box"
@@ -84,7 +92,6 @@ const DraggableSchedule = memo(
             transform={CSS.Translate.toString(transform)}
             {...listeners}
             {...attributes}
-            {...boxProps}
           >
             <Text fontSize="sm" fontWeight="bold">
               {lecture.title}
@@ -92,34 +99,27 @@ const DraggableSchedule = memo(
             <Text fontSize="xs">{room}</Text>
           </Box>
         </PopoverTrigger>
-        <PopoverContent onClick={(event) => event.stopPropagation()}>
-          <PopoverArrow />
-          <PopoverCloseButton />
-          <PopoverBody>
-            <Text>강의를 삭제하시겠습니까?</Text>
-            <Button colorScheme="red" size="xs" onClick={handleDeleteClick}>
-              삭제
-            </Button>
-          </PopoverBody>
-        </PopoverContent>
+        {/* 🔥 최적화: 팝업이 열린 상태에서만 렌더링 (드래그 중에도 함께 움직임) */}
+        {isPopoverOpen && (
+          <PopoverContent
+            onClick={handlePopoverClick}
+            transform={
+              isCurrentlyDragging
+                ? CSS.Translate.toString(transform)
+                : undefined
+            } // 🔥 최적화: 드래그 중 팝업도 함께 움직임
+          >
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverBody>
+              <Text>강의를 삭제하시겠습니까?</Text>
+              <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
+                삭제
+              </Button>
+            </PopoverBody>
+          </PopoverContent>
+        )}
       </Popover>
-    );
-  },
-  (prevProps, nextProps) => {
-    // data가 실제로 변경되었는지 확인 (성능 최적화)
-    return (
-      prevProps.id === nextProps.id &&
-      prevProps.bg === nextProps.bg &&
-      prevProps.data.day === nextProps.data.day &&
-      prevProps.data.range.length === nextProps.data.range.length &&
-      prevProps.data.range.every(
-        (time, index) => time === nextProps.data.range[index]
-      ) &&
-      prevProps.data.room === nextProps.data.room &&
-      prevProps.data.lecture.title === nextProps.data.lecture.title &&
-      prevProps.onDeleteButtonClick === nextProps.onDeleteButtonClick &&
-      prevProps.scheduleDay === nextProps.scheduleDay &&
-      prevProps.scheduleTime === nextProps.scheduleTime
     );
   }
 );
