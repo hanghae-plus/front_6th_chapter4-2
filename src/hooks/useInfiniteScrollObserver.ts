@@ -31,7 +31,6 @@ export function useInfiniteScrollObserver({
     enabled: hasMore,
   });
 
-  // ref를 loaderRef와 intersectionRef에 동시에 연결
   const setRef = useCallback(
     (element: HTMLDivElement | null) => {
       loaderRef.current = element;

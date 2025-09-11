@@ -15,6 +15,7 @@ export function useSearchOptions(lectures: Lecture[]) {
 
   const filteredLectures = useMemo(() => {
     const { query = '', credits, grades, days, times, majors } = searchOptions;
+
     return lectures
       .filter(
         (lecture) =>

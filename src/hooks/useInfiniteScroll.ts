@@ -1,7 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useEffect } from 'react';
 import { Lecture } from '../types';
-import { PAGE_SIZE } from '../constants';
+
 import { useInfiniteScrollObserver } from './useInfiniteScrollObserver';
+import { usePagination } from './usePagination';
 
 interface UseInfiniteScrollOptions {
   items: Lecture[];
@@ -9,21 +10,8 @@ interface UseInfiniteScrollOptions {
 }
 
 export function useInfiniteScroll({ items, root }: UseInfiniteScrollOptions) {
-  const [page, setPage] = useState(1);
-
-  const lastPage = useMemo(() => Math.ceil(items.length / PAGE_SIZE), [items.length]);
-
-  const visibleItems = useMemo(() => items.slice(0, page * PAGE_SIZE), [items, page]);
-
-  const hasMore = page < lastPage;
-
-  const handleLoadMore = useCallback(() => {
-    setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-  }, [lastPage]);
-
-  const resetPage = useCallback(() => {
-    setPage(1);
-  }, []);
+  const { page, setPage, lastPage, visibleItems, hasMore, handleLoadMore, resetPage } =
+    usePagination({ items });
 
   const { loaderRef } = useInfiniteScrollObserver({
     hasMore,
@@ -31,8 +19,7 @@ export function useInfiniteScroll({ items, root }: UseInfiniteScrollOptions) {
     root,
   });
 
-  // 아이템이 변경되면 페이지 리셋
-  useMemo(() => {
+  useEffect(() => {
     resetPage();
   }, [items.length, resetPage]);
 
