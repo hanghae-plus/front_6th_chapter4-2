@@ -1,2 +1,2 @@
-export * from "./ScheduleTables";
-export * from "./SearchDialog";
+export * from "./schedule-tables";
+export * from "./search-dialog";
