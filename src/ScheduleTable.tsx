@@ -42,6 +42,44 @@ const TIMES = [
     .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
 ] as const;
 
+const ScheduleTable = ({
+  tableId,
+  schedules,
+  onScheduleTimeClick,
+  onDeleteButtonClick,
+  isActive = false,
+}: Props) => {
+  const getColor = (lectureId: string): string => {
+    const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
+    const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
+    return colors[lectures.indexOf(lectureId) % colors.length];
+  };
+
+  const handleScheduleTimeClock = useAutoCallback((timeInfo: TimeInfo) =>
+    onScheduleTimeClick?.(timeInfo),
+  );
+
+  const handleDeleteSchedule = useAutoCallback((schedule: Schedule) =>
+    onDeleteButtonClick?.({ day: schedule.day, time: schedule.range[0] }),
+  );
+
+  return (
+    <Box position="relative" outline={isActive ? "5px dashed" : undefined} outlineColor="blue.300">
+      <TableGrid onScheduleTimeClick={handleScheduleTimeClock} />
+
+      {schedules.map((schedule, index) => (
+        <DraggableSchedule
+          key={`${schedule.lecture.title}-${index}`}
+          id={`${tableId}:${index}`}
+          data={schedule}
+          bg={getColor(schedule.lecture.id)}
+          onDeleteButtonClick={(schedule) => handleDeleteSchedule(schedule)}
+        />
+      ))}
+    </Box>
+  );
+};
+
 const TableGrid = memo(
   ({ onScheduleTimeClick }: { onScheduleTimeClick?: (timeInfo: TimeInfo) => void }) => {
     return (
@@ -97,95 +135,58 @@ const TableGrid = memo(
   },
 );
 
-const ScheduleTable = ({
-  tableId,
-  schedules,
-  onScheduleTimeClick,
-  onDeleteButtonClick,
-  isActive = false,
-}: Props) => {
-  const getColor = (lectureId: string): string => {
-    const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
-    const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
-    return colors[lectures.indexOf(lectureId) % colors.length];
-  };
+const DraggableSchedule = memo(
+  ({
+    id,
+    data,
+    bg,
+    onDeleteButtonClick,
+  }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
+      onDeleteButtonClick: (schedule: Schedule) => void;
+    }) => {
+    const { day, range, room, lecture } = data;
+    const { attributes, setNodeRef, listeners, transform } = useDraggable({ id });
+    const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
+    const topIndex = range[0] - 1;
+    const size = range.length;
 
-  const handleScheduleTimeClock = useAutoCallback((timeInfo: TimeInfo) =>
-    onScheduleTimeClick?.(timeInfo),
-  );
-
-  return (
-    <Box position="relative" outline={isActive ? "5px dashed" : undefined} outlineColor="blue.300">
-      <TableGrid onScheduleTimeClick={handleScheduleTimeClock} />
-
-      {schedules.map((schedule, index) => (
-        <DraggableSchedule
-          key={`${schedule.lecture.title}-${index}`}
-          id={`${tableId}:${index}`}
-          data={schedule}
-          bg={getColor(schedule.lecture.id)}
-          onDeleteButtonClick={() =>
-            onDeleteButtonClick?.({
-              day: schedule.day,
-              time: schedule.range[0],
-            })
-          }
-        />
-      ))}
-    </Box>
-  );
-};
-
-const DraggableSchedule = ({
-  id,
-  data,
-  bg,
-  onDeleteButtonClick,
-}: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
-    onDeleteButtonClick: () => void;
-  }) => {
-  const { day, range, room, lecture } = data;
-  const { attributes, setNodeRef, listeners, transform } = useDraggable({ id });
-  const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
-  const topIndex = range[0] - 1;
-  const size = range.length;
-
-  return (
-    <Popover>
-      <PopoverTrigger>
-        <Box
-          position="absolute"
-          left={`${120 + CellSize.WIDTH * leftIndex + 1}px`}
-          top={`${40 + (topIndex * CellSize.HEIGHT + 1)}px`}
-          width={CellSize.WIDTH - 1 + "px"}
-          height={CellSize.HEIGHT * size - 1 + "px"}
-          bg={bg}
-          p={1}
-          boxSizing="border-box"
-          cursor="pointer"
-          ref={setNodeRef}
-          transform={CSS.Translate.toString(transform)}
-          {...listeners}
-          {...attributes}
-        >
-          <Text fontSize="sm" fontWeight="bold">
-            {lecture.title}
-          </Text>
-          <Text fontSize="xs">{room}</Text>
-        </Box>
-      </PopoverTrigger>
-      <PopoverContent onClick={(event) => event.stopPropagation()}>
-        <PopoverArrow />
-        <PopoverCloseButton />
-        <PopoverBody>
-          <Text>강의를 삭제하시겠습니까?</Text>
-          <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
-            삭제
-          </Button>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
-  );
-};
+    return (
+      <Popover>
+        <PopoverTrigger>
+          <Box
+            position="absolute"
+            left={`${120 + CellSize.WIDTH * leftIndex + 1}px`}
+            top={`${40 + (topIndex * CellSize.HEIGHT + 1)}px`}
+            width={CellSize.WIDTH - 1 + "px"}
+            height={CellSize.HEIGHT * size - 1 + "px"}
+            bg={bg}
+            p={1}
+            boxSizing="border-box"
+            cursor="pointer"
+            ref={setNodeRef}
+            transform={CSS.Translate.toString(transform)}
+            {...listeners}
+            {...attributes}
+          >
+            <Text fontSize="sm" fontWeight="bold">
+              {lecture.title}
+            </Text>
+            <Text fontSize="xs">{room}</Text>
+          </Box>
+        </PopoverTrigger>
+        <PopoverContent onClick={(event) => event.stopPropagation()}>
+          <PopoverArrow />
+          <PopoverCloseButton />
+          <PopoverBody>
+            <Text>강의를 삭제하시겠습니까?</Text>
+            <Button colorScheme="red" size="xs" onClick={() => onDeleteButtonClick(data)}>
+              삭제
+            </Button>
+          </PopoverBody>
+        </PopoverContent>
+      </Popover>
+    );
+  },
+);
 
 export default ScheduleTable;
