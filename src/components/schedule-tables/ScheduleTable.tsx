@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react';
-import { useDndContext } from '@dnd-kit/core';
 import { memo, useMemo } from 'react';
 import { useAutoCallback } from '../../hooks/useAutoCallback';
+import { useScheduleDrag } from '../../hooks/useScheduleDrag';
 import { Schedule, TimeInfo } from '../../types';
 import { DraggableSchedule } from './DraggableSchedule';
 import { ScheduleTableGrid } from './ScheduleTableGrid';
@@ -20,6 +20,8 @@ export const ScheduleTable = memo(
     onScheduleTimeClick,
     onDeleteButtonClick,
   }: ScheduleTableProps) => {
+    const isThisTableDragging = useScheduleDrag(tableId);
+
     // 색상 매핑을 메모이제이션
     const getColor = useMemo(() => {
       const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
@@ -30,17 +32,6 @@ export const ScheduleTable = memo(
       };
     }, [schedules]);
 
-    const dndContext = useDndContext();
-
-    // activeTableId 계산을 메모이제이션
-    const activeTableId = useMemo(() => {
-      const activeId = dndContext.active?.id;
-      if (activeId) {
-        return String(activeId).split(':')[0];
-      }
-      return null;
-    }, [dndContext.active?.id]);
-
     const handleScheduleTimeClick = useAutoCallback((timeInfo: TimeInfo) => {
       onScheduleTimeClick?.(timeInfo);
     });
@@ -48,7 +39,7 @@ export const ScheduleTable = memo(
     return (
       <Box
         position='relative'
-        outline={activeTableId === tableId ? '5px dashed' : undefined}
+        outline={isThisTableDragging ? '5px dashed' : undefined}
         outlineColor='blue.300'
       >
         <ScheduleTableGrid onScheduleTimeClick={handleScheduleTimeClick} />
