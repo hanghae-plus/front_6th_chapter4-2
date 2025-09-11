@@ -38,9 +38,11 @@ interface Props {
 }
 
 const PAGE_SIZE = 100;
+const base =
+    process.env.NODE_ENV === "production" ? "/front_6th_chapter4-2/" : "/";
 
-const fetchMajors = () => axios.get<Lecture[]>('/schedules-majors.json');
-const fetchLiberalArts = () => axios.get<Lecture[]>('/schedules-liberal-arts.json');
+const fetchMajors = () => axios.get<Lecture[]>(`${base}schedules-majors.json`);
+const fetchLiberalArts = () => axios.get<Lecture[]>(`${base}schedules-liberal-arts.json`)
 
 let majorsCache: Promise<AxiosResponse<Lecture[]>> | null = null;
 let liberalArtsCache: Promise<AxiosResponse<Lecture[]>> | null = null;
