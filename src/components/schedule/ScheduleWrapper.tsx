@@ -57,7 +57,7 @@ const ScheduleWrapper = memo(
 
         <ScheduleDndProvider draggedTableId={tableId}>
           <ScheduleTable
-            key={`schedule-table-${index}`}
+            key={`schedule-table-${tableId}`}
             schedules={schedules}
             tableId={tableId}
             setSearchInfo={setSearchInfo}
