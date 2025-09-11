@@ -10,6 +10,7 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import { useSchedulesActions } from "../../contexts";
+import { useInfiniteScroll } from "../../hooks";
 import { Lecture, SearchOption } from "../../types.ts";
 import { parseSchedule } from "../../utils.ts";
 import axios from "axios";
@@ -224,27 +225,18 @@ export const SearchDialog = ({ searchInfo, onClose }: Props) => {
     });
   }, []);
 
-  useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
+  const handleLoadMore = useCallback((nextPage: number) => {
+    setPage(nextPage);
+  }, []);
 
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
-
-    observer.observe($loader);
-
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
+  useInfiniteScroll({
+    loaderRef,
+    containerRef: loaderWrapperRef,
+    currentPage: page,
+    lastPage,
+    onLoadMore: handleLoadMore,
+    enabled: Boolean(searchInfo),
+  });
 
   useEffect(() => {
     setSearchOptions((prev) => ({
