@@ -1,7 +1,7 @@
 import { Flex } from "@chakra-ui/react";
 import { useMemo, memo } from "react";
 import { useSchedulesData } from "../../contexts";
-import { useSearchInfo } from "../../hooks";
+import { useSearchInfo, useAutoCallback } from "../../hooks";
 import { SearchDialog } from "../search/SearchDialog";
 import { ScheduleWrapper } from "./ScheduleWrapper";
 
@@ -14,6 +14,12 @@ export const ScheduleTables = memo(() => {
     [schedulesMap]
   );
 
+  const handleCloseSearchDialog = useAutoCallback(() => {
+    setSearchInfo(null);
+  });
+
+  const stableSetSearchInfo = useAutoCallback(setSearchInfo);
+
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
@@ -23,15 +29,18 @@ export const ScheduleTables = memo(() => {
             tableId={tableId}
             schedules={schedules}
             index={index}
-            setSearchInfo={setSearchInfo}
+            setSearchInfo={stableSetSearchInfo}
             disabledRemoveButton={disabledRemoveButton}
           />
         ))}
       </Flex>
-      <SearchDialog
-        searchInfo={searchInfo}
-        onClose={() => setSearchInfo(null)}
-      />
+
+      {searchInfo && (
+        <SearchDialog
+          searchInfo={searchInfo}
+          onClose={handleCloseSearchDialog}
+        />
+      )}
     </>
   );
 });

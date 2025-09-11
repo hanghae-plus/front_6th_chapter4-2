@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback, memo } from "react";
 import {
   Box,
   Checkbox,
@@ -77,7 +77,7 @@ const fetchAllLectures = async () => {
 };
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
-export const SearchDialog = ({ searchInfo, onClose }: Props) => {
+export const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useSchedulesActions();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
@@ -276,4 +276,6 @@ export const SearchDialog = ({ searchInfo, onClose }: Props) => {
       </Modal>
     </SearchDialogContext.Provider>
   );
-};
+});
+
+SearchDialog.displayName = "SearchDialog";

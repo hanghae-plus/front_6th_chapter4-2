@@ -65,6 +65,24 @@ const ScheduleWrapper = memo(
         </ScheduleDndProvider>
       </Stack>
     );
+  },
+
+  (prevProps, nextProps) => {
+    return (
+      prevProps.tableId === nextProps.tableId &&
+      prevProps.index === nextProps.index &&
+      prevProps.schedules.length === nextProps.schedules.length &&
+      prevProps.disabledRemoveButton === nextProps.disabledRemoveButton &&
+      prevProps.setSearchInfo === nextProps.setSearchInfo &&
+      prevProps.schedules.every(
+        (schedule, idx) =>
+          nextProps.schedules[idx] &&
+          schedule.lecture.id === nextProps.schedules[idx].lecture.id &&
+          schedule.day === nextProps.schedules[idx].day &&
+          JSON.stringify(schedule.range) ===
+            JSON.stringify(nextProps.schedules[idx].range)
+      )
+    );
   }
 );
 
