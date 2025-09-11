@@ -1,12 +1,13 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useSchedulesData, useSchedulesActions } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { useState, useCallback, useMemo } from "react";
-import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
+import { ScheduleDndProvider } from "./ScheduleDndProvider.tsx";
 
 export const ScheduleTables = () => {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const { schedulesMap } = useSchedulesData();
+  const { setSchedulesMap } = useSchedulesActions();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
@@ -27,7 +28,7 @@ export const ScheduleTables = () => {
 
   const remove = useCallback(
     (targetId: string) => {
-      setSchedulesMap((prev) => {
+      setSchedulesMap((prev: Record<string, any[]>) => {
         delete prev[targetId];
         return { ...prev };
       });
@@ -51,7 +52,8 @@ export const ScheduleTables = () => {
       setSchedulesMap((prev) => ({
         ...prev,
         [tableId]: prev[tableId].filter(
-          (schedule) => schedule.day !== day || !schedule.range.includes(time)
+          (schedule: any) =>
+            schedule.day !== day || !schedule.range.includes(time)
         ),
       }));
     },
@@ -128,7 +130,7 @@ export const ScheduleTables = () => {
                 </Button>
               </ButtonGroup>
             </Flex>
-            <ScheduleDndProvider>
+            <ScheduleDndProvider draggedTableId={tableId}>
               <ScheduleTable
                 key={`schedule-table-${index}`}
                 schedules={schedules}

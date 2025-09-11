@@ -9,7 +9,7 @@ import {
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useSchedulesActions } from "./ScheduleContext.tsx";
 import { Lecture, SearchOption } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import axios from "axios";
@@ -77,7 +77,7 @@ const fetchAllLectures = async () => {
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const { setSchedulesMap } = useSchedulesActions();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -163,7 +163,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         lecture,
       }));
 
-      setSchedulesMap((prev) => ({
+      setSchedulesMap((prev: Record<string, any[]>) => ({
         ...prev,
         [tableId]: [...prev[tableId], ...schedules],
       }));
