@@ -26,7 +26,6 @@ import GradeFilter from "./GradeFilter.tsx";
 import PeriodTimeFilter from "./PeriodTimeFilter.tsx";
 import CreditFilter from "./CreditFilter.tsx";
 import QueryFilter from "./QueryFilter.tsx";
-import { useInfiniteScroll } from "./hooks/useInfiniteScroll.ts";
 import { SearchOption } from "./types.ts";
 
 interface Props {
@@ -160,15 +159,32 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     })
   }, []);
 
-    useInfiniteScroll({
-        onIntersect: useCallback(() => {
-            setPage((prev) => Math.min(lastPage, prev + 1));
-        }, [lastPage]),
-        loaderRef: loaderRef,
-        loaderWrapperRef: loaderWrapperRef,
-        options: { threshold: 0 },
-        enabled: page < lastPage,
-    });
+    // TODO 우선 다른 분 코드를 참고해서 수정한 것이니 꼭 제발 꼭 다시 공부하기
+    const observerRef = useRef<IntersectionObserver | null>(null);
+
+    const setLoaderWrapperRef = useCallback(
+        (node: HTMLDivElement | null) => {
+            if (!node) return; // unmount 시 null 들어옴
+
+            const $loader = loaderRef.current;
+            if (!$loader) return;
+
+            observerRef.current?.unobserve($loader);
+
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    if (entries[0].isIntersecting) {
+                        setPage((prev) => Math.min(lastPage, prev + 1));
+                    }
+                },
+                { root: node }
+            );
+
+            observer.observe($loader);
+            observerRef.current = observer;
+        },
+        [lastPage]
+    );
 
   useEffect(() => {
     setSearchOptions(prev => ({
@@ -209,7 +225,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <SearchTableHead />
               </Table>
 
-              <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
+              <Box overflowY="auto" maxH="500px" ref={setLoaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>
                     {visibleLectures.map((lecture, index) => (
