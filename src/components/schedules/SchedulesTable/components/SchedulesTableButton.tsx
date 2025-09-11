@@ -19,14 +19,6 @@ export const SchedulesTableButton = memo(
     const duplicate = useCallback((targetId: string) => {
       store.duplicateTable(targetId); // ← store 메서드 사용
     }, []);
-    // const handleDuplicate = useCallback(
-    //   () => onDuplicate(tableId),
-    //   [tableId, onDuplicate]
-    // );
-    // const handleRemove = useCallback(
-    //   () => onRemove(tableId),
-    //   [tableId, onRemove]
-    // );
     const remove = useCallback((targetId: string) => {
       store.removeTable(targetId);
     }, []);
