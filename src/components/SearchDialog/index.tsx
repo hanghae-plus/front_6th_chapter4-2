@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useScheduleContext } from '../../context/ScheduleContext.tsx';
+import { useScheduleTableContext } from '../../context/ScheduleTableContext.tsx';
 import { Lecture } from '../../types.ts';
 import { createApiCache } from '../../utils/apiCache.ts';
 import { parseSchedule } from '../../utils/utils.ts';
@@ -72,7 +72,7 @@ const fetchAllLectures = async () =>
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const { setSchedules } = useScheduleTableContext();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -140,20 +140,16 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     (lecture: Lecture) => {
       if (!searchInfo) return;
 
-      const { tableId } = searchInfo;
       const schedules = parseSchedule(lecture.schedule).map(schedule => ({
         ...schedule,
         lecture,
       }));
 
-      setSchedulesMap(prev => ({
-        ...prev,
-        [tableId]: [...prev[tableId], ...schedules],
-      }));
+      setSchedules(prev => [...prev, ...schedules]);
 
       onClose();
     },
-    [searchInfo, setSchedulesMap, onClose]
+    [searchInfo, setSchedules, onClose]
   );
 
   useEffect(() => {

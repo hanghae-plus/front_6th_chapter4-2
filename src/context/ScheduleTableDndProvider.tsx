@@ -1,5 +1,5 @@
 import { DndContext, Modifier, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useCallback } from 'react';
 import { CellSize, DAY_LABELS } from '../constants.ts';
 import { useScheduleTableContext } from './ScheduleTableContext.tsx';
 
@@ -31,7 +31,7 @@ function createSnapModifier(): Modifier {
 const modifiers = [createSnapModifier()];
 
 const ScheduleTableDndProvider = ({ children }: PropsWithChildren) => {
-  const { schedules, setSchedules } = useScheduleTableContext();
+  const { schedules, updateSchedule } = useScheduleTableContext();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -41,32 +41,26 @@ const ScheduleTableDndProvider = ({ children }: PropsWithChildren) => {
     })
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (event: any) => {
-    const { active, delta } = event;
-    const { x, y } = delta;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_, scheduleIndex] = active.id.split(':');
-    const schedule = schedules[Number(scheduleIndex)];
+  const handleDragEnd = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (event: any) => {
+      const { active, delta } = event;
+      const { x, y } = delta;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [_, scheduleIndex] = active.id.split(':');
+      const schedule = schedules[Number(scheduleIndex)];
 
-    const nowDayIndex = DAY_LABELS.indexOf(schedule.day as (typeof DAY_LABELS)[number]);
-    const moveDayIndex = Math.floor(x / 80);
-    const moveTimeIndex = Math.floor(y / 30);
+      const nowDayIndex = DAY_LABELS.indexOf(schedule.day as (typeof DAY_LABELS)[number]);
+      const moveDayIndex = Math.floor(x / 80);
+      const moveTimeIndex = Math.floor(y / 30);
 
-    setSchedules(prevSchedules =>
-      prevSchedules.map((targetSchedule, targetIndex) => {
-        console.log('target id, index: ', targetSchedule, targetIndex);
-        if (targetIndex !== Number(scheduleIndex)) {
-          return { ...targetSchedule };
-        }
-        return {
-          ...targetSchedule,
-          day: DAY_LABELS[nowDayIndex + moveDayIndex],
-          range: targetSchedule.range.map(time => time + moveTimeIndex),
-        };
-      })
-    );
-  };
+      updateSchedule(Number(scheduleIndex), {
+        day: DAY_LABELS[nowDayIndex + moveDayIndex],
+        range: schedule.range.map(time => time + moveTimeIndex),
+      });
+    },
+    [schedules, updateSchedule]
+  );
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd} modifiers={modifiers}>

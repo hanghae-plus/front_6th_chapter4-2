@@ -1,9 +1,9 @@
-import { Button, Flex, Heading, Stack } from '@chakra-ui/react';
+import { Stack } from '@chakra-ui/react';
 
-import { ButtonGroup } from '@chakra-ui/react';
-import { useScheduleContext } from '../context/ScheduleContext';
+import { useCallback } from 'react';
 import { useScheduleTableContext } from '../context/ScheduleTableContext.tsx';
-import ScheduleTable from './ScheduleTable.tsx';
+import ScheduleTable from './ScheduleTable/index.tsx';
+import ScheduleTableHeader from './ScheduleTableHeader.tsx';
 
 interface Props {
   tableId: string;
@@ -13,46 +13,38 @@ interface Props {
 }
 
 const ScheduleTableWrapper = ({ tableId, index, disabledRemoveButton, setSearchInfo }: Props) => {
-  const { duplicateTable, removeTable } = useScheduleContext();
   const { schedules, removeSchedule } = useScheduleTableContext();
 
-  const duplicate = (targetId: string) => duplicateTable(targetId);
+  const handleDeleteButtonClick = useCallback(
+    ({ day, time }: { day: string; time: number }) => {
+      removeSchedule(
+        schedules.findIndex(schedule => schedule.day === day && schedule.range.includes(time))
+      );
+    },
+    [removeSchedule, schedules]
+  );
 
-  const remove = (targetId: string) => removeTable(targetId);
-
-  const handleDeleteButtonClick = ({ day, time }: { day: string; time: number }) => {
-    removeSchedule(
-      schedules.findIndex(schedule => schedule.day === day && schedule.range.includes(time))
-    );
-  };
+  const handleScheduleTimeClick = useCallback(
+    (timeInfo: { day: string; time: number }) => {
+      setSearchInfo({ tableId, ...timeInfo });
+    },
+    [setSearchInfo, tableId]
+  );
 
   return (
     <Stack width="600px">
-      <Flex justifyContent="space-between" alignItems="center">
-        <Heading as="h3" fontSize="lg">
-          시간표 {index + 1}
-        </Heading>
-        <ButtonGroup size="sm" isAttached>
-          <Button colorScheme="green" onClick={() => setSearchInfo({ tableId })}>
-            시간표 추가
-          </Button>
-          <Button colorScheme="green" mx="1px" onClick={() => duplicate(tableId)}>
-            복제
-          </Button>
-          <Button
-            colorScheme="green"
-            isDisabled={disabledRemoveButton}
-            onClick={() => remove(tableId)}
-          >
-            삭제
-          </Button>
-        </ButtonGroup>
-      </Flex>
+      <ScheduleTableHeader
+        tableId={tableId}
+        index={index}
+        setSearchInfo={setSearchInfo}
+        disabledRemoveButton={disabledRemoveButton}
+      />
+
       <ScheduleTable
         key={`schedule-table-${index}`}
         schedules={schedules}
         tableId={tableId}
-        onScheduleTimeClick={timeInfo => setSearchInfo({ tableId, ...timeInfo })}
+        onScheduleTimeClick={handleScheduleTimeClick}
         onDeleteButtonClick={handleDeleteButtonClick}
       />
     </Stack>

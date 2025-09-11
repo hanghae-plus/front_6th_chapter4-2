@@ -30,10 +30,10 @@ export const ScheduleTables = () => {
                 setSearchInfo={setSearchInfo}
               />
             </ScheduleTableDndProvider>
+            <SearchDialog searchInfo={searchInfo} onClose={() => setSearchInfo(null)} />
           </ScheduleTableProvider>
         ))}
       </Flex>
-      <SearchDialog searchInfo={searchInfo} onClose={() => setSearchInfo(null)} />
     </>
   );
 };
