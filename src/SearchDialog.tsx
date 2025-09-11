@@ -130,10 +130,10 @@ const SearchDialog = ({ searchInfo, onClose, onScheduleAdd }: Props) => {
   const changeSearchOption = useCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
       setPage(1);
-      setSearchOptions({ ...searchOptions, [field]: value });
+      setSearchOptions(prev => ({ ...prev, [field]: value }));
       loaderWrapperRef.current?.scrollTo(0, 0);
     },
-    [searchOptions]
+    []
   );
 
   const addSchedule = (lecture: Lecture) => {
