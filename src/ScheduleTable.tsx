@@ -1,9 +1,6 @@
 import {
   Box,
   Button,
-  Flex,
-  Grid,
-  GridItem,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -86,55 +83,88 @@ const ScheduleTable = ({
 
 const TableGrid = memo(
   ({ onScheduleTimeClick }: { onScheduleTimeClick?: (timeInfo: TimeInfo) => void }) => {
+    const gray100 = "#EDF2F7";
+    const gray200 = "#E2E8F0";
+    const gray300 = "#CBD5E0";
+    const yellow100 = "#FEFCBF";
+
+    const gridStyle: React.CSSProperties = {
+      display: "grid",
+      gridTemplateColumns: `120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`,
+      gridTemplateRows: `40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`,
+      backgroundColor: "#ffffff",
+      fontSize: "14px",
+      textAlign: "center",
+      outline: `1px solid ${gray300}`,
+    };
+
+    const headerCellStyle: React.CSSProperties = {
+      borderLeft: `1px solid ${gray300}`,
+      backgroundColor: gray100,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    };
+
+    const timeColCellBase: React.CSSProperties = {
+      borderTop: `1px solid ${gray300}`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    };
+
+    const dayCellBase: React.CSSProperties = {
+      borderTop: `1px solid ${gray300}`,
+      borderLeft: `1px solid ${gray300}`,
+      cursor: "pointer",
+    };
+
     return (
-      <Grid
-        templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}
-        templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`}
-        bg="white"
-        fontSize="sm"
-        textAlign="center"
-        outline="1px solid"
-        outlineColor="gray.300"
-      >
-        <GridItem key="교시" borderColor="gray.300" bg="gray.100">
-          <Flex justifyContent="center" alignItems="center" h="full" w="full">
-            <Text fontWeight="bold">교시</Text>
-          </Flex>
-        </GridItem>
+      <div style={gridStyle}>
+        <div style={{ backgroundColor: gray100 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            <strong>교시</strong>
+          </div>
+        </div>
         {DAY_LABELS.map((day) => (
-          <GridItem key={day} borderLeft="1px" borderColor="gray.300" bg="gray.100">
-            <Flex justifyContent="center" alignItems="center" h="full">
-              <Text fontWeight="bold">{day}</Text>
-            </Flex>
-          </GridItem>
+          <div key={day} style={headerCellStyle}>
+            <strong>{day}</strong>
+          </div>
         ))}
         {TIMES.map((time, timeIndex) => (
           <Fragment key={`시간-${timeIndex + 1}`}>
-            <GridItem
-              borderTop="1px solid"
-              borderColor="gray.300"
-              bg={timeIndex > 17 ? "gray.200" : "gray.100"}
+            <div
+              style={{ ...timeColCellBase, backgroundColor: timeIndex > 17 ? gray200 : gray100 }}
             >
-              <Flex justifyContent="center" alignItems="center" h="full">
-                <Text fontSize="xs">
-                  {fill2(timeIndex + 1)} ({time})
-                </Text>
-              </Flex>
-            </GridItem>
+              <span style={{ fontSize: "12px" }}>
+                {fill2(timeIndex + 1)} ({time})
+              </span>
+            </div>
             {DAY_LABELS.map((day) => (
-              <GridItem
+              <div
                 key={`${day}-${timeIndex + 2}`}
-                borderWidth="1px 0 0 1px"
-                borderColor="gray.300"
-                bg={timeIndex > 17 ? "gray.100" : "white"}
-                cursor="pointer"
-                _hover={{ bg: "yellow.100" }}
+                style={{
+                  ...dayCellBase,
+                  backgroundColor: timeIndex > 17 ? gray100 : "#ffffff",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = yellow100)}
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = timeIndex > 17 ? gray100 : "#ffffff")
+                }
                 onClick={() => onScheduleTimeClick?.({ day, time: timeIndex + 1 })}
               />
             ))}
           </Fragment>
         ))}
-      </Grid>
+      </div>
     );
   },
 );
