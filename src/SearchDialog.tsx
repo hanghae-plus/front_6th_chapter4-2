@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   Box,
   Modal,
@@ -70,8 +70,9 @@ const fetchAllLectures = async () =>
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
-  const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
   const searchOptions = useSearchOptionsStore((state) => state.searchOptions);
@@ -128,6 +129,32 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     [lectures]
   );
 
+  const setLoaderWrapperRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!node) return;
+
+      const $loader = loaderRef.current;
+      if (!$loader) return;
+
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setPage((prev) => Math.min(lastPage, prev + 1));
+          }
+        },
+        { root: node }
+      );
+
+      observer.observe($loader);
+      observerRef.current = observer;
+    },
+    [lastPage]
+  );
+
   const addSchedule = (lecture: Lecture) => {
     if (!searchInfo) return;
 
@@ -156,28 +183,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       setLectures(results.flatMap((result) => result.data));
     });
   }, []);
-
-  useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
-
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
-
-    observer.observe($loader);
-
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
 
   useEffect(() => {
     useSearchOptionsStore.setState((state) => ({
@@ -213,7 +218,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 </Thead>
               </Table>
 
-              <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
+              <Box overflowY="auto" maxH="500px" ref={setLoaderWrapperRef}>
                 <SearchResultTable
                   lectures={visibleLectures}
                   addSchedule={addSchedule}
