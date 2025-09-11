@@ -5,7 +5,6 @@ import {
   FormControl,
   FormLabel,
   HStack,
-  Input,
   Select,
   Stack,
   Tag,
@@ -14,8 +13,9 @@ import {
   VStack,
   Wrap,
 } from "@chakra-ui/react";
-import { DAY_LABELS } from "../../constants.ts";
+import { DAY_LABELS } from "../../data/constants";
 import { MajorCheckbox, TimeSlotCheckbox } from "./index";
+import SearchInput from "./SearchInput";
 
 interface SearchOption {
   query?: string;
@@ -75,9 +75,10 @@ const SearchForm = memo(
     onMajorToggle,
     onTimeSlotToggle,
   }: SearchFormProps) => {
+    // 검색어 변경 핸들러
     const handleQueryChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        onSearchOptionChange("query", e.target.value);
+      (query: string) => {
+        onSearchOptionChange("query", query);
       },
       [onSearchOptionChange]
     );
@@ -126,15 +127,11 @@ const SearchForm = memo(
     return (
       <VStack spacing={4} align="stretch">
         <HStack spacing={4}>
-          <FormControl>
-            <FormLabel htmlFor={`${idPrefix}-query`}>검색어</FormLabel>
-            <Input
-              id={`${idPrefix}-query`}
-              placeholder="과목명 또는 과목코드"
-              value={searchOptions.query}
-              onChange={handleQueryChange}
-            />
-          </FormControl>
+          <SearchInput
+            query={searchOptions.query}
+            idPrefix={idPrefix}
+            onQueryChange={handleQueryChange}
+          />
 
           <FormControl>
             <FormLabel htmlFor={`${idPrefix}-credits`}>학점</FormLabel>

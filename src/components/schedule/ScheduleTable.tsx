@@ -3,7 +3,7 @@ import { CellSize, DAY_LABELS, 분 } from "../../data/constants";
 import { fill2, parseHnM } from "../../lib/utils";
 import { Fragment, memo, useCallback, useMemo } from "react";
 import { useTableSchedules } from "../../stores/scheduleStore";
-import { DraggableSchedule } from "../dnd";
+import { DraggableSchedule } from "..//dnd";
 
 interface Props {
   tableId: string;

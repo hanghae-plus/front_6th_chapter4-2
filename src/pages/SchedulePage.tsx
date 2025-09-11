@@ -2,7 +2,7 @@ import { Flex } from "@chakra-ui/react";
 import { useState, memo, useCallback } from "react";
 import { useScheduleStore } from "../stores/scheduleStore";
 import { ScheduleTableWrapper } from "../components/schedule";
-import SearchDialog from "../components/search/SearchDialog";
+import { SearchDialog } from "../components/search";
 
 export const SchedulePage = memo(() => {
   const { schedulesMap, removeSchedule } = useScheduleStore();
