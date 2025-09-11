@@ -1,8 +1,9 @@
 import { memo } from "react";
-import { Box, Text, Table, Tbody } from "@chakra-ui/react";
+import { Box, Text, Table } from "@chakra-ui/react";
 import { Lecture } from "../types";
 import SearchResultTableHeader from "./SearchResultTableHeader";
 import SearchResultTableRow from "./SearchResultTableRow";
+// CSS는 main.tsx에서 전역 import
 
 interface Props {
   visibleLectures: Lecture[];
@@ -25,8 +26,8 @@ const SearchResultTable = memo(
           <SearchResultTableHeader />
 
           <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
-            <Table size="sm" variant="striped">
-              <Tbody>
+            <Table size="sm">
+              <tbody className="chakra-striped-table">
                 {visibleLectures.map((lecture, index) => (
                   <SearchResultTableRow
                     key={`${lecture.id}-${index}`}
@@ -38,7 +39,7 @@ const SearchResultTable = memo(
                     schedule={lecture.schedule}
                   />
                 ))}
-              </Tbody>
+              </tbody>
             </Table>
             <Box ref={loaderRef} h="20px" />
           </Box>

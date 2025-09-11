@@ -1,0 +1,11 @@
+.chakra-striped-table tr:nth-of-type(2n + 1) td {
+  background: var(--chakra-colors-gray-100) !important;
+}
+
+.chakra-striped-table td {
+  border-bottom: 1px solid var(--chakra-colors-gray-100);
+}
+
+.chakra-button:hover {
+  background: var(--chakra-colors-green-600) !important;
+}
