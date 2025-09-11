@@ -6,8 +6,8 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { PropsWithChildren, useCallback } from 'react';
-import { CellSize, DAY_LABELS } from '../../constants';
-import { useScheduleContext } from '../../ScheduleContext';
+import { CellSize } from '../../constants';
+import { ScheduleActionsReturn } from '../../hooks/useScheduleActions';
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -46,16 +46,13 @@ function createSnapModifier(): Modifier {
 const modifiers = [createSnapModifier()];
 
 interface ScheduleDndProviderProps extends PropsWithChildren {
-  tableId?: string;
+  actions: ScheduleActionsReturn;
 }
 
 export const ScheduleDndProvider = ({
   children,
-  tableId,
+  actions,
 }: ScheduleDndProviderProps) => {
-  // ✅ 수정: Hook을 최상위 레벨에서 호출
-  const { actions } = useScheduleContext();
-
   // ✅ 수정: useSensors를 최상위에서 직접 호출
   const sensors = useSensors(
     useSensor(PointerSensor, {
