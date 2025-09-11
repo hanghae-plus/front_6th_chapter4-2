@@ -16,9 +16,9 @@ import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { ComponentProps, Fragment } from "react";
 
-import { CellSize, DAY_LABELS, 분 } from "./constants";
-import { Schedule } from "./types";
-import { fill2, parseHnM } from "./utils";
+import { CellSize, DAY_LABELS, 분 } from "../../constants";
+import type { Schedule } from "../../types";
+import { fill2, parseHnM } from "../../utils";
 
 interface Props {
   tableId: string;
@@ -39,7 +39,7 @@ const TIMES = [
     .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
 ] as const;
 
-const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
+export const ScheduleTable = ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
   const getColor = (lectureId: string): string => {
     const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
     const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
@@ -174,5 +174,3 @@ const DraggableSchedule = ({
     </Popover>
   );
 };
-
-export default ScheduleTable;

@@ -27,11 +27,11 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 
-import { DAY_LABELS } from "./constants";
-import { useScheduleContext } from "./ScheduleContext";
-import { LectureService } from "./services";
-import { Lecture } from "./types";
-import { parseSchedule } from "./utils";
+import { DAY_LABELS } from "../../constants";
+import { useScheduleContext } from "../../contexts";
+import { LectureService } from "../../services";
+import type { Lecture } from "../../types";
+import { parseSchedule } from "../../utils";
 
 interface Props {
   searchInfo: {
@@ -81,7 +81,7 @@ const TIME_SLOTS = [
 const PAGE_SIZE = 100;
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
-const SearchDialog = ({ searchInfo, onClose }: Props) => {
+export const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
@@ -405,5 +405,3 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     </Modal>
   );
 };
-
-export default SearchDialog;
