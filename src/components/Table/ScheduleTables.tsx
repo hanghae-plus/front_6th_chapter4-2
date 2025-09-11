@@ -6,6 +6,7 @@ import { useScheduleActions, useScheduleState } from "../../ScheduleContext.tsx"
 import SearchDialog from "../../SearchDialog.tsx";
 import ScheduleDndProvider from "../../ScheduleDndProvider.tsx";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
+import type { Schedule } from "../../types.ts";
 
 export const ScheduleTables = () => {
   const { schedulesMap } = useScheduleState();

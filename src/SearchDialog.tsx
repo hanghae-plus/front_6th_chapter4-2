@@ -236,8 +236,8 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
             />
 
             <HStack spacing={4}>
-              <GradeFilter grades={searchOptions.grades} onChange={(grades) => changeSearchOption("grades", grades)} />
-              <DayFilter days={searchOptions.days} onChange={(days) => changeSearchOption("days", days)} />
+              <GradeFilter grades={searchOptions.grades} onChange={changeSearchOption} />
+              <DayFilter days={searchOptions.days} onChange={changeSearchOption} />
             </HStack>
 
             <HStack spacing={4}>

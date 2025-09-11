@@ -1,9 +1,10 @@
 import { Checkbox, CheckboxGroup, FormControl, FormLabel, HStack } from "@chakra-ui/react";
 import { memo } from "react";
+import { SearchOption } from "../../../types";
 
 interface GradeFilterProps {
   grades: number[];
-  onChange: (grades: number[]) => void;
+  onChange: (field: keyof SearchOption, value: number[]) => void;
 }
 
 const GradeFilter = memo(
@@ -13,7 +14,7 @@ const GradeFilter = memo(
     return (
       <FormControl>
         <FormLabel>학년</FormLabel>
-        <CheckboxGroup value={grades} onChange={(value) => onChange(value.map(Number))}>
+        <CheckboxGroup value={grades} onChange={(value) => onChange("grades", value.map(Number))}>
           <HStack spacing={4}>
             {[1, 2, 3, 4].map((grade) => (
               <Checkbox key={grade} value={grade}>
@@ -26,11 +27,19 @@ const GradeFilter = memo(
     );
   },
   (prev, next) => {
-    return (
-      prev.grades.length === next.grades.length &&
-      prev.grades.every((grade, index) => grade === next.grades[index]) &&
-      prev.onChange === next.onChange
-    );
+    // grades 배열이 동일한지 확인 (참조 동일성 우선 체크)
+    if (prev.grades === next.grades && prev.onChange === next.onChange) {
+      return true;
+    }
+    
+    // 길이가 다르면 다름
+    if (prev.grades.length !== next.grades.length) {
+      return false;
+    }
+    
+    // 각 요소 비교
+    return prev.grades.every((grade, index) => grade === next.grades[index]) &&
+           prev.onChange === next.onChange;
   }
 );
 
