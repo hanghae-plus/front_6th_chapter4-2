@@ -27,9 +27,12 @@ export const useLectureData = () => {
   };
 };
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
+const fetchMajors = () =>
+  axios.get<Lecture[]>(`${import.meta.env.BASE_URL}schedules-majors.json`);
 const fetchLiberalArts = () =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json");
+  axios.get<Lecture[]>(
+    `${import.meta.env.BASE_URL}schedules-liberal-arts.json`
+  );
 
 const fetchAllLectures = async () =>
   await Promise.all([
