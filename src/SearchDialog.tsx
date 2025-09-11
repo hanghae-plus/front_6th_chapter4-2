@@ -29,7 +29,7 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { DAY_LABELS } from "./constants";
 import { useScheduleContext } from "./ScheduleContext";
 import { Lecture } from "./types.ts";
@@ -80,6 +80,32 @@ const TIME_SLOTS = [
 ];
 
 const PAGE_SIZE = 100;
+
+const LectureRow = memo(({ lecture, onAdd }: { lecture: Lecture & { parsedSchedule: any[] }, onAdd: (lecture: Lecture) => void }) => (
+  <Tr>
+    <Td width="100px">{lecture.id}</Td>
+    <Td width="50px">{lecture.grade}</Td>
+    <Td width="200px">{lecture.title}</Td>
+    <Td width="50px">{lecture.credits}</Td>
+    <Td
+      width="150px"
+      dangerouslySetInnerHTML={{ __html: lecture.major }}
+    />
+    <Td
+      width="150px"
+      dangerouslySetInnerHTML={{ __html: lecture.schedule }}
+    />
+    <Td width="80px">
+      <Button
+        size="sm"
+        colorScheme="green"
+        onClick={() => onAdd(lecture)}
+      >
+        추가
+      </Button>
+    </Td>
+  </Tr>
+));
 
 const fetchMajors = createCache(() =>
   axios.get<Lecture[]>("/schedules-majors.json"),
@@ -192,6 +218,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     () => filteredLectures.slice(0, page * PAGE_SIZE),
     [filteredLectures, page],
   );
+  
   const allMajors = useMemo(
     () => [...new Set(lectures.map((lecture) => lecture.major))],
     [lectures],
@@ -234,7 +261,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       const end = performance.now();
       console.log("모든 API 호출 완료 ", end);
       console.log("API 호출에 걸린 시간(ms): ", end - start);
-      setLectures(results.flatMap((result) => result.data));
+      
+      const allData = results.flatMap((result) => result.data);
+      const uniqueLectures = Array.from(
+        new Map(allData.map(lecture => [lecture.id, lecture])).values()
+      );
+      
+      setLectures(uniqueLectures);
     });
   }, []);
 
@@ -461,30 +494,12 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>
-                    {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.major }}
-                        />
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-                        />
-                        <Td width="80px">
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() => addSchedule(lecture)}
-                          >
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
+                    {visibleLectures.map((lecture) => (
+                      <LectureRow
+                        key={lecture.id}
+                        lecture={lecture}
+                        onAdd={addSchedule}
+                      />
                     ))}
                   </Tbody>
                 </Table>
