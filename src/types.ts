@@ -8,8 +8,13 @@ export interface Lecture {
 }
 
 export interface Schedule {
-  lecture: Lecture
+  lecture: Lecture;
   day: string;
-  range: number[]
+  range: number[];
   room?: string;
+}
+
+export interface TimeInfo {
+  day: string;
+  time: number;
 }
