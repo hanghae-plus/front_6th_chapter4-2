@@ -3,3 +3,4 @@ export * from './DraggableSchedule';
 export * from './ScheduleTable';
 export * from './ScheduleTables';
 export * from './ScheduleDndProvider';
+export * from './ScheduleTableContainer';

@@ -6,27 +6,23 @@ import {
   ModalHeader,
   ModalOverlay,
   VStack,
-} from "@chakra-ui/react";
-import { useScheduleContext } from "../../ScheduleContext";
-import { Lecture } from "../../types";
-import { parseSchedule } from "../../utils";
-import { useLectureData } from "../../hooks/useLectureData";
-import { useSearchWithPagination } from "../../hooks/useSearchWithPagination";
-import { useAutoCallback } from "../../hooks/useAutoCallback";
-import { SearchForm } from "./SearchForm";
-import { SearchResults } from "./SearchResults";
+} from '@chakra-ui/react';
+import { useScheduleContext } from '../../ScheduleContext';
+import { Lecture, SearchInfo } from '../../types';
+import { parseSchedule } from '../../utils';
+import { useLectureData } from '../../hooks/useLectureData';
+import { useSearchWithPagination } from '../../hooks/useSearchWithPagination';
+import { useAutoCallback } from '../../hooks/useAutoCallback';
+import { SearchForm } from './SearchForm';
+import { SearchResults } from './SearchResults';
 
 interface SearchDialogProps {
-  searchInfo: {
-    tableId: string;
-    day?: string;
-    time?: number;
-  } | null;
+  searchInfo: SearchInfo | null;
   onClose: () => void;
 }
 
 export const SearchDialog = ({ searchInfo, onClose }: SearchDialogProps) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const { actions } = useScheduleContext();
   const { lectures, isLoading } = useLectureData();
 
   // 통합된 검색 + 페이지네이션 훅
@@ -54,19 +50,15 @@ export const SearchDialog = ({ searchInfo, onClose }: SearchDialogProps) => {
       lecture,
     }));
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
-
+    actions.addSchedules(tableId, schedules);
     onClose();
   });
 
   if (isLoading) {
     return (
-      <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
+      <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size='6xl'>
         <ModalOverlay />
-        <ModalContent maxW="90vw" w="1000px">
+        <ModalContent maxW='90vw' w='1000px'>
           <ModalHeader>수업 검색</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -78,13 +70,13 @@ export const SearchDialog = ({ searchInfo, onClose }: SearchDialogProps) => {
   }
 
   return (
-    <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
+    <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size='6xl'>
       <ModalOverlay />
-      <ModalContent maxW="90vw" w="1000px">
+      <ModalContent maxW='90vw' w='1000px'>
         <ModalHeader>수업 검색</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <VStack spacing={4} align="stretch">
+          <VStack spacing={4} align='stretch'>
             <SearchForm
               searchOptions={searchOptions}
               allMajors={allMajors}
