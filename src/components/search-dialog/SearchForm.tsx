@@ -18,6 +18,26 @@ import {
 import { SearchOption } from '../../hooks/useSearchWithPagination';
 import { DAY_LABELS, TIME_SLOTS } from '../../constants';
 
+// 시간 슬롯 체크박스 컴포넌트
+const TimeSlotCheckbox = memo(({ id, label }: { id: number; label: string }) => (
+  <Box key={id}>
+    <Checkbox key={id} size='sm' value={id}>
+      {id}교시({label})
+    </Checkbox>
+  </Box>
+));
+TimeSlotCheckbox.displayName = 'TimeSlotCheckbox';
+
+// 전공 체크박스 컴포넌트
+const MajorCheckbox = memo(({ major }: { major: string }) => (
+  <Box key={major}>
+    <Checkbox key={major} size='sm' value={major}>
+      {major.replace(/<p>/gi, ' ')}
+    </Checkbox>
+  </Box>
+));
+MajorCheckbox.displayName = 'MajorCheckbox';
+
 interface SearchFormProps {
   searchOptions: SearchOption;
   allMajors: string[];
@@ -135,11 +155,7 @@ export const SearchForm = memo(
                 p={2}
               >
                 {TIME_SLOTS.map(({ id, label }) => (
-                  <Box key={id}>
-                    <Checkbox key={id} size='sm' value={id}>
-                      {id}교시({label})
-                    </Checkbox>
-                  </Box>
+                  <TimeSlotCheckbox key={id} id={id} label={label} />
                 ))}
               </Stack>
             </CheckboxGroup>
@@ -184,11 +200,7 @@ export const SearchForm = memo(
                 p={2}
               >
                 {allMajors.map((major) => (
-                  <Box key={major}>
-                    <Checkbox key={major} size='sm' value={major}>
-                      {major.replace(/<p>/gi, ' ')}
-                    </Checkbox>
-                  </Box>
+                  <MajorCheckbox key={major} major={major} />
                 ))}
               </Stack>
             </CheckboxGroup>

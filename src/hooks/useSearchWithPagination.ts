@@ -82,15 +82,14 @@ export const useSearchWithPagination = ({
     return [...new Set(lectures.map((lecture) => lecture.major))];
   }, [lectures]);
 
-  const lastPage = Math.ceil(filteredLectures.length / SEARCH_PAGE_SIZE);
+  const lastPage = useMemo(() => {
+    return Math.ceil(filteredLectures.length / SEARCH_PAGE_SIZE);
+  }, [filteredLectures]);
 
   const visibleLectures = useMemo(() => {
     return filteredLectures.slice(0, page * SEARCH_PAGE_SIZE);
   }, [filteredLectures, page]);
 
-  const resetPage = useCallback(() => {
-    setPage(1);
-  }, []);
 
   const scrollToTop = useCallback(() => {
     loaderWrapperRef.current?.scrollTo(0, 0);
@@ -98,11 +97,10 @@ export const useSearchWithPagination = ({
 
   const changeSearchOption = useCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
-      resetPage();
       setSearchOptions((prev) => ({ ...prev, [field]: value }));
       scrollToTop();
     },
-    [resetPage, scrollToTop]
+    [scrollToTop]
   );
 
   // searchInfo 변경시 검색 옵션 업데이트
@@ -112,36 +110,91 @@ export const useSearchWithPagination = ({
       days: searchInfo?.day ? [searchInfo.day] : [],
       times: searchInfo?.time ? [searchInfo.time] : [],
     }));
-    resetPage();
-  }, [searchInfo, resetPage]);
+  }, [searchInfo]);
 
-  // filteredLectures 변경시 페이지 리셋
+  // searchOptions 변경시 페이지 리셋
+  const prevSearchOptionsRef = useRef<SearchOption | null>(null);
   useEffect(() => {
-    setPage(1);
-  }, [filteredLectures]);
+    const prev = prevSearchOptionsRef.current;
+    const current = searchOptions;
+    
+    if (prev && (
+      prev.query !== current.query ||
+      prev.credits !== current.credits ||
+      prev.grades.length !== current.grades.length ||
+      prev.days.length !== current.days.length ||
+      prev.times.length !== current.times.length ||
+      prev.majors.length !== current.majors.length ||
+      !prev.grades.every(g => current.grades.includes(g)) ||
+      !prev.days.every(d => current.days.includes(d)) ||
+      !prev.times.every(t => current.times.includes(t)) ||
+      !prev.majors.every(m => current.majors.includes(m))
+    )) {
+      setPage(1);
+    }
+    
+    prevSearchOptionsRef.current = { ...current };
+  }, [searchOptions]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
+    // ref가 연결될 때까지 계속 체크
+    const checkAndSetupObserver = () => {
+      const $loader = loaderRef.current;
+      const $loaderWrapper = loaderWrapperRef.current;
 
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
+      if (!$loader || !$loaderWrapper || lastPage === 0 || filteredLectures.length === 0) {
+        return null;
+      }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setPage((currentPage) => {
+              const currentLastPage = Math.ceil(filteredLectures.length / SEARCH_PAGE_SIZE);
+              if (currentPage < currentLastPage) {
+                return Math.min(currentLastPage, currentPage + 1);
+              }
+              return currentPage;
+            });
+          }
+        },
+        { 
+          threshold: 0.1, 
+          root: $loaderWrapper,
+          rootMargin: '10px'
         }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
+      );
 
-    observer.observe($loader);
+      observer.observe($loader);
+      return observer;
+    };
 
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
+    let observer: IntersectionObserver | null = null;
+    let retryCount = 0;
+    const maxRetries = 20; // 최대 2초까지 시도 (100ms * 20)
+
+    const setupWithRetry = () => {
+      if (filteredLectures.length === 0) {
+        return;
+      }
+      
+      observer = checkAndSetupObserver();
+      
+      if (!observer && retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(setupWithRetry, 100);
+      }
+    };
+
+    setupWithRetry();
+
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [lastPage, filteredLectures.length]); // page 의존성 제거로 매번 재생성 방지
 
   return {
     searchOptions,

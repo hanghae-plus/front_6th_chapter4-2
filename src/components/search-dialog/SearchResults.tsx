@@ -42,7 +42,7 @@ export const SearchResults = memo(
               <Tbody>
                 {visibleLectures.map((lecture, index) => (
                   <SearchItem
-                    key={`${lecture.id}-${index}`}
+                    key={`${lecture.id}-${lecture.title}-${lecture.major}-${index}`}
                     addSchedule={addSchedule}
                     {...lecture}
                   />
