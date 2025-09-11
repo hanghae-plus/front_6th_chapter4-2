@@ -1,7 +1,7 @@
-import { Checkbox, CheckboxGroup, FormControl, FormLabel, HStack } from "@chakra-ui/react";
-import { memo } from "react";
-import { DAY_LABELS } from "../../constants";
-import { gradeDayComparison } from "../../utils/memoComparison";
+import { HStack } from "@chakra-ui/react";
+import { memo, useMemo } from "react";
+import DayFilters from "./DayFilters";
+import GradeFilters from "./GradeFilters";
 
 interface SearchOption {
   query?: string;
@@ -19,36 +19,20 @@ interface GradeDayFiltersProps {
 }
 
 const GradeDayFilters = memo(({ grades, days, onChange }: GradeDayFiltersProps) => {
+  console.log("GradeDayFilters 리렌더링");
+
+  // 각 필터별로 최적화된 onChange 함수 생성
+  const handleGradeChange = useMemo(() => (newGrades: number[]) => onChange("grades", newGrades), [onChange]);
+
+  const handleDayChange = useMemo(() => (newDays: string[]) => onChange("days", newDays), [onChange]);
+
   return (
     <HStack spacing={4}>
-      <FormControl>
-        <FormLabel>학년</FormLabel>
-        <CheckboxGroup value={grades} onChange={(value) => onChange("grades", value.map(Number))}>
-          <HStack spacing={4}>
-            {[1, 2, 3, 4].map((grade) => (
-              <Checkbox key={grade} value={grade}>
-                {grade}학년
-              </Checkbox>
-            ))}
-          </HStack>
-        </CheckboxGroup>
-      </FormControl>
-
-      <FormControl>
-        <FormLabel>요일</FormLabel>
-        <CheckboxGroup value={days} onChange={(value) => onChange("days", value as string[])}>
-          <HStack spacing={4}>
-            {DAY_LABELS.map((day) => (
-              <Checkbox key={day} value={day}>
-                {day}
-              </Checkbox>
-            ))}
-          </HStack>
-        </CheckboxGroup>
-      </FormControl>
+      <GradeFilters grades={grades} onChange={handleGradeChange} />
+      <DayFilters days={days} onChange={handleDayChange} />
     </HStack>
   );
-}, gradeDayComparison);
+});
 
 GradeDayFilters.displayName = "GradeDayFilters";
 
