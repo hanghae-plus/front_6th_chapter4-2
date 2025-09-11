@@ -137,6 +137,26 @@ const TimeSlotCheckbox = memo(({ timeSlot, isSelected, onChange }: {
   </Box>
 ));
 
+const SelectedTimeTag = memo(({ time, onRemove }: { 
+  time: number, 
+  onRemove: (time: number) => void 
+}) => (
+  <Tag size="sm" variant="outline" colorScheme="blue">
+    <TagLabel>{time}교시</TagLabel>
+    <TagCloseButton onClick={() => onRemove(time)} />
+  </Tag>
+));
+
+const SelectedMajorTag = memo(({ major, onRemove }: { 
+  major: string, 
+  onRemove: (major: string) => void 
+}) => (
+  <Tag size="sm" variant="outline" colorScheme="blue">
+    <TagLabel>{major.split("<p>").pop()}</TagLabel>
+    <TagCloseButton onClick={() => onRemove(major)} />
+  </Tag>
+));
+
 const fetchMajors = createCache(() =>
   axios.get<Lecture[]>("/schedules-majors.json"),
 );
@@ -281,6 +301,22 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       changeSearchOption("times", newTimes);
     },
     [searchOptions.times, changeSearchOption],
+  );
+
+  const handleRemoveTime = useCallback(
+    (timeToRemove: number) => {
+      const newTimes = searchOptions.times.filter(time => time !== timeToRemove);
+      changeSearchOption("times", newTimes);
+    },
+    [searchOptions.times, changeSearchOption],
+  );
+
+  const handleRemoveMajor = useCallback(
+    (majorToRemove: string) => {
+      const newMajors = searchOptions.majors.filter(major => major !== majorToRemove);
+      changeSearchOption("majors", newMajors);
+    },
+    [searchOptions.majors, changeSearchOption],
   );
 
   const addSchedule = useCallback(
@@ -438,22 +474,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                     {searchOptions.times
                       .sort((a, b) => a - b)
                       .map((time) => (
-                        <Tag
+                        <SelectedTimeTag
                           key={time}
-                          size="sm"
-                          variant="outline"
-                          colorScheme="blue"
-                        >
-                          <TagLabel>{time}교시</TagLabel>
-                          <TagCloseButton
-                            onClick={() =>
-                              changeSearchOption(
-                                "times",
-                                searchOptions.times.filter((v) => v !== time),
-                              )
-                            }
-                          />
-                        </Tag>
+                          time={time}
+                          onRemove={handleRemoveTime}
+                        />
                       ))}
                   </Wrap>
                   <Stack
@@ -488,22 +513,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 >
                   <Wrap spacing={1} mb={2}>
                     {searchOptions.majors.map((major) => (
-                      <Tag
+                      <SelectedMajorTag
                         key={major}
-                        size="sm"
-                        variant="outline"
-                        colorScheme="blue"
-                      >
-                        <TagLabel>{major.split("<p>").pop()}</TagLabel>
-                        <TagCloseButton
-                          onClick={() =>
-                            changeSearchOption(
-                              "majors",
-                              searchOptions.majors.filter((v) => v !== major),
-                            )
-                          }
-                        />
-                      </Tag>
+                        major={major}
+                        onRemove={handleRemoveMajor}
+                      />
                     ))}
                   </Wrap>
                   <Stack
