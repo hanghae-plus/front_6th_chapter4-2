@@ -457,7 +457,12 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                     ))}
                   </Tbody>
                 </Table>
-                <Box ref={loaderRef} h="20px" />
+                <Box
+                  ref={(e) => {
+                    loaderRef.current = e;
+                  }}
+                  h="20px"
+                />
               </Box>
             </Box>
           </VStack>
