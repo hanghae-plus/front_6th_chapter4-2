@@ -1,6 +1,6 @@
 import { DndContext, type Modifier, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { PropsWithChildren } from "react";
-import { CellSize, DAY_LABELS } from "./constants.ts";
+import { CellSize, DAY_LABELS } from "../constants/constants.ts";
 import { useScheduleContext } from "./ScheduleContext.tsx";
 
 function createSnapModifier(): Modifier {
@@ -56,7 +56,7 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
         return {
           ...targetSchedule,
           day: DAY_LABELS[nowDayIndex + moveDayIndex],
-          range: targetSchedule.range.map((time) => time + moveTimeIndex),
+          range: targetSchedule.range.map((time: number) => time + moveTimeIndex),
         };
       }),
     });

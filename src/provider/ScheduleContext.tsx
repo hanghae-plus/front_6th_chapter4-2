@@ -1,7 +1,7 @@
 import type React from "react";
 import { createContext, type PropsWithChildren, useContext, useState } from "react";
-import dummyScheduleMap from "./dummyScheduleMap.ts";
-import type { Schedule } from "./types.ts";
+import dummyScheduleMap from "../constants/dummyScheduleMap.ts";
+import type { Schedule } from "../types/types.ts";
 
 interface ScheduleContextType {
   schedulesMap: Record<string, Schedule[]>;

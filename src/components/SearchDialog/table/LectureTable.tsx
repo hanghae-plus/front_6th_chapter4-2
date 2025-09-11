@@ -1,6 +1,6 @@
 import { Table, Tbody } from "@chakra-ui/react";
 import { memo } from "react";
-import type { Lecture } from "../../../types";
+import type { Lecture } from "../../../types/types";
 import { lectureTableComparison } from "../../../utils/memoComparison";
 import LectureRow from "./LectureRow";
 

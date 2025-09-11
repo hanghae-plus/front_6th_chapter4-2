@@ -1,7 +1,7 @@
 import { Flex, Grid, GridItem, Text } from "@chakra-ui/react";
 import { Fragment, memo } from "react";
-import { CellSize, DAY_LABELS, 분 } from "../../constants.ts";
-import { fill2, parseHnM } from "../../utils.ts";
+import { CellSize, DAY_LABELS, 분 } from "../../constants/constants.ts";
+import { fill2, parseHnM } from "../../utils/utils.ts";
 
 interface Props {
   onScheduleTimeClick?: (timeInfo: { day: string; time: number }) => void;

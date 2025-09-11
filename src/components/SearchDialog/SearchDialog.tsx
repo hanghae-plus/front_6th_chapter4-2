@@ -20,11 +20,11 @@ import {
   MajorFilter,
   LectureTable,
   TableHeader,
-} from "./components/SearchDialog";
-import { useScheduleContext } from "./ScheduleContext.tsx";
-import type { Lecture } from "./types.ts";
-import { parseSchedule } from "./utils.ts";
-import { useAutoCallback } from "./hooks/useAutoCallback.ts";
+} from "./index.ts";
+import { useScheduleContext } from "../../provider/ScheduleContext.tsx";
+import type { Lecture } from "../../types/types.ts";
+import { parseSchedule } from "../../utils/utils.ts";
+import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
 
 interface Props {
   searchInfo: {
