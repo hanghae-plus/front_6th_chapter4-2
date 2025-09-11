@@ -96,8 +96,8 @@ const getParsedSchedule = (schedule: string) => {
   return parsed;
 };
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
-const fetchLiberalArts = () => axios.get<Lecture[]>("/schedules-liberal-arts.json");
+const fetchMajors = () => axios.get<Lecture[]>("schedules-majors.json");
+const fetchLiberalArts = () => axios.get<Lecture[]>("schedules-liberal-arts.json");
 
 const fetchAllLectures = async () => {
   const majors = (allLecturesCache.majors ??= fetchMajors().catch((error) => {
