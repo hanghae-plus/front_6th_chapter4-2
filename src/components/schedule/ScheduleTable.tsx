@@ -1,40 +1,72 @@
-import { memo } from "react";
+import { Box } from "@chakra-ui/react";
 import { Schedule } from "../../types";
-import { useSchedulesActions } from "../../contexts";
+import { useDndContext } from "@dnd-kit/core";
+import { memo, useMemo } from "react";
 import { useAutoCallback } from "../../hooks";
-import OriginalScheduleTable from "../../ScheduleTable";
+import { useSchedulesActions } from "../../contexts";
+import { DraggableSchedule } from "./DraggableSchedule";
+import { ScheduleTableGrid } from "./ScheduleTableGrid";
 
 interface Props {
-  schedules: Schedule[];
   tableId: string;
+  schedules: Schedule[];
   setSearchInfo: (
     searchInfo: { tableId: string; day?: string; time?: number } | null
   ) => void;
 }
 
 export const ScheduleTable = memo(
-  ({ schedules, tableId, setSearchInfo }: Props) => {
+  ({ tableId, schedules, setSearchInfo }: Props) => {
     const { deleteSchedule } = useSchedulesActions();
+    const dndContext = useDndContext();
 
-    const handleScheduleTimeClick = useAutoCallback(
-      (day: string, time: number) => {
-        setSearchInfo({ tableId, day, time });
+    const activeTableId = useMemo(() => {
+      const activeId = dndContext.active?.id;
+      if (activeId) {
+        return String(activeId).split(":")[0];
       }
-    );
+      return null;
+    }, [dndContext]);
+
+    const colorMap = useMemo(() => {
+      const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
+      const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
+      return lectures.reduce((acc, lectureId, index) => {
+        acc[lectureId] = colors[index % colors.length];
+        return acc;
+      }, {} as Record<string, string>);
+    }, [schedules]);
 
     const handleDeleteButtonClick = useAutoCallback(
-      (day: string, time: number) => {
+      ({ day, time }: { day: string; time: number }) => {
         deleteSchedule({ tableId, day, time });
       }
     );
 
+    const handleScheduleTimeClick = useAutoCallback(
+      (timeInfo: { day: string; time: number }) => {
+        setSearchInfo({ tableId, ...timeInfo });
+      }
+    );
+
     return (
-      <OriginalScheduleTable
-        schedules={schedules}
-        tableId={tableId}
-        onScheduleTimeClick={handleScheduleTimeClick}
-        onDeleteButtonClick={handleDeleteButtonClick}
-      />
+      <Box
+        position="relative"
+        outline={activeTableId === tableId ? "5px dashed" : undefined}
+        outlineColor="blue.300"
+      >
+        <ScheduleTableGrid onScheduleTimeClick={handleScheduleTimeClick} />
+
+        {schedules.map((schedule, index) => (
+          <DraggableSchedule
+            key={`${schedule.lecture.title}-${index}`}
+            id={`${tableId}:${index}`}
+            data={schedule}
+            bg={colorMap[schedule.lecture.id]}
+            onDeleteButtonClick={handleDeleteButtonClick}
+          />
+        ))}
+      </Box>
     );
   }
 );
