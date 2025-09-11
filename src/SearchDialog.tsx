@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -95,7 +95,7 @@ const SearchDialog = ({ searchInfo, onClose, onScheduleAdd }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  const getFilteredLectures = useCallback(() => {
     const { query = '', credits, grades, days, times, majors } = searchOptions;
     return lectures
       .filter(
@@ -120,12 +120,12 @@ const SearchDialog = ({ searchInfo, onClose, onScheduleAdd }: Props) => {
         const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
         return schedules.some(s => s.range.some(time => times.includes(time)));
       });
-  };
+  }, [searchOptions, lectures]);
 
   const filteredLectures = getFilteredLectures();
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
   const visibleLectures = filteredLectures.slice(0, page * PAGE_SIZE);
-  const allMajors = [...new Set(lectures.map(lecture => lecture.major))];
+  const allMajors = useMemo(() => [...new Set(lectures.map(lecture => lecture.major))], [lectures]);
 
   const changeSearchOption = useCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
