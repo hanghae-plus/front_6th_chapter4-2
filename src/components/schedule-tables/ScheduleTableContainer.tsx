@@ -16,7 +16,8 @@ export const ScheduleTableContainer = memo(
     const schedules = useScheduleTable(schedulesMap, tableId);
 
     return (
-      <ScheduleDndProvider>
+      <ScheduleDndProvider tableId={tableId}>
+        {/* ✅ tableId 전달 */}
         <ScheduleTable
           schedules={schedules}
           tableId={tableId}
