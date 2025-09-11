@@ -12,14 +12,14 @@ import {
   PopoverTrigger,
   Text,
 } from '@chakra-ui/react';
-import { CellSize, DAY_LABELS, 분 } from './constants.ts';
-import { Schedule } from './types.ts';
-import { fill2, parseHnM } from './utils.ts';
+import { CellSize, DAY_LABELS, 분 } from '../../constants.ts';
+import { Schedule } from '../../types.ts';
+import { fill2, parseHnM } from '../../utils.ts';
 import { useDndContext, useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { ComponentProps, Fragment, memo } from 'react';
-import { useAutoCallback } from './hooks';
-import { useSchedulesActions } from './ScheduleContext.tsx';
+import { useAutoCallback } from '../../hooks';
+import { useSchedulesActions } from '../../contexts';
 import { useMemo } from 'react';
 
 type TimeInfo = {
@@ -44,15 +44,8 @@ const TIMES = [
     .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
 ] as const;
 
-const ScheduleTable = memo(({ tableId, schedules, setSearchInfo }: Props) => {
+export const ScheduleTable = memo(({ tableId, schedules, setSearchInfo }: Props) => {
   const { deleteSchedule } = useSchedulesActions();
-
-  const getColor = useAutoCallback((lectureId: string): string => {
-    const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
-    const colors = ['#fdd', '#ffd', '#dff', '#ddf', '#fdf', '#dfd'];
-    return colors[lectures.indexOf(lectureId) % colors.length];
-  });
-
   const dndContext = useDndContext();
 
   const activeTableId = useMemo(() => {
@@ -62,6 +55,12 @@ const ScheduleTable = memo(({ tableId, schedules, setSearchInfo }: Props) => {
     }
     return null;
   }, [dndContext]);
+
+  const getColor = useAutoCallback((lectureId: string): string => {
+    const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
+    const colors = ['#fdd', '#ffd', '#dff', '#ddf', '#fdf', '#dfd'];
+    return colors[lectures.indexOf(lectureId) % colors.length];
+  });
 
   const handleDeleteButtonClick = useAutoCallback(
     ({ day, time }: { day: string; time: number }) => {
@@ -151,8 +150,6 @@ const DraggableSchedule = memo(
     );
   }
 );
-
-export default ScheduleTable;
 
 const ScheduleTableGrid = memo(
   ({ onScheduleTimeClick }: { onScheduleTimeClick: (timeInfo: TimeInfo) => void }) => {

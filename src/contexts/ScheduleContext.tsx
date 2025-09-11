@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useMemo, useState } from 'react';
-import dummyScheduleMap from './dummyScheduleMap.ts';
-import { useAutoCallback } from './hooks';
-import { Schedule, TimeInfo } from './types.ts';
+import dummyScheduleMap from '../dummyScheduleMap.ts';
+import { useAutoCallback } from '../hooks/index.ts';
+import { Schedule, TimeInfo } from '../types.ts';
 
 type SchedulesMap = Record<string, Schedule[]>;
 

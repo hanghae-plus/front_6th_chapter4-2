@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import axios, { AxiosResponse } from 'axios';
-import { useAutoCallback } from './hooks';
+import { useAutoCallback, useSearchOptions, useInfiniteScroll, useLectures } from '../../hooks';
 import {
   HStack,
   Modal,
@@ -11,10 +11,10 @@ import {
   ModalOverlay,
   VStack,
 } from '@chakra-ui/react';
-import type { SearchOption } from './types';
-import { useSchedulesActions } from './ScheduleContext.tsx';
-import { Lecture } from './types.ts';
-import { parseSchedule } from './utils.ts';
+import type { SearchOption } from '../../types.ts';
+import { useSchedulesActions } from '../../contexts/ScheduleContext.tsx';
+import { Lecture } from '../../types.ts';
+import { parseSchedule } from '../../utils.ts';
 import { SearchFilters } from './SearchFilters.tsx';
 import { LectureTable } from './LectureTable.tsx';
 
@@ -26,8 +26,6 @@ interface Props {
   } | null;
   onClose: () => void;
 }
-
-const PAGE_SIZE = 100;
 
 const createApiCache = () => {
   const cache = new Map<string, Promise<AxiosResponse<Lecture[]>>>();
@@ -69,64 +67,20 @@ const fetchAllLectures = async () =>
   ]);
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
-const SearchDialog = ({ searchInfo, onClose }: Props) => {
+export const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useSchedulesActions();
+  const { lectures, setLectures, allMajors } = useLectures();
+  const { searchOptions, setSearchOptions, filteredLectures } = useSearchOptions(lectures);
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
-  const loaderRef = useRef<HTMLDivElement>(null);
-  const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [page, setPage] = useState(1);
-  const [searchOptions, setSearchOptions] = useState<SearchOption>({
-    query: '',
-    grades: [],
-    days: [],
-    times: [],
-    majors: [],
+
+  const { visibleItems: visibleLectures, loaderRef } = useInfiniteScroll({
+    items: filteredLectures,
+    root: loaderWrapperRef.current,
   });
-
-  const filteredLectures = useMemo(() => {
-    const { query = '', credits, grades, days, times, majors } = searchOptions;
-    return lectures
-      .filter(
-        (lecture) =>
-          lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-          lecture.id.toLowerCase().includes(query.toLowerCase())
-      )
-      .filter((lecture) => grades.length === 0 || grades.includes(lecture.grade))
-      .filter((lecture) => majors.length === 0 || majors.includes(lecture.major))
-      .filter((lecture) => !credits || lecture.credits.startsWith(String(credits)))
-      .filter((lecture) => {
-        if (days.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some((s) => days.includes(s.day));
-      })
-      .filter((lecture) => {
-        if (times.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some((s) => s.range.some((time) => times.includes(time)));
-      });
-  }, [lectures, searchOptions]);
-
-  const lastPage = useMemo(
-    () => Math.ceil(filteredLectures.length / PAGE_SIZE),
-    [filteredLectures]
-  );
-  const visibleLectures = useMemo(
-    () => filteredLectures.slice(0, page * PAGE_SIZE),
-    [filteredLectures, page]
-  );
-  const allMajors = useMemo(
-    () => [...new Set(lectures.map((lecture) => lecture.major))],
-    [lectures]
-  );
 
   const changeSearchOption = useAutoCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
-      setPage(1);
       setSearchOptions({ ...searchOptions, [field]: value });
       loaderWrapperRef.current?.scrollTo(0, 0);
     }
@@ -150,38 +104,38 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     onClose();
   });
 
-  const removeTime = useAutoCallback((time: number) => {
+  const handleRemoveTime = useAutoCallback((time: number) => {
     changeSearchOption(
       'times',
       searchOptions.times.filter((t) => t !== time)
     );
   });
 
-  const queryChange = useAutoCallback((query: string) => {
+  const handleQueryChange = useAutoCallback((query: string) => {
     changeSearchOption('query', query);
   });
 
-  const creditsChange = useAutoCallback((credits: number) => {
+  const handleCreditsChange = useAutoCallback((credits: number) => {
     changeSearchOption('credits', credits);
   });
 
-  const gradesChange = useAutoCallback((grades: number[]) => {
+  const handleGradesChange = useAutoCallback((grades: number[]) => {
     changeSearchOption('grades', grades);
   });
 
-  const daysChange = useAutoCallback((days: string[]) => {
+  const handleDaysChange = useAutoCallback((days: string[]) => {
     changeSearchOption('days', days);
   });
 
-  const timesChange = useAutoCallback((times: number[]) => {
+  const handleTimesChange = useAutoCallback((times: number[]) => {
     changeSearchOption('times', times);
   });
 
-  const majorsChange = useAutoCallback((majors: string[]) => {
+  const handleMajorsChange = useAutoCallback((majors: string[]) => {
     changeSearchOption('majors', majors);
   });
 
-  const removeMajor = useAutoCallback((major: string) => {
+  const handleRemoveMajor = useAutoCallback((major: string) => {
     setSearchOptions((prev) => ({
       ...prev,
       majors: prev.majors.filter((m) => m !== major),
@@ -200,35 +154,12 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, []);
 
   useEffect(() => {
-    const $loader = loaderRef.current;
-    const $loaderWrapper = loaderWrapperRef.current;
-
-    if (!$loader || !$loaderWrapper) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prevPage) => Math.min(lastPage, prevPage + 1));
-        }
-      },
-      { threshold: 0, root: $loaderWrapper }
-    );
-
-    observer.observe($loader);
-
-    return () => observer.unobserve($loader);
-  }, [lastPage]);
-
-  useEffect(() => {
     setSearchOptions((prev) => ({
       ...prev,
       days: searchInfo?.day ? [searchInfo.day] : [],
       times: searchInfo?.time ? [searchInfo.time] : [],
     }));
-    setPage(1);
-  }, [searchInfo]);
+  }, [searchInfo, setSearchOptions]);
 
   return (
     <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
@@ -240,26 +171,29 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
           <VStack spacing={4} align="stretch">
             <SearchFilters>
               <HStack spacing={4}>
-                <SearchFilters.Search value={searchOptions.query} onChange={queryChange} />
-                <SearchFilters.Credits value={searchOptions.credits} onChange={creditsChange} />
+                <SearchFilters.Search value={searchOptions.query} onChange={handleQueryChange} />
+                <SearchFilters.Credits
+                  value={searchOptions.credits}
+                  onChange={handleCreditsChange}
+                />
               </HStack>
 
               <HStack spacing={4}>
-                <SearchFilters.Grades value={searchOptions.grades} onChange={gradesChange} />
-                <SearchFilters.Days value={searchOptions.days} onChange={daysChange} />
+                <SearchFilters.Grades value={searchOptions.grades} onChange={handleGradesChange} />
+                <SearchFilters.Days value={searchOptions.days} onChange={handleDaysChange} />
               </HStack>
 
               <HStack spacing={4}>
                 <SearchFilters.Times
                   value={searchOptions.times}
-                  onChange={timesChange}
-                  onRemove={removeTime}
+                  onChange={handleTimesChange}
+                  onRemove={handleRemoveTime}
                 />
                 <SearchFilters.Majors
                   value={searchOptions.majors}
                   allMajors={allMajors}
-                  onChange={majorsChange}
-                  onRemove={removeMajor}
+                  onChange={handleMajorsChange}
+                  onRemove={handleRemoveMajor}
                 />
               </HStack>
 
@@ -278,5 +212,3 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     </Modal>
   );
 };
-
-export default SearchDialog;

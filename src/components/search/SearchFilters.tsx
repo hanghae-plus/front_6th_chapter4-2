@@ -16,7 +16,7 @@ import {
   TagLabel,
   Wrap,
 } from '@chakra-ui/react';
-import { DAY_LABELS } from '../../utils';
+import { DAY_LABELS } from '../../constants';
 
 const TIME_SLOTS = [
   { id: 1, label: '09:00~09:30' },
