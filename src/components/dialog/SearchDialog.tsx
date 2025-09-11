@@ -33,11 +33,11 @@ interface Props {
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 // (이미 호출한 api는 다시 호출하지 않도록 - 클로저를 이용하여 캐시 구성)
-const fetchAllLectures = () => {
-	let lectureCache: Lecture[] | null = null;
+const createLectureFetcher = () => {
+	let lectureCache: Lecture[] | null = null; // 클로저에서만 유지되는 캐시
 
-	return async () => {
-		if (lectureCache) return lectureCache;
+	const fetchAllLectures = async () => {
+		if (lectureCache) return lectureCache; // 캐시가 있으면 api 호출 생략
 
 		const res = await Promise.all([
 			(console.log('API Call 1', performance.now()), fetchMajors()),
@@ -51,7 +51,12 @@ const fetchAllLectures = () => {
 		lectureCache = res.flatMap((r) => r.data); // 전공과 교양을 평탄화하여 하나의 배열로 처리
 		return lectureCache;
 	};
+
+	return { fetchAllLectures };
 };
+
+// fetcher 생성
+const lectureFetcher = createLectureFetcher();
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 // (스크롤을 할 때마다 검색을 시도하지 않도록)
@@ -111,7 +116,7 @@ const SearchDialog = ({ searchInfo, onClose, addLecture }: Props) => {
 		const start = performance.now();
 		console.log('API 호출 시작: ', start);
 
-		fetchAllLectures()().then((results) => {
+		lectureFetcher.fetchAllLectures().then((results) => {
 			const end = performance.now();
 			console.log('모든 API 호출 완료 ', end);
 			console.log('API 호출에 걸린 시간(ms): ', end - start);
