@@ -75,7 +75,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [page, setPage] = useState(1);
-  const searchOptions = useSearchOptionsStore((state) => state.searchOptions);
+
+  const searchOptions = useSearchOptionsStore((s) => s.searchOptions);
+  const setDays = useSearchOptionsStore((s) => s.setDays);
+  const setTimes = useSearchOptionsStore((s) => s.setTimes);
 
   const filteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
@@ -185,13 +188,10 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, []);
 
   useEffect(() => {
-    useSearchOptionsStore.setState((state) => ({
-      ...state,
-      days: searchInfo?.day ? [searchInfo.day] : [],
-      times: searchInfo?.time ? [searchInfo.time] : [],
-    }));
+    setDays(searchInfo?.day ? [searchInfo.day] : []);
+    setTimes(searchInfo?.time ? [searchInfo.time] : []);
     setPage(1);
-  }, [searchInfo]);
+  }, [searchInfo, setDays, setTimes]);
 
   return (
     <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
