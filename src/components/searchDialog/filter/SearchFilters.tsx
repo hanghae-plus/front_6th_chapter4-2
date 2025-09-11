@@ -6,7 +6,7 @@ import {
   DayForm,
   TimeForm,
   MajorForm,
-} from "./forms";
+} from "./forms/index.ts";
 
 export const SearchFilters = ({ allMajors }: { allMajors: string[] }) => {
   return (

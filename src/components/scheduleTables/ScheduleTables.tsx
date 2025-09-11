@@ -1,8 +1,8 @@
 import { Flex } from "@chakra-ui/react";
-import SearchDialog from "./SearchDialog.tsx";
+import SearchDialog from "../searchDialog/SearchDialog.tsx";
 import { useState } from "react";
-import { ScheduleTableWrapper } from "./ScheduleTableWrapper.tsx";
-import { useSchedulesStore } from "./store/schedulesStore.ts";
+import { ScheduleTableWrapper } from "./tableWrapper/ScheduleTableWrapper.tsx";
+import { useSchedulesStore } from "../../store/schedulesStore.ts";
 
 export const ScheduleTables = () => {
   const schedulesMap = useSchedulesStore((state) => state.schedulesMap);

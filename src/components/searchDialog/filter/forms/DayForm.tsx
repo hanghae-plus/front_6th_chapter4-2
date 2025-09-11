@@ -5,8 +5,8 @@ import {
   HStack,
   Checkbox,
 } from "@chakra-ui/react";
-import { useSearchOptionsStore } from "../../../store/searchOptionsStore";
-import { DAY_LABELS } from "../../../constants";
+import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
+import { DAY_LABELS } from "../../../../constants";
 
 export const DayForm = () => {
   const days = useSearchOptionsStore((state) => state.searchOptions.days);

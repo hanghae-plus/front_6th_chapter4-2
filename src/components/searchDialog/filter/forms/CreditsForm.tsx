@@ -1,5 +1,5 @@
 import { FormControl, FormLabel, Select } from "@chakra-ui/react";
-import { useSearchOptionsStore } from "../../../store/searchOptionsStore";
+import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
 
 export const CreditsForm = () => {
   const credits = useSearchOptionsStore((state) => state.searchOptions.credits);

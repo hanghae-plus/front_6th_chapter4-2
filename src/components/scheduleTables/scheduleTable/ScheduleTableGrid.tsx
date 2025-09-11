@@ -1,9 +1,9 @@
 import { Flex, Grid, GridItem, Text } from "@chakra-ui/react";
-import { CellSize, DAY_LABELS, 분 } from "./constants";
+import { CellSize, DAY_LABELS, 분 } from "../../../constants";
 import { TimeInfo } from "./ScheduleTable";
 import { Fragment, memo } from "react";
-import { fill2, parseHnM } from "./utils";
-import { useAutoCallback } from "./hooks/useAutoCallback";
+import { fill2, parseHnM } from "../../../utils";
+import { useAutoCallback } from "../../../hooks/useAutoCallback";
 
 export const ScheduleTableGrid = memo(
   ({

@@ -1,4 +1,4 @@
-import { Schedule } from "./types";
+import { Schedule } from "../../../types";
 import { ComponentProps, memo } from "react";
 import {
   Box,
@@ -12,8 +12,8 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useDraggable } from "@dnd-kit/core";
-import { DAY_LABELS } from "./constants";
-import { CellSize } from "./constants";
+import { DAY_LABELS } from "../../../constants";
+import { CellSize } from "../../../constants";
 import { CSS } from "@dnd-kit/utilities";
 
 export const DraggableSchedule = memo(

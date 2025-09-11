@@ -5,7 +5,7 @@ import {
   HStack,
   Checkbox,
 } from "@chakra-ui/react";
-import { useSearchOptionsStore } from "../../../store/searchOptionsStore";
+import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
 
 export const GradeForm = () => {
   const grades = useSearchOptionsStore((state) => state.searchOptions.grades);

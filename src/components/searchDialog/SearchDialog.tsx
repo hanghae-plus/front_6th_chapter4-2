@@ -14,14 +14,14 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { Lecture } from "./types.ts";
-import { parseSchedule } from "./utils.ts";
+import { Lecture } from "../../types.ts";
+import { parseSchedule } from "../../utils.ts";
 import axios from "axios";
-import { SearchFilters } from "./components/filter/SearchFilters.tsx";
-import { SearchResultTable } from "./components/table/SearchResultTable.tsx";
-import { useSearchOptionsStore } from "./store/searchOptionsStore.ts";
-import { PAGE_SIZE } from "./constants.ts";
-import { useSchedulesStore } from "./store/schedulesStore.ts";
+import { SearchFilters } from "./filter/SearchFilters.tsx";
+import { SearchResultTable } from "./table/SearchResultTable.tsx";
+import { useSearchOptionsStore } from "../../store/searchOptionsStore.ts";
+import { PAGE_SIZE } from "../../constants.ts";
+import { useSchedulesStore } from "../../store/schedulesStore.ts";
 
 interface Props {
   searchInfo: {

@@ -1,5 +1,5 @@
 import { Button, Table, Tbody, Td, Tr } from "@chakra-ui/react";
-import { Lecture } from "../../types";
+import { Lecture } from "../../../types";
 import { memo } from "react";
 
 export const SearchResultTable = memo(

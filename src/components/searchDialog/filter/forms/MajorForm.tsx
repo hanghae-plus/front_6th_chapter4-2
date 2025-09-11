@@ -11,7 +11,7 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { useSearchOptionsStore } from "../../../store/searchOptionsStore";
+import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
 
 export const MajorForm = memo(({ allMajors }: { allMajors: string[] }) => {
   const majors = useSearchOptionsStore((state) => state.searchOptions.majors);

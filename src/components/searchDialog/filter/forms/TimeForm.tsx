@@ -10,8 +10,8 @@ import {
   Box,
   Checkbox,
 } from "@chakra-ui/react";
-import { useSearchOptionsStore } from "../../../store/searchOptionsStore";
-import { TIME_SLOTS } from "../../../constants";
+import { useSearchOptionsStore } from "../../../../store/searchOptionsStore";
+import { TIME_SLOTS } from "../../../../constants";
 
 export const TimeForm = () => {
   const times = useSearchOptionsStore((state) => state.searchOptions.times);

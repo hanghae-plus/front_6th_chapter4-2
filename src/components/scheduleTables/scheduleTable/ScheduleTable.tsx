@@ -1,9 +1,9 @@
 import { Box } from "@chakra-ui/react";
-import { Schedule } from "./types.ts";
+import { Schedule } from "../../../types.ts";
 import { useDndContext } from "@dnd-kit/core";
 import { ScheduleTableGrid } from "./ScheduleTableGrid.tsx";
 import { DraggableSchedule } from "./DraggableSchedule.tsx";
-import { useAutoCallback } from "./hooks/useAutoCallback.ts";
+import { useAutoCallback } from "../../../hooks/useAutoCallback.ts";
 
 export type TimeInfo = { day: string; time: number };
 

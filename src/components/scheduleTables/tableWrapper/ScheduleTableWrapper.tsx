@@ -1,9 +1,9 @@
-import { Schedule } from "./types.ts";
+import { Schedule } from "../../../types.ts";
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import ScheduleTable from "./ScheduleTable.tsx";
+import ScheduleTable from "../scheduleTable/ScheduleTable.tsx";
 import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
 import { memo } from "react";
-import { useSchedulesStore } from "./store/schedulesStore.ts";
+import { useSchedulesStore } from "../../../store/schedulesStore.ts";
 
 export const ScheduleTableWrapper = memo(
   ({
