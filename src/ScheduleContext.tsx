@@ -2,6 +2,7 @@ import React, {
   createContext,
   PropsWithChildren,
   useContext,
+  useMemo,
   useReducer,
 } from 'react';
 import { Schedule } from './types';
@@ -24,7 +25,6 @@ interface ScheduleContextType {
 const ScheduleContext = createContext<ScheduleContextType | undefined>(
   undefined
 );
-
 
 export const useScheduleContext = () => {
   const context = useContext(ScheduleContext);
@@ -53,10 +53,17 @@ export const ScheduleProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
+  const contextValue = useMemo(
+    () => ({
+      schedulesMap,
+      actions,
+      setSchedulesMap,
+    }),
+    [schedulesMap, actions, setSchedulesMap]
+  );
+
   return (
-    <ScheduleContext.Provider
-      value={{ schedulesMap, actions, setSchedulesMap }}
-    >
+    <ScheduleContext.Provider value={contextValue}>
       {children}
     </ScheduleContext.Provider>
   );
