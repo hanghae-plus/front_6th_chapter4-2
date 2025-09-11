@@ -53,14 +53,14 @@ const createCachedFetch = () => {
 
   const fetchMajors = () => {
     if (!cache.has('majors')) {
-      cache.set('majors', axios.get<Lecture[]>('/schedules-majors.json'));
+      cache.set('majors', axios.get<Lecture[]>('./schedules-majors.json'));
     }
     return cache.get('majors')!;
   };
 
   const fetchLiberalArts = () => {
     if (!cache.has('liberal-arts')) {
-      cache.set('liberal-arts', axios.get<Lecture[]>('/schedules-liberal-arts.json'));
+      cache.set('liberal-arts', axios.get<Lecture[]>('./schedules-liberal-arts.json'));
     }
     return cache.get('liberal-arts')!;
   };
