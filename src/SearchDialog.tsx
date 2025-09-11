@@ -100,19 +100,22 @@ const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
 const fetchLiberalArts = () => axios.get<Lecture[]>("/schedules-liberal-arts.json");
 
 const fetchAllLectures = async () => {
-  const majors =
-    (console.log("API Call 1", performance.now()),
-    (allLecturesCache.majors ??= fetchMajors().catch((error) => {
-      allLecturesCache.majors = undefined;
-      throw error;
-    })));
-  const liberal =
-    (console.log("API Call 2", performance.now()),
-    (allLecturesCache.liberal ??= fetchLiberalArts().catch((error) => {
-      allLecturesCache.liberal = undefined;
-      throw error;
-    })));
-  return Promise.all([majors, liberal]);
+  const majors = (allLecturesCache.majors ??= fetchMajors().catch((error) => {
+    allLecturesCache.majors = undefined;
+    throw error;
+  }));
+  const liberal = (allLecturesCache.liberal ??= fetchLiberalArts().catch((error) => {
+    allLecturesCache.liberal = undefined;
+    throw error;
+  }));
+  return Promise.all([
+    (console.log("API Call 1", performance.now()), majors),
+    (console.log("API Call 2", performance.now()), liberal),
+    (console.log("API Call 3", performance.now()), majors),
+    (console.log("API Call 4", performance.now()), liberal),
+    (console.log("API Call 5", performance.now()), majors),
+    (console.log("API Call 6", performance.now()), liberal),
+  ]);
 };
 
 interface SearchItemProps {
