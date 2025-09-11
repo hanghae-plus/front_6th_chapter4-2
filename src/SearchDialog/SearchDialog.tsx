@@ -36,9 +36,11 @@ interface Props {
 }
 
 const PAGE_SIZE = 100;
+const baseURL =
+  process.env.NODE_ENV === "production" ? "/front_6th_chapter4-2/" : "/";
 
 const cachedFetchMajors = cacheManager.createCachedFunction(
-  () => axios.get<Lecture[]>("/schedules-majors.json"),
+  () => axios.get<Lecture[]>(baseURL + "schedules-majors.json"),
   {
     ttl: 5000,
     prefix: "schedules-majors",
@@ -46,7 +48,7 @@ const cachedFetchMajors = cacheManager.createCachedFunction(
 );
 
 const cachedFetchLiberalArts = cacheManager.createCachedFunction(
-  () => axios.get<Lecture[]>("/schedules-liberal-arts.json"),
+  () => axios.get<Lecture[]>(baseURL + "schedules-liberal-arts.json"),
   {
     ttl: 5000,
     prefix: "schedules-liberal-arts",
