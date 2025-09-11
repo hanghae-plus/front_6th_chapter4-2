@@ -1,101 +1,126 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import { useState } from "react";
-import { useScheduleContext } from "../../provider/ScheduleContext.tsx";
-import { TableProvider, useTableContext } from "../../provider/TableContext.tsx";
+import { useDndContext } from "@dnd-kit/core";
+import { memo, useCallback, useState } from "react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import SearchDialog from "../SearchDialog/SearchDialog.tsx";
-import ScheduleDndProvider from "../../provider/ScheduleDndProvider.tsx";
-import type { Schedule } from "../../types/types.ts";
+import { useScheduleActions, useScheduleState } from "../../ScheduleContext.tsx";
+import SearchDialog from "../../SearchDialog.tsx";
+import ScheduleDndProvider from "../../ScheduleDndProvider.tsx";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
 
-// 개별 테이블 컴포넌트 - 완전한 격리 (모달 + 버튼 + 상태)
-const ScheduleTableWrapper = ({
-  tableId,
-  index,
-  onDuplicate,
-  onRemove,
-  disabledRemoveButton,
-}: {
-  tableId: string;
-  index: number;
-  onDuplicate: (tableId: string, schedules: Schedule[]) => void;
-  onRemove: (tableId: string) => void;
-  disabledRemoveButton: boolean;
-}) => {
-  const { schedules, updateSchedules, removeSchedule } = useTableContext();
+export const ScheduleTables = () => {
+  const { schedulesMap } = useScheduleState();
+  const dndContext = useDndContext();
+
+  const getActiveTableId = () => {
+    const activeId = dndContext.active?.id;
+    if (activeId) {
+      return String(activeId).split(":")[0];
+    }
+    return null;
+  };
+
+  const activeTableId = getActiveTableId();
+
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
     time?: number;
   } | null>(null);
 
-  const handleSchedulesChange = useAutoCallback((newSchedules: Schedule[]) => {
-    updateSchedules(newSchedules);
-  });
+  const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
 
-  const handleDeleteButtonClick = useAutoCallback(({ day, time }: { day: string; time: number }) => {
-    removeSchedule(day, time);
-  });
-
-  return (
-    <Stack width="600px">
-      <Flex justifyContent="space-between" alignItems="center">
-        <Heading as="h3" fontSize="lg">
-          시간표 {index + 1}
-        </Heading>
-        <ButtonGroup size="sm" isAttached>
-          <Button colorScheme="green" onClick={() => setSearchInfo({ tableId })}>
-            시간표 추가
-          </Button>
-          <Button colorScheme="green" mx="1px" onClick={() => onDuplicate(tableId, schedules)}>
-            복제
-          </Button>
-          <Button colorScheme="green" isDisabled={disabledRemoveButton} onClick={() => onRemove(tableId)}>
-            삭제
-          </Button>
-        </ButtonGroup>
-      </Flex>
-      <ScheduleDndProvider tableId={tableId} schedules={schedules} onSchedulesChange={handleSchedulesChange}>
-        <ScheduleTable
-          schedules={schedules}
-          tableId={tableId}
-          onScheduleTimeClick={(timeInfo) => setSearchInfo({ tableId, ...timeInfo })}
-          onDeleteButtonClick={handleDeleteButtonClick}
-        />
-      </ScheduleDndProvider>
-      <SearchDialog searchInfo={searchInfo} onClose={() => setSearchInfo(null)} />
-    </Stack>
-  );
-};
-
-export const ScheduleTables = () => {
-  const { tableIds, addTable, removeTable, getInitialSchedules } = useScheduleContext();
-
-  const disabledRemoveButton = tableIds.length === 1;
-
-  const duplicate = useAutoCallback((targetId: string, schedules: Schedule[]) => {
-    addTable(schedules);
-  });
-
-  const remove = useAutoCallback((targetId: string) => {
-    removeTable(targetId);
+  const openSearch = useAutoCallback((tableId: string, day?: string, time?: number) => {
+    setSearchInfo({ tableId, day, time });
   });
 
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
-        {tableIds.map((tableId, index) => (
-          <TableProvider key={tableId} tableId={tableId} initialSchedules={getInitialSchedules(tableId)}>
-            <ScheduleTableWrapper
-              tableId={tableId}
-              index={index}
-              onDuplicate={duplicate}
-              onRemove={remove}
-              disabledRemoveButton={disabledRemoveButton}
-            />
-          </TableProvider>
+        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
+          <ScheduleCard
+            key={tableId}
+            index={index}
+            tableId={tableId}
+            schedules={schedules}
+            disabledRemoveButton={disabledRemoveButton}
+            openSearch={openSearch}
+            isActive={activeTableId === tableId}
+          />
         ))}
       </Flex>
+      <SearchDialog searchInfo={searchInfo} onClose={() => setSearchInfo(null)} />
     </>
   );
 };
+
+interface ScheduleCardProps {
+  index: number;
+  tableId: string;
+  schedules: ReturnType<typeof Object.values>[number];
+  disabledRemoveButton: boolean;
+  openSearch: (tableId: string, day?: string, time?: number) => void;
+  isActive: boolean;
+}
+
+const ScheduleCard = memo(
+  ({ index, tableId, schedules, disabledRemoveButton, openSearch, isActive }: ScheduleCardProps) => {
+    const { duplicate, remove, updateTable } = useScheduleActions();
+    const onScheduleTimeClick = useCallback(
+      (timeInfo: { day: string; time: number }) => openSearch(tableId, timeInfo.day, timeInfo.time),
+      [openSearch, tableId]
+    );
+
+    const onDeleteButtonClick = useCallback(
+      ({ day, time }: { day: string; time: number }) =>
+        updateTable(tableId, (prev) => prev.filter((s) => s.day !== day || !s.range.includes(time))),
+      [updateTable, tableId]
+    );
+
+    const handleSchedulesChange = useAutoCallback((newSchedules: Schedule[]) => {
+      updateTable(tableId, () => newSchedules);
+    });
+
+    return (
+      <Stack width="600px">
+        <Flex
+          justifyContent="space-between"
+          alignItems="center"
+          outline={isActive ? "5px dashed" : undefined}
+          outlineColor="blue.300"
+        >
+          <Heading as="h3" fontSize="lg">
+            시간표 {index + 1}
+          </Heading>
+          <ButtonGroup size="sm" isAttached>
+            <Button colorScheme="green" onClick={() => openSearch(tableId)}>
+              시간표 추가
+            </Button>
+            <Button colorScheme="green" mx="1px" onClick={() => duplicate(tableId)}>
+              복제
+            </Button>
+            <Button colorScheme="green" isDisabled={disabledRemoveButton} onClick={() => remove(tableId)}>
+              삭제
+            </Button>
+          </ButtonGroup>
+        </Flex>
+        <ScheduleDndProvider tableId={tableId} schedules={schedules} onSchedulesChange={handleSchedulesChange}>
+          <ScheduleTable
+            key={`schedule-table-${tableId}`}
+            schedules={schedules}
+            tableId={tableId}
+            onScheduleTimeClick={onScheduleTimeClick}
+            onDeleteButtonClick={onDeleteButtonClick}
+          />
+        </ScheduleDndProvider>
+      </Stack>
+    );
+  },
+  (prev, next) =>
+    prev.tableId === next.tableId &&
+    prev.isActive === next.isActive &&
+    prev.disabledRemoveButton === next.disabledRemoveButton &&
+    prev.openSearch === next.openSearch &&
+    prev.schedules === next.schedules
+);
+
+ScheduleCard.displayName = "ScheduleCard";

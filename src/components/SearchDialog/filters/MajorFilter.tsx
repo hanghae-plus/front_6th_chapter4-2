@@ -11,7 +11,7 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { SearchOption } from "../../../types/types";
+import { SearchOption } from "../../../types";
 
 interface MajorFilterProps {
   majors: string[];

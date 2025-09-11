@@ -20,11 +20,11 @@ import {
   MajorFilter,
   LectureTable,
   TableHeader,
-} from "./index.ts";
-import type { Lecture } from "../../types/types.ts";
-import { parseSchedule } from "../../utils/utils.ts";
-import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
-import { useTableContext } from "../../provider/TableContext.tsx";
+} from "./components/SearchDialog/index.ts";
+import type { Lecture } from "./types.ts";
+import { parseSchedule } from "./utils.ts";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
+import { useScheduleActions } from "./ScheduleContext.tsx";
 
 interface Props {
   searchInfo: {
@@ -92,7 +92,7 @@ const fetchAllLectures = async () => {
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
-  const { addSchedules } = useTableContext();
+  const { updateTable } = useScheduleActions();
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -157,11 +157,13 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
       }));
 
       // Context를 통해 직접 스케줄 추가
-      addSchedules(schedules);
+      if (searchInfo?.tableId) {
+        updateTable(searchInfo.tableId, (prev) => [...prev, ...schedules]);
+      }
 
       onClose();
     },
-    [searchInfo, addSchedules, onClose]
+    [searchInfo, updateTable, onClose]
   );
 
   useEffect(() => {

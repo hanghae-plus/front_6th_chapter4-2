@@ -1,5 +1,5 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import { ScheduleProvider } from "./provider/ScheduleContext.tsx";
+import { ScheduleProvider } from "./ScheduleContext.tsx";
 import { ScheduleTables } from "./components/Table/ScheduleTables.tsx";
 
 function App() {

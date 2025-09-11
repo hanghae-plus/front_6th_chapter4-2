@@ -1,6 +1,6 @@
 import { Button, Td, Tr } from "@chakra-ui/react";
 import { memo } from "react";
-import type { Lecture } from "../../../types/types";
+import type { Lecture } from "../../../types";
 
 interface LectureRowProps {
   lecture: Lecture;

@@ -1,9 +1,9 @@
 import { memo } from "react";
-import { Schedule } from "../../types/types";
+import { Schedule } from "./types";
 import { ComponentProps } from "react";
 import { Box, Text, Button } from "@chakra-ui/react";
 import { useDraggable } from "@dnd-kit/core";
-import { DAY_LABELS } from "../../constants/constants";
+import { DAY_LABELS } from "./constants";
 import {
   Popover,
   PopoverTrigger,
@@ -12,7 +12,7 @@ import {
   PopoverBody,
   PopoverCloseButton,
 } from "@chakra-ui/react";
-import { CellSize } from "../../constants/constants";
+import { CellSize } from "./constants";
 import { CSS } from "@dnd-kit/utilities";
 
 const DraggableSchedule = memo(
@@ -68,7 +68,6 @@ const DraggableSchedule = memo(
     );
   },
   (prev, next) => {
-    // 개별 속성 비교로 최적화
     return (
       prev.id === next.id &&
       prev.bg === next.bg &&

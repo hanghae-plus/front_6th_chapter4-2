@@ -1,7 +1,7 @@
 import { DndContext, type Modifier, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { PropsWithChildren } from "react";
-import { CellSize, DAY_LABELS } from "../constants/constants.ts";
-import type { Schedule } from "../types/types.ts";
+import { CellSize, DAY_LABELS } from "./constants.ts";
+import type { Schedule } from "./types.ts";
 
 interface ScheduleDndProviderProps extends PropsWithChildren {
   tableId: string;
@@ -33,12 +33,7 @@ function createSnapModifier(): Modifier {
 
 const modifiers = [createSnapModifier()];
 
-export default function ScheduleDndProvider({
-  children,
-  tableId,
-  schedules,
-  onSchedulesChange,
-}: ScheduleDndProviderProps) {
+export default function ScheduleDndProvider({ children, schedules, onSchedulesChange }: ScheduleDndProviderProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {

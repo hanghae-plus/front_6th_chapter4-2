@@ -3,8 +3,8 @@ import { useDndContext } from "@dnd-kit/core";
 import { memo, useCallback, useMemo } from "react";
 import ScheduleTableGrid from "./ScheduleTableGrid.tsx";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
-import type { Schedule } from "../../types/types.ts";
-import DraggableSchedule from "../DnD/DraggableSchedule.tsx";
+import type { Schedule } from "../../types.ts";
+import DraggableSchedule from "../../DraggableSchedule.tsx";
 
 interface Props {
   tableId: string;

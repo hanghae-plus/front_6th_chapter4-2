@@ -1,6 +1,6 @@
 import { FormControl, FormLabel, HStack, Input, Select } from "@chakra-ui/react";
 import { memo } from "react";
-import { SearchOption } from "../../../types/types";
+import { SearchOption } from "../../../types";
 
 interface SearchInputFilterProps {
   query?: string;
