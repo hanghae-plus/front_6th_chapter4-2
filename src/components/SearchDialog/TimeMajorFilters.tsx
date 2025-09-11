@@ -1,17 +1,17 @@
-import { memo } from "react";
 import {
+  Box,
+  Checkbox,
+  CheckboxGroup,
   FormControl,
   FormLabel,
-  CheckboxGroup,
-  Checkbox,
-  Box,
-  Stack,
-  Wrap,
-  Tag,
-  TagLabel,
-  TagCloseButton,
   HStack,
+  Stack,
+  Tag,
+  TagCloseButton,
+  TagLabel,
+  Wrap,
 } from "@chakra-ui/react";
+import { memo } from "react";
 import { timeMajorComparison } from "../../utils/memoComparison";
 
 const TIME_SLOTS = [
