@@ -22,9 +22,6 @@ import { Input } from '@chakra-ui/react/input';
 import { Box } from '@chakra-ui/react/box';
 import { Lecture, SearchOption } from '../../../types.ts';
 import { parseSchedule } from '../../../utils/utils.ts';
-import axios from 'axios';
-
-import { createCachedApi } from '../../../lib/createCachedApi.ts';
 
 import { Table, Tbody, Thead } from '@chakra-ui/react/table';
 
@@ -40,13 +37,19 @@ import {
 import CheckGrade from './components/CheckGrade.tsx';
 import { store } from '../../../store/schedules.store.ts';
 import { searchInfoStore } from '../../../store/searchInfo.store.ts';
+import { createCachedApi2 } from '../../../api/createCachedApi2.ts';
 
-const fetchMajors = createCachedApi(() =>
-  axios.get<Lecture[]>('/schedules-majors.json')
+// const fetchMajors = createCachedApi(() =>
+//   axios.get<Lecture[]>('/schedules-majors.json')
+// );
+// const fetchLiberalArts = createCachedApi(() =>
+//   axios.get<Lecture[]>('/schedules-liberal-arts.json')
+// );
+const fetchMajors = createCachedApi2<Lecture[]>('/schedules-majors.json');
+const fetchLiberalArts = createCachedApi2<Lecture[]>(
+  '/schedules-liberal-arts.json'
 );
-const fetchLiberalArts = createCachedApi(() =>
-  axios.get<Lecture[]>('/schedules-liberal-arts.json')
-);
+// const test = createCachedApi2<Lecture[]>('/schedules-liberal-arts.json');
 
 // TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
 const fetchAllLectures = async () => {
