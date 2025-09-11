@@ -2,7 +2,6 @@ import { Flex, Grid, GridItem, Text } from "@chakra-ui/react";
 import { CellSize, DAY_LABELS, 분 } from "./constants.ts";
 import { Schedule } from "./types.ts";
 import { fill2, parseHnM } from "./utils.ts";
-import { useDndContext } from "@dnd-kit/core";
 import { Fragment, useCallback, useMemo } from "react";
 import DndContextWrapper from "./components/DndContextWrapper";
 import DraggableScheduleWrapper from "./components/DraggableScheduleWrapper";
@@ -32,24 +31,15 @@ const ScheduleTable = ({
   onScheduleTimeClick,
   onDeleteButtonClick,
 }: Props) => {
-  const getColor = (lectureId: string): string => {
+  const colorMap = useMemo(() => {
     const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
-    const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
-    return colors[lectures.indexOf(lectureId) % colors.length];
-  };
-
-  const dndContext = useDndContext();
-
-  const getActiveTableId = () => {
-    const activeId = dndContext.active?.id;
-    if (activeId) {
-      return String(activeId).split(":")[0];
-    }
-    return null;
-  };
-
-  // DndContextWrapper에서 activeTableId 하이라이트 처리
-  getActiveTableId();
+    const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"] as const;
+    const map = new Map<string, string>();
+    lectures.forEach((id, index) => {
+      map.set(id, colors[index % colors.length]);
+    });
+    return map;
+  }, [schedules]);
 
   const handleScheduleTimeClick = useCallback(
     (day: string, time: number) => {
@@ -146,7 +136,7 @@ const ScheduleTable = ({
           key={`${schedule.lecture.title}-${index}`}
           id={`${tableId}:${index}`}
           schedule={schedule}
-          color={getColor(schedule.lecture.id)}
+          color={colorMap.get(schedule.lecture.id) || "#fdd"}
           onDelete={scheduleDeleteHandlers[index]}
         />
       ))}
