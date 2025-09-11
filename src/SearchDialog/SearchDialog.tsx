@@ -1,5 +1,6 @@
 import {
 	Box,
+	HStack,
 	Modal,
 	ModalBody,
 	ModalCloseButton,
@@ -18,7 +19,8 @@ import { useAutoCallback } from "../hook/useAutoCallback.ts";
 import { useSchedules } from "../hook/useSchedules.ts";
 import type { Lecture } from "../types.ts";
 import { parseSchedule } from "../utils.ts";
-import { GradeDayFilters } from "./GradeDayFilters.tsx";
+import { DayFilter } from "./DayFilter.tsx";
+import { GradeFilter } from "./GradeFilter.tsx";
 import { LectureRow } from "./LectureRow.tsx";
 import { SearchInputFilters } from "./SearchInputFilters.tsx";
 import { TableHeader } from "./TableHeader.tsx";
@@ -55,9 +57,11 @@ const createApiCache = () => {
 
 		const result = axios.get<Lecture[]>(url);
 		cache.set(url, result);
+
 		result.finally(() => {
 			cache.delete(url);
 		});
+
 		return result;
 	};
 };
@@ -225,11 +229,16 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 							onChange={changeSearchOption}
 						/>
 
-						<GradeDayFilters
-							grades={searchOptions.grades}
-							days={searchOptions.days}
-							onChange={changeSearchOption}
-						/>
+						<HStack spacing={4}>
+							<GradeFilter
+								grades={searchOptions.grades}
+								onChange={changeSearchOption}
+							/>
+							<DayFilter
+								days={searchOptions.days}
+								onChange={changeSearchOption}
+							/>
+						</HStack>
 
 						<TimeMajorFilters
 							times={searchOptions.times}
