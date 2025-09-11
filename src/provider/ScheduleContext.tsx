@@ -7,7 +7,7 @@ interface ScheduleContextType {
   tableIds: string[];
   setTableIds: React.Dispatch<React.SetStateAction<string[]>>;
   getInitialSchedules: (tableId: string) => Schedule[];
-  addTable: (initialSchedules: Schedule[]) => string;
+  addTable: () => string;
   removeTable: (tableId: string) => void;
   duplicateTable: (tableId: string) => string;
 }
@@ -30,7 +30,7 @@ export const ScheduleProvider = ({ children }: PropsWithChildren) => {
     return initialSchedulesMap[tableId] || [];
   };
 
-  const addTable = (initialSchedules: Schedule[]): string => {
+  const addTable = (): string => {
     const newTableId = `schedule-${Date.now()}`;
     setTableIds((prev) => [...prev, newTableId]);
     return newTableId;
@@ -41,8 +41,7 @@ export const ScheduleProvider = ({ children }: PropsWithChildren) => {
   };
 
   const duplicateTable = (tableId: string): string => {
-    const initialSchedules = getInitialSchedules(tableId);
-    return addTable(initialSchedules);
+    return addTable();
   };
 
   return (

@@ -1,49 +1,50 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useScheduleContext } from "../../provider/ScheduleContext.tsx";
+import { TableProvider, useTableContext } from "../../provider/TableContext.tsx";
 import ScheduleTable from "./ScheduleTable.tsx";
 import SearchDialog from "../SearchDialog/SearchDialog.tsx";
 import ScheduleDndProvider from "../../provider/ScheduleDndProvider.tsx";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
 import type { Schedule } from "../../types/types.ts";
 
-// 개별 테이블 컴포넌트 - 완전히 독립적인 상태 관리
+// 개별 테이블 컴포넌트 - 완전한 격리 (모달 + 버튼 + 상태)
 const ScheduleTableWrapper = ({
   tableId,
   index,
-  onSearchInfoChange,
   onDeleteButtonClick,
-  onRegisterRef,
+  onDuplicate,
+  onRemove,
+  disabledRemoveButton,
 }: {
   tableId: string;
   index: number;
-  onSearchInfoChange: (info: { tableId: string; day?: string; time?: number }) => void;
   onDeleteButtonClick: () => void;
-  onRegisterRef: (tableId: string, ref: { addSchedules: (schedules: Schedule[]) => void }) => void;
+  onDuplicate: (tableId: string) => void;
+  onRemove: (tableId: string) => void;
+  disabledRemoveButton: boolean;
 }) => {
-  const { getInitialSchedules } = useScheduleContext();
-  const [schedules, setSchedules] = useState<Schedule[]>(() => getInitialSchedules(tableId));
+  const { schedules, updateSchedules, removeSchedule } = useTableContext();
+  const [searchInfo, setSearchInfo] = useState<{
+    tableId: string;
+    day?: string;
+    time?: number;
+  } | null>(null);
 
-  const handleSchedulesChange = useCallback((newSchedules: Schedule[]) => {
-    setSchedules(newSchedules);
-  }, []);
+  const handleSchedulesChange = useCallback(
+    (newSchedules: Schedule[]) => {
+      updateSchedules(newSchedules);
+    },
+    [updateSchedules]
+  );
 
   const handleDeleteButtonClick = useCallback(
     ({ day, time }: { day: string; time: number }) => {
-      setSchedules((prev) => prev.filter((schedule) => schedule.day !== day || !schedule.range.includes(time)));
+      removeSchedule(day, time);
       onDeleteButtonClick();
     },
-    [onDeleteButtonClick]
+    [removeSchedule, onDeleteButtonClick]
   );
-
-  const addSchedules = useCallback((newSchedules: Schedule[]) => {
-    setSchedules((prev) => [...prev, ...newSchedules]);
-  }, []);
-
-  // ref 등록
-  useEffect(() => {
-    onRegisterRef(tableId, { addSchedules });
-  }, [tableId, addSchedules, onRegisterRef]);
 
   return (
     <Stack width="600px">
@@ -52,8 +53,14 @@ const ScheduleTableWrapper = ({
           시간표 {index + 1}
         </Heading>
         <ButtonGroup size="sm" isAttached>
-          <Button colorScheme="green" onClick={() => onSearchInfoChange({ tableId })}>
+          <Button colorScheme="green" onClick={() => setSearchInfo({ tableId })}>
             시간표 추가
+          </Button>
+          <Button colorScheme="green" mx="1px" onClick={() => onDuplicate(tableId)}>
+            복제
+          </Button>
+          <Button colorScheme="green" isDisabled={disabledRemoveButton} onClick={() => onRemove(tableId)}>
+            삭제
           </Button>
         </ButtonGroup>
       </Flex>
@@ -61,22 +68,17 @@ const ScheduleTableWrapper = ({
         <ScheduleTable
           schedules={schedules}
           tableId={tableId}
-          onScheduleTimeClick={(timeInfo) => onSearchInfoChange({ tableId, ...timeInfo })}
+          onScheduleTimeClick={(timeInfo) => setSearchInfo({ tableId, ...timeInfo })}
           onDeleteButtonClick={handleDeleteButtonClick}
         />
       </ScheduleDndProvider>
+      <SearchDialog searchInfo={searchInfo} onClose={() => setSearchInfo(null)} />
     </Stack>
   );
 };
 
 export const ScheduleTables = () => {
-  const { tableIds, duplicateTable, removeTable } = useScheduleContext();
-  const [searchInfo, setSearchInfo] = useState<{
-    tableId: string;
-    day?: string;
-    time?: number;
-  } | null>(null);
-  const [tableRefs, setTableRefs] = useState<Record<string, { addSchedules: (schedules: Schedule[]) => void }>>({});
+  const { tableIds, duplicateTable, removeTable, getInitialSchedules } = useScheduleContext();
 
   const disabledRemoveButton = tableIds.length === 1;
 
@@ -86,65 +88,28 @@ export const ScheduleTables = () => {
 
   const remove = useAutoCallback((targetId: string) => {
     removeTable(targetId);
-    setTableRefs((prev) => {
-      const newRefs = { ...prev };
-      delete newRefs[targetId];
-      return newRefs;
-    });
   });
 
   const handleDeleteButtonClick = useCallback(() => {
     // 개별 테이블에서 삭제는 각 테이블의 상태에서 처리되므로 여기서는 추가 로직이 필요 없음
   }, []);
 
-  const handleAddSchedule = useCallback(
-    (tableId: string, newSchedules: Schedule[]) => {
-      if (tableRefs[tableId]) {
-        tableRefs[tableId].addSchedules(newSchedules);
-      }
-    },
-    [tableRefs]
-  );
-
-  const registerTableRef = useCallback((tableId: string, ref: { addSchedules: (schedules: Schedule[]) => void }) => {
-    setTableRefs((prev) => ({
-      ...prev,
-      [tableId]: ref,
-    }));
-  }, []);
-
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
         {tableIds.map((tableId, index) => (
-          <Stack key={tableId}>
-            <Flex justifyContent="space-between" alignItems="center">
-              <Heading as="h3" fontSize="lg">
-                시간표 {index + 1}
-              </Heading>
-              <ButtonGroup size="sm" isAttached>
-                <Button colorScheme="green" onClick={() => setSearchInfo({ tableId })}>
-                  시간표 추가
-                </Button>
-                <Button colorScheme="green" mx="1px" onClick={() => duplicate(tableId)}>
-                  복제
-                </Button>
-                <Button colorScheme="green" isDisabled={disabledRemoveButton} onClick={() => remove(tableId)}>
-                  삭제
-                </Button>
-              </ButtonGroup>
-            </Flex>
+          <TableProvider key={tableId} tableId={tableId} initialSchedules={getInitialSchedules(tableId)}>
             <ScheduleTableWrapper
               tableId={tableId}
               index={index}
-              onSearchInfoChange={setSearchInfo}
               onDeleteButtonClick={handleDeleteButtonClick}
-              onRegisterRef={registerTableRef}
+              onDuplicate={duplicate}
+              onRemove={remove}
+              disabledRemoveButton={disabledRemoveButton}
             />
-          </Stack>
+          </TableProvider>
         ))}
       </Flex>
-      <SearchDialog searchInfo={searchInfo} onClose={() => setSearchInfo(null)} onAddSchedule={handleAddSchedule} />
     </>
   );
 };
