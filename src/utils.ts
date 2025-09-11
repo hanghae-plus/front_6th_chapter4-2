@@ -1,3 +1,5 @@
+import {분} from "./constants.ts";
+
 export const fill2 = (n: number) => `0${n}`.substr(-2);
 
 export const parseHnM = (current: number) => {
@@ -28,3 +30,14 @@ export const parseSchedule = (schedule: string) => {
     return { day, range, room };
   });
 };
+
+export const TIMES = [
+    ...Array(18)
+        .fill(0)
+        .map((v, k) => v + k * 30 * 분)
+        .map((v) => `${parseHnM(v)}~${parseHnM(v + 30 * 분)}`),
+    ...Array(6)
+        .fill(18 * 30 * 분)
+        .map((v, k) => v + k * 55 * 분)
+        .map((v) => `${parseHnM(v)}~${parseHnM(v + 50 * 분)}`),
+] as const;

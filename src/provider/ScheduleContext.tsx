@@ -1,6 +1,8 @@
-import React, { createContext, PropsWithChildren, useContext, useState } from "react";
+import React, {createContext, PropsWithChildren, useContext, useState} from "react";
 import { Schedule } from "../types.ts";
 import dummyScheduleMap from "../dummyScheduleMap.ts";
+
+// TODO: 컨텍스트 분리 필요
 
 interface ScheduleContextType {
   schedulesMap: Record<string, Schedule[]>;
