@@ -15,12 +15,12 @@ import { useLectureData } from "./hooks/useLectureData.ts";
 import { useSearchLectures } from "./hooks/useSearchLectures.ts";
 import { useInfiniteScroll } from "./hooks/useInfiniteScroll.ts";
 import { useScheduleManagement } from "./hooks/useScheduleManagement.ts";
-import 검색어Form from "./components/forms/검색어Form.tsx";
-import 학점Form from "./components/forms/학점Form.tsx";
-import 학년Form from "./components/forms/학년Form.tsx";
-import 요일Form from "./components/forms/요일Form.tsx";
-import 시간Form from "./components/forms/시간Form.tsx";
-import 전공Form from "./components/forms/전공Form.tsx";
+import SearchForm from "./components/forms/SearchForm.tsx";
+import CreditForm from "./components/forms/CreditForm.tsx";
+import GradeForm from "./components/forms/GradeForm.tsx";
+import DayForm from "./components/forms/DayForm.tsx";
+import TimeForm from "./components/forms/TimeForm.tsx";
+import MajorForm from "./components/forms/MajorForm.tsx";
 import ResultTable from "./components/ResultTable.tsx";
 
 interface Props {
@@ -70,11 +70,11 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <HStack spacing={4}>
-              <검색어Form
+              <SearchForm
                 keyword={searchOptions.query}
                 onKeywordChange={(value) => changeSearchOption("query", value)}
               />
-              <학점Form
+              <CreditForm
                 credits={searchOptions.credits}
                 onCreditsChange={(value) =>
                   changeSearchOption("credits", value)
@@ -83,26 +83,26 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
             </HStack>
 
             <HStack spacing={4}>
-              <학년Form
+              <GradeForm
                 grades={searchOptions.grades}
                 onGradesChange={(value) => changeSearchOption("grades", value)}
               />
 
-              <요일Form
+              <DayForm
                 days={searchOptions.days}
                 onDaysChange={(value) => changeSearchOption("days", value)}
               />
             </HStack>
 
             <HStack spacing={4}>
-              <시간Form
+              <TimeForm
                 times={searchOptions.times}
                 onTimesChange={(value) => changeSearchOption("times", value)}
               />
             </HStack>
 
             <HStack spacing={4}>
-              <전공Form
+              <MajorForm
                 majors={searchOptions.majors}
                 allMajors={allMajors}
                 onMajorsChange={(value) => changeSearchOption("majors", value)}

@@ -6,7 +6,7 @@ interface Props {
   onCreditsChange: (credits: number) => void;
 }
 
-function 학점Form({ credits, onCreditsChange }: Props) {
+function CreditForm({ credits, onCreditsChange }: Props) {
   return (
     <FormControl>
       <FormLabel>학점</FormLabel>
@@ -23,4 +23,4 @@ function 학점Form({ credits, onCreditsChange }: Props) {
   );
 }
 
-export default memo(학점Form);
+export default memo(CreditForm);

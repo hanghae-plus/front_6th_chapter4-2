@@ -1,7 +1,7 @@
 import { Box, Checkbox, Stack } from "@chakra-ui/react";
 import { memo } from "react";
 
-function 전공FormList({ allMajors }: { allMajors: string[] }) {
+function MajorFormList({ allMajors }: { allMajors: string[] }) {
   return (
     <Stack
       spacing={2}
@@ -23,4 +23,4 @@ function 전공FormList({ allMajors }: { allMajors: string[] }) {
   );
 }
 
-export default memo(전공FormList);
+export default memo(MajorFormList);

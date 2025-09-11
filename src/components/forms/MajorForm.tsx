@@ -8,7 +8,7 @@ import {
   TagCloseButton,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import 전공FormList from "./전공Form.List";
+import MajorFormList from "./MajorForm.List";
 
 interface Props {
   majors: string[];
@@ -16,7 +16,7 @@ interface Props {
   onMajorsChange: (majors: string[]) => void;
 }
 
-function 전공Form({ majors, allMajors, onMajorsChange }: Props) {
+function MajorForm({ majors, allMajors, onMajorsChange }: Props) {
   return (
     <FormControl>
       <FormLabel>전공</FormLabel>
@@ -37,10 +37,10 @@ function 전공Form({ majors, allMajors, onMajorsChange }: Props) {
             </Tag>
           ))}
         </Wrap>
-        <전공FormList allMajors={allMajors} />
+        <MajorFormList allMajors={allMajors} />
       </CheckboxGroup>
     </FormControl>
   );
 }
 
-export default memo(전공Form);
+export default memo(MajorForm);

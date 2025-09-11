@@ -12,7 +12,7 @@ interface Props {
   onGradesChange: (grades: number[]) => void;
 }
 
-function 학년Form({ grades, onGradesChange }: Props) {
+function GradeForm({ grades, onGradesChange }: Props) {
   return (
     <FormControl>
       <FormLabel>학년</FormLabel>
@@ -32,4 +32,4 @@ function 학년Form({ grades, onGradesChange }: Props) {
   );
 }
 
-export default memo(학년Form);
+export default memo(GradeForm);

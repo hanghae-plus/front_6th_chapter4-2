@@ -17,7 +17,7 @@ interface Props {
   onTimesChange: (times: number[]) => void;
 }
 
-function 시간Form({ times, onTimesChange }: Props) {
+function TimeForm({ times, onTimesChange }: Props) {
   return (
     <FormControl>
       <FormLabel>시간</FormLabel>
@@ -60,4 +60,4 @@ function 시간Form({ times, onTimesChange }: Props) {
   );
 }
 
-export default 시간Form;
+export default TimeForm;

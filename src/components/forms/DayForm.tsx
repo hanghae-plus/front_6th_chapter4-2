@@ -13,7 +13,7 @@ interface Props {
   onDaysChange: (days: string[]) => void;
 }
 
-function 요일Form({ days, onDaysChange }: Props) {
+function DayForm({ days, onDaysChange }: Props) {
   return (
     <FormControl>
       <FormLabel>요일</FormLabel>
@@ -33,4 +33,4 @@ function 요일Form({ days, onDaysChange }: Props) {
   );
 }
 
-export default memo(요일Form);
+export default memo(DayForm);

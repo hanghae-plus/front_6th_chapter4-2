@@ -6,7 +6,7 @@ interface Props {
   onKeywordChange: (keyword: string) => void;
 }
 
-function 검색어Form({ keyword, onKeywordChange }: Props) {
+function SearchForm({ keyword, onKeywordChange }: Props) {
   return (
     <FormControl>
       <FormLabel>검색어</FormLabel>
@@ -19,4 +19,4 @@ function 검색어Form({ keyword, onKeywordChange }: Props) {
   );
 }
 
-export default memo(검색어Form);
+export default memo(SearchForm);
