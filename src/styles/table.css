@@ -9,3 +9,7 @@
 .chakra-button:hover {
   background: var(--chakra-colors-green-600) !important;
 }
+
+.mt-4 {
+  margin-top: var(--chakra-space-4);
+}

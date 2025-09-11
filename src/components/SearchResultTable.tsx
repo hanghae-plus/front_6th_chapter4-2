@@ -21,7 +21,7 @@ const SearchResultTable = memo(
     return (
       <>
         <Text align="right">검색결과: {filteredLectures.length}개</Text>
-        <Box>
+        <Box className="mt-4">
           <SearchResultTableHeader />
 
           <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
