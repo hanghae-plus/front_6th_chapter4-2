@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { SEARCH_PAGE_SIZE } from '../constants';
-import { Lecture } from '../types';
-import { parseSchedule } from '../utils';
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { SEARCH_PAGE_SIZE } from "../constants";
+import { Lecture } from "../types";
+import { parseSchedule } from "../utils";
 
 export interface SearchOption {
   query?: string;
@@ -26,7 +26,7 @@ export const useSearchWithPagination = ({
 }: UseSearchWithPaginationProps) => {
   const [page, setPage] = useState(1);
   const [searchOptions, setSearchOptions] = useState<SearchOption>({
-    query: '',
+    query: "",
     grades: [],
     days: [],
     times: [],
@@ -38,22 +38,22 @@ export const useSearchWithPagination = ({
 
   // 필터링된 강의 목록 계산
   const filteredLectures = useMemo(() => {
-    const { query = '', credits, grades, days, times, majors } = searchOptions;
+    const { query = "", credits, grades, days, times, majors } = searchOptions;
 
     return lectures
       .filter(
         (lecture) =>
           lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-          lecture.id.toLowerCase().includes(query.toLowerCase())
+          lecture.id.toLowerCase().includes(query.toLowerCase()),
       )
       .filter(
-        (lecture) => grades.length === 0 || grades.includes(lecture.grade)
+        (lecture) => grades.length === 0 || grades.includes(lecture.grade),
       )
       .filter(
-        (lecture) => majors.length === 0 || majors.includes(lecture.major)
+        (lecture) => majors.length === 0 || majors.includes(lecture.major),
       )
       .filter(
-        (lecture) => !credits || lecture.credits.startsWith(String(credits))
+        (lecture) => !credits || lecture.credits.startsWith(String(credits)),
       )
       .filter((lecture) => {
         if (days.length === 0) {
@@ -72,7 +72,7 @@ export const useSearchWithPagination = ({
           ? parseSchedule(lecture.schedule)
           : [];
         return schedules.some((s) =>
-          s.range.some((time) => times.includes(time))
+          s.range.some((time) => times.includes(time)),
         );
       });
   }, [lectures, searchOptions]);
@@ -90,7 +90,6 @@ export const useSearchWithPagination = ({
     return filteredLectures.slice(0, page * SEARCH_PAGE_SIZE);
   }, [filteredLectures, page]);
 
-
   const scrollToTop = useCallback(() => {
     loaderWrapperRef.current?.scrollTo(0, 0);
   }, []);
@@ -100,7 +99,7 @@ export const useSearchWithPagination = ({
       setSearchOptions((prev) => ({ ...prev, [field]: value }));
       scrollToTop();
     },
-    [scrollToTop]
+    [scrollToTop],
   );
 
   // searchInfo 변경시 검색 옵션 업데이트
@@ -117,22 +116,23 @@ export const useSearchWithPagination = ({
   useEffect(() => {
     const prev = prevSearchOptionsRef.current;
     const current = searchOptions;
-    
-    if (prev && (
-      prev.query !== current.query ||
-      prev.credits !== current.credits ||
-      prev.grades.length !== current.grades.length ||
-      prev.days.length !== current.days.length ||
-      prev.times.length !== current.times.length ||
-      prev.majors.length !== current.majors.length ||
-      !prev.grades.every(g => current.grades.includes(g)) ||
-      !prev.days.every(d => current.days.includes(d)) ||
-      !prev.times.every(t => current.times.includes(t)) ||
-      !prev.majors.every(m => current.majors.includes(m))
-    )) {
+
+    if (
+      prev &&
+      (prev.query !== current.query ||
+        prev.credits !== current.credits ||
+        prev.grades.length !== current.grades.length ||
+        prev.days.length !== current.days.length ||
+        prev.times.length !== current.times.length ||
+        prev.majors.length !== current.majors.length ||
+        !prev.grades.every((g) => current.grades.includes(g)) ||
+        !prev.days.every((d) => current.days.includes(d)) ||
+        !prev.times.every((t) => current.times.includes(t)) ||
+        !prev.majors.every((m) => current.majors.includes(m)))
+    ) {
       setPage(1);
     }
-    
+
     prevSearchOptionsRef.current = { ...current };
   }, [searchOptions]);
 
@@ -143,7 +143,12 @@ export const useSearchWithPagination = ({
       const $loader = loaderRef.current;
       const $loaderWrapper = loaderWrapperRef.current;
 
-      if (!$loader || !$loaderWrapper || lastPage === 0 || filteredLectures.length === 0) {
+      if (
+        !$loader ||
+        !$loaderWrapper ||
+        lastPage === 0 ||
+        filteredLectures.length === 0
+      ) {
         return null;
       }
 
@@ -151,7 +156,9 @@ export const useSearchWithPagination = ({
         (entries) => {
           if (entries[0].isIntersecting) {
             setPage((currentPage) => {
-              const currentLastPage = Math.ceil(filteredLectures.length / SEARCH_PAGE_SIZE);
+              const currentLastPage = Math.ceil(
+                filteredLectures.length / SEARCH_PAGE_SIZE,
+              );
               if (currentPage < currentLastPage) {
                 return Math.min(currentLastPage, currentPage + 1);
               }
@@ -159,11 +166,11 @@ export const useSearchWithPagination = ({
             });
           }
         },
-        { 
-          threshold: 0.1, 
+        {
+          threshold: 0.1,
           root: $loaderWrapper,
-          rootMargin: '10px'
-        }
+          rootMargin: "10px",
+        },
       );
 
       observer.observe($loader);
@@ -178,9 +185,9 @@ export const useSearchWithPagination = ({
       if (filteredLectures.length === 0) {
         return;
       }
-      
+
       observer = checkAndSetupObserver();
-      
+
       if (!observer && retryCount < maxRetries) {
         retryCount++;
         setTimeout(setupWithRetry, 100);
