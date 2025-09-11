@@ -4,6 +4,8 @@ export const BASE_URL = "/front_6th_chapter4-2";
 
 export const DAY_LABELS = ["월", "화", "수", "목", "금", "토"] as const;
 
+export const GRADE_VALUES = [1, 2, 3, 4];
+
 export const CellSize = {
   WIDTH: 80,
   HEIGHT: 30,

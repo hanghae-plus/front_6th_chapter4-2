@@ -1,19 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
-  Checkbox,
-  CheckboxGroup,
-  FormControl,
-  FormLabel,
   HStack,
-  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Select,
   Table,
   Tbody,
   Text,
@@ -24,7 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { Lecture, ProcessedLecture, SearchOption } from "../../types";
 import { parseSchedule } from "../../lib/utils";
-import { DAY_LABELS, PAGE_SIZE } from "../../constants";
+import { PAGE_SIZE } from "../../constants";
 import { useAutoCallback } from "../../hooks/useAutoCallback.ts";
 import { fetchAllLectures } from "../../lib/api.ts";
 import { TimeFilter } from "./TimeFilter.tsx";
@@ -32,6 +26,10 @@ import { MajorFilter } from "./MajorFilter.tsx";
 import { SearchItem } from "./SearchItem.tsx";
 import { useScheduleStore } from "../../store/scheduleStore";
 import { useDebounce } from "../../hooks/useDebounce.ts";
+import { GradeFilter } from "./GradeFilter.tsx";
+import { DayFilter } from "./DayFilter.tsx";
+import { SearchFilter } from "./SearchFilter.tsx";
+import { CreditFilter } from "./CreditFilter.tsx";
 
 interface Props {
   searchInfo: {
@@ -134,7 +132,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     setSchedulesMap((prev: any) => {
       return {
         ...prev,
-        [tableId]: [...prev[tableId], schedules],
+        [tableId]: [...prev[tableId], ...schedules],
       };
     });
 
@@ -142,12 +140,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   });
 
   useEffect(() => {
-    const start = performance.now();
-    console.log("API 호출 시작: ", start);
     fetchAllLectures().then((results) => {
-      const end = performance.now();
-      console.log("모든 API 호출 완료 ", end);
-      console.log("API 호출에 걸린 시간(ms): ", end - start);
       setLectures(results.flatMap((result) => result.data));
     });
   }, []);
@@ -196,63 +189,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <HStack spacing={4}>
-              <FormControl>
-                <FormLabel>검색어</FormLabel>
-                <Input
-                  placeholder="과목명 또는 과목코드"
-                  value={searchOptions.query}
-                  onChange={(e) => changeSearchOption("query", e.target.value)}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>학점</FormLabel>
-                <Select
-                  value={searchOptions.credits}
-                  onChange={(e) => changeSearchOption("credits", e.target.value)}
-                >
-                  <option value="">전체</option>
-                  <option value="1">1학점</option>
-                  <option value="2">2학점</option>
-                  <option value="3">3학점</option>
-                </Select>
-              </FormControl>
+              <SearchFilter searchQuery={searchOptions.query} onChange={changeSearchOption} />
+              <CreditFilter selectedCredit={searchOptions.credits} onChange={changeSearchOption} />
             </HStack>
-
             <HStack spacing={4}>
-              <FormControl>
-                <FormLabel>학년</FormLabel>
-                <CheckboxGroup
-                  value={searchOptions.grades}
-                  onChange={(value) => changeSearchOption("grades", value.map(Number))}
-                >
-                  <HStack spacing={4}>
-                    {[1, 2, 3, 4].map((grade) => (
-                      <Checkbox key={grade} value={grade}>
-                        {grade}학년
-                      </Checkbox>
-                    ))}
-                  </HStack>
-                </CheckboxGroup>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>요일</FormLabel>
-                <CheckboxGroup
-                  value={searchOptions.days}
-                  onChange={(value) => changeSearchOption("days", value as string[])}
-                >
-                  <HStack spacing={4}>
-                    {DAY_LABELS.map((day) => (
-                      <Checkbox key={day} value={day}>
-                        {day}
-                      </Checkbox>
-                    ))}
-                  </HStack>
-                </CheckboxGroup>
-              </FormControl>
+              <GradeFilter selectedGrades={searchOptions.grades} onChange={changeSearchOption} />
+              <DayFilter selectedDays={searchOptions.days} onChange={changeSearchOption} />
             </HStack>
-
             <HStack spacing={4}>
               <TimeFilter selectedTimes={searchOptions.times} onChange={changeSearchOption} />
               <MajorFilter
@@ -276,7 +219,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                   </Tr>
                 </Thead>
               </Table>
-
               <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
                 <Table size="sm" variant="striped">
                   <Tbody>
