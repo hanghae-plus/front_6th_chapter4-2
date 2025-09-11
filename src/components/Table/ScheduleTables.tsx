@@ -18,7 +18,7 @@ const ScheduleTableWrapper = ({
 }: {
   tableId: string;
   index: number;
-  onDuplicate: (tableId: string) => void;
+  onDuplicate: (tableId: string, schedules: Schedule[]) => void;
   onRemove: (tableId: string) => void;
   disabledRemoveButton: boolean;
 }) => {
@@ -47,7 +47,7 @@ const ScheduleTableWrapper = ({
           <Button colorScheme="green" onClick={() => setSearchInfo({ tableId })}>
             시간표 추가
           </Button>
-          <Button colorScheme="green" mx="1px" onClick={() => onDuplicate(tableId)}>
+          <Button colorScheme="green" mx="1px" onClick={() => onDuplicate(tableId, schedules)}>
             복제
           </Button>
           <Button colorScheme="green" isDisabled={disabledRemoveButton} onClick={() => onRemove(tableId)}>
@@ -69,12 +69,12 @@ const ScheduleTableWrapper = ({
 };
 
 export const ScheduleTables = () => {
-  const { tableIds, duplicateTable, removeTable, getInitialSchedules } = useScheduleContext();
+  const { tableIds, addTable, removeTable, getInitialSchedules } = useScheduleContext();
 
   const disabledRemoveButton = tableIds.length === 1;
 
-  const duplicate = useAutoCallback((targetId: string) => {
-    duplicateTable(targetId);
+  const duplicate = useAutoCallback((targetId: string, schedules: Schedule[]) => {
+    addTable(schedules);
   });
 
   const remove = useAutoCallback((targetId: string) => {

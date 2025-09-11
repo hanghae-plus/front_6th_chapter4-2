@@ -7,7 +7,7 @@ interface ScheduleContextType {
   tableIds: string[];
   setTableIds: React.Dispatch<React.SetStateAction<string[]>>;
   getInitialSchedules: (tableId: string) => Schedule[];
-  addTable: () => string;
+  addTable: (initialSchedules?: Schedule[]) => string;
   removeTable: (tableId: string) => void;
   duplicateTable: (tableId: string) => string;
 }
@@ -24,15 +24,24 @@ export const useScheduleContext = () => {
 
 export const ScheduleProvider = ({ children }: PropsWithChildren) => {
   const [tableIds, setTableIds] = useState<string[]>(Object.keys(dummyScheduleMap));
-  const [initialSchedulesMap] = useState<Record<string, Schedule[]>>(dummyScheduleMap);
+  const [initialSchedulesMap, setInitialSchedulesMap] = useState<Record<string, Schedule[]>>(dummyScheduleMap);
 
   const getInitialSchedules = (tableId: string): Schedule[] => {
     return initialSchedulesMap[tableId] || [];
   };
 
-  const addTable = (): string => {
+  const addTable = (initialSchedules?: Schedule[]): string => {
     const newTableId = `schedule-${Date.now()}`;
     setTableIds((prev) => [...prev, newTableId]);
+
+    // 초기 스케줄이 제공되면 initialSchedulesMap에 저장
+    if (initialSchedules) {
+      setInitialSchedulesMap((prev) => ({
+        ...prev,
+        [newTableId]: initialSchedules,
+      }));
+    }
+
     return newTableId;
   };
 
@@ -40,7 +49,7 @@ export const ScheduleProvider = ({ children }: PropsWithChildren) => {
     setTableIds((prev) => prev.filter((id) => id !== tableId));
   };
 
-  const duplicateTable = (tableId: string): string => {
+  const duplicateTable = (): string => {
     return addTable();
   };
 
