@@ -120,6 +120,23 @@ const MajorCheckbox = memo(({ major, isSelected, onChange }: { major: string, is
   </Box>
 ));
 
+const TimeSlotCheckbox = memo(({ timeSlot, isSelected, onChange }: { 
+  timeSlot: { id: number, label: string }, 
+  isSelected: boolean, 
+  onChange: (timeId: number, checked: boolean) => void 
+}) => (
+  <Box>
+    <Checkbox 
+      size="sm" 
+      value={timeSlot.id}
+      isChecked={isSelected}
+      onChange={(e) => onChange(timeSlot.id, e.target.checked)}
+    >
+      {timeSlot.id}교시({timeSlot.label})
+    </Checkbox>
+  </Box>
+));
+
 const fetchMajors = createCache(() =>
   axios.get<Lecture[]>("/schedules-majors.json"),
 );
@@ -254,6 +271,16 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
       changeSearchOption("majors", newMajors);
     },
     [searchOptions.majors, changeSearchOption],
+  );
+
+  const handleTimeSlotChange = useCallback(
+    (timeId: number, checked: boolean) => {
+      const newTimes = checked 
+        ? [...searchOptions.times, timeId]
+        : searchOptions.times.filter(t => t !== timeId);
+      changeSearchOption("times", newTimes);
+    },
+    [searchOptions.times, changeSearchOption],
   );
 
   const addSchedule = useCallback(
@@ -438,12 +465,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                     borderRadius={5}
                     p={2}
                   >
-                    {TIME_SLOTS.map(({ id, label }) => (
-                      <Box key={id}>
-                        <Checkbox key={id} size="sm" value={id}>
-                          {id}교시({label})
-                        </Checkbox>
-                      </Box>
+                    {TIME_SLOTS.map((timeSlot) => (
+                      <TimeSlotCheckbox
+                        key={timeSlot.id}
+                        timeSlot={timeSlot}
+                        isSelected={searchOptions.times.includes(timeSlot.id)}
+                        onChange={handleTimeSlotChange}
+                      />
                     ))}
                   </Stack>
                 </CheckboxGroup>
