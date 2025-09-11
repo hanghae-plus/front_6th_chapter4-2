@@ -31,7 +31,7 @@ import {
 } from '@chakra-ui/react';
 import { Lecture, Schedule } from './types.ts';
 import { parseSchedule } from './utils.ts';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { DAY_LABELS } from './constants.ts';
 
 interface Props {
@@ -82,8 +82,27 @@ const TIME_SLOTS = [
 
 const PAGE_SIZE = 100;
 
-const fetchMajors = () => axios.get<Lecture[]>('/schedules-majors.json');
-const fetchLiberalArts = () => axios.get<Lecture[]>('/schedules-liberal-arts.json');
+const createCachedFetch = () => {
+  const cache = new Map<string, Promise<AxiosResponse<Lecture[]>>>();
+
+  const fetchMajors = () => {
+    if (!cache.has('majors')) {
+      cache.set('majors', axios.get<Lecture[]>('/schedules-majors.json'));
+    }
+    return cache.get('majors')!;
+  };
+
+  const fetchLiberalArts = () => {
+    if (!cache.has('liberal-arts')) {
+      cache.set('liberal-arts', axios.get<Lecture[]>('/schedules-liberal-arts.json'));
+    }
+    return cache.get('liberal-arts')!;
+  };
+
+  return { fetchMajors, fetchLiberalArts };
+};
+
+const { fetchMajors, fetchLiberalArts } = createCachedFetch();
 
 const fetchAllLectures = async () =>
   await Promise.all([
