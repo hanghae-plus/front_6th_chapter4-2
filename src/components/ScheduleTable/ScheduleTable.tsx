@@ -307,9 +307,9 @@ const DraggableSchedule = memo(
       );
     }
 
-    // 드래그가 끝나면 Popover와 함께 렌더링
+    // 드래그가 끝나면 Popover와 함께 렌더링 (클릭할 때만 PopoverContent 렌더링)
     return (
-      <Popover>
+      <Popover isLazy>
         <PopoverTrigger>
           <Box
             position="absolute"
