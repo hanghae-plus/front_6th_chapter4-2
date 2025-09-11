@@ -1,10 +1,13 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import {
+  useScheduleActionContext,
+  useScheduleStateContext,
+} from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { memo, useCallback, useState } from "react";
-import { Schedule } from "./types.ts";
 import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
+import { Schedule } from "./types.ts";
 
 const ScheduleTableWrapper = memo(
   ({
@@ -12,6 +15,7 @@ const ScheduleTableWrapper = memo(
     schedules,
     index,
     setSearchInfo,
+    disabledRemoveButton,
   }: {
     tableId: string;
     schedules: Schedule[];
@@ -19,22 +23,18 @@ const ScheduleTableWrapper = memo(
     setSearchInfo: (
       info: { tableId: string; day?: string; time?: number } | null
     ) => void;
+    disabledRemoveButton: boolean;
   }) => {
-    const { schedulesMap, setSchedulesMap } = useScheduleContext();
-    const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
+    const { addTable, removeTable, updateTableSchedules } =
+      useScheduleActionContext();
 
-    const duplicate = (targetId: string) => {
-      setSchedulesMap((prev) => ({
-        ...prev,
-        [`schedule-${Date.now()}`]: [...prev[targetId]],
-      }));
+    const duplicate = () => {
+      const newTableId = `schedule-${Date.now()}`;
+      addTable(newTableId, [...schedules]);
     };
 
     const remove = (targetId: string) => {
-      setSchedulesMap((prev) => {
-        delete prev[targetId];
-        return { ...prev };
-      });
+      removeTable(targetId);
     };
 
     const handleScheduleTimeClick = useCallback(
@@ -45,13 +45,12 @@ const ScheduleTableWrapper = memo(
 
     const handleDeleteButtonClick = useCallback(
       ({ day, time }: { day: string; time: number }) =>
-        setSchedulesMap((prev) => ({
-          ...prev,
-          [tableId]: prev[tableId].filter(
+        updateTableSchedules(tableId, (prev) =>
+          prev.filter(
             (schedule) => schedule.day !== day || !schedule.range.includes(time)
-          ),
-        })),
-      [setSchedulesMap, tableId]
+          )
+        ),
+      [updateTableSchedules, tableId]
     );
 
     return (
@@ -63,19 +62,18 @@ const ScheduleTableWrapper = memo(
           <ButtonGroup size="sm" isAttached>
             <Button
               colorScheme="green"
-              onClick={() => setSearchInfo({ tableId })}>
+              onClick={() => setSearchInfo({ tableId })}
+            >
               시간표 추가
             </Button>
-            <Button
-              colorScheme="green"
-              mx="1px"
-              onClick={() => duplicate(tableId)}>
+            <Button colorScheme="green" mx="1px" onClick={duplicate}>
               복제
             </Button>
             <Button
               colorScheme="green"
               isDisabled={disabledRemoveButton}
-              onClick={() => remove(tableId)}>
+              onClick={() => remove(tableId)}
+            >
               삭제
             </Button>
           </ButtonGroup>
@@ -95,7 +93,7 @@ const ScheduleTableWrapper = memo(
 );
 
 export const ScheduleTables = () => {
-  const { schedulesMap } = useScheduleContext();
+  const { schedulesMap, tableCount } = useScheduleStateContext();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
@@ -105,6 +103,8 @@ export const ScheduleTables = () => {
   const handleCloseDialog = useCallback(() => {
     setSearchInfo(null);
   }, []);
+
+  const disabledRemoveButton = tableCount === 1;
 
   return (
     <>
@@ -116,10 +116,13 @@ export const ScheduleTables = () => {
             schedules={schedules}
             index={index}
             setSearchInfo={setSearchInfo}
+            disabledRemoveButton={disabledRemoveButton}
           />
         ))}
       </Flex>
-      <SearchDialog searchInfo={searchInfo} onClose={handleCloseDialog} />
+      {searchInfo && (
+        <SearchDialog searchInfo={searchInfo} onClose={handleCloseDialog} />
+      )}
     </>
   );
 };

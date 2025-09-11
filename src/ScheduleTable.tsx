@@ -98,7 +98,8 @@ const Table = memo(
         fontSize="sm"
         textAlign="center"
         outline="1px solid"
-        outlineColor="gray.300">
+        outlineColor="gray.300"
+      >
         <GridItem key="교시" borderColor="gray.300" bg="gray.100">
           <Flex justifyContent="center" alignItems="center" h="full" w="full">
             <Text fontWeight="bold">교시</Text>
@@ -163,9 +164,9 @@ const ScheduleTable = memo(
       return null;
     }, [dndContext.active?.id]);
 
-    const deleteHandler = useCallback(
-      (day: string, time: number) => () => {
-        onDeleteButtonClick?.({ day, time });
+    const createDeleteHandler = useCallback(
+      (day: string, time: number) => {
+        return () => onDeleteButtonClick?.({ day, time });
       },
       [onDeleteButtonClick]
     );
@@ -181,10 +182,10 @@ const ScheduleTable = memo(
       <Box
         position="relative"
         outline={activeTableId === tableId ? "5px dashed" : undefined}
-        outlineColor="blue.300">
+        outlineColor="blue.300"
+      >
         <Table onScheduleTimeClick={handleScheduleTimeClick} />
         {schedules.map((schedule, index) => {
-          // 더 안정적인 key 생성
           const scheduleKey = `${schedule.lecture.id}-${
             schedule.day
           }-${schedule.range.join("-")}`;
@@ -194,7 +195,7 @@ const ScheduleTable = memo(
               id={`${tableId}:${index}`}
               data={schedule}
               bg={getColor(schedule.lecture.id)}
-              onDeleteButtonClick={deleteHandler(
+              onDeleteButtonClick={createDeleteHandler(
                 schedule.day,
                 schedule.range[0]
               )}
@@ -264,7 +265,8 @@ const DraggableSchedule = memo(
             ref={setNodeRef}
             transform={CSS.Translate.toString(transform)}
             {...listeners}
-            {...attributes}>
+            {...attributes}
+          >
             <ScheduleText
               lecture={scheduleInfo.lecture}
               room={scheduleInfo.room}

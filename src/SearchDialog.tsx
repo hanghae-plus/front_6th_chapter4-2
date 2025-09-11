@@ -16,7 +16,6 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import axios from "axios";
@@ -29,6 +28,7 @@ import { FormCheckbox } from "./components/common/FormCheckbox.tsx";
 import { SearchMajorsInput } from "./components/search/SearchMajorsInput.tsx";
 import { SearchTimeInput } from "./components/search/SearchTimesInput.tsx";
 import { useSearchDialog } from "./components/hooks/useSearchDialog.ts";
+import { useScheduleActionContext } from "./ScheduleContext.tsx";
 
 interface Props {
   searchInfo: {
@@ -82,7 +82,7 @@ const fetchAllLectures = async () =>
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  const { updateTableSchedules } = useScheduleActionContext();
 
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -173,14 +173,11 @@ const SearchDialog = memo(({ searchInfo, onClose }: Props) => {
         lecture,
       }));
 
-      setSchedulesMap((prev) => ({
-        ...prev,
-        [tableId]: [...prev[tableId], ...schedules],
-      }));
+      updateTableSchedules(tableId, (prev) => [...prev, ...schedules]);
 
       onClose();
     },
-    [onClose, searchInfo, setSchedulesMap]
+    [onClose, searchInfo, updateTableSchedules]
   );
 
   useEffect(() => {
