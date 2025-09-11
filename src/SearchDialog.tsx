@@ -108,14 +108,15 @@ const fetchAllLectures = async () => {
   return await Promise.all([
     (console.log('API Call 1', performance.now()), fetchMajors()),
     (console.log('API Call 2', performance.now()), fetchLiberalArts()),
-    (console.log('API Call 3', performance.now()), fetchMajors()),
-    (console.log('API Call 4', performance.now()), fetchLiberalArts()),
-    (console.log('API Call 5', performance.now()), fetchMajors()),
-    (console.log('API Call 6', performance.now()), fetchLiberalArts()),
   ]);
 };
 
-// TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
+// ✅ 최적화 완료: 불필요한 연산 제거 및 성능 개선
+// - parseSchedule 메모이제이션으로 중복 파싱 방지
+// - 검색어/제목/ID 소문자 변환 미리 처리
+// - 배열 검색을 Set으로 변경하여 O(1) 성능
+// - useCallback으로 함수 안정화
+// - 빈 검색어 조건 체크로 불필요한 필터링 방지
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const { setSchedulesMap } = useScheduleContext();
 
@@ -132,49 +133,72 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   const [times, setTimes] = useState<number[]>([]);
   const [majors, setMajors] = useState<string[]>([]);
 
-  const getFilteredLectures = useCallback(() => {
-    return lectures
-      .filter(lecture =>
-        lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-        lecture.id.toLowerCase().includes(query.toLowerCase())
-      )
-      .filter(lecture => grades.length === 0 || grades.includes(lecture.grade))
-      .filter(lecture => majors.length === 0 || majors.includes(lecture.major))
+  // parseSchedule 메모이제이션 + 검색을 위한 소문자 변환 미리 처리
+  const lecturesWithParsedSchedule = useMemo(() => 
+    lectures.map(lecture => ({
+      ...lecture,
+      parsedSchedule: lecture.schedule ? parseSchedule(lecture.schedule) : [],
+      // 검색 성능을 위해 미리 소문자로 변환
+      titleLower: lecture.title.toLowerCase(),
+      idLower: lecture.id.toLowerCase()
+    })), [lectures]);
+
+  // 배열을 Set으로 변환하여 O(1) 검색 성능 확보
+  const gradesSet = useMemo(() => new Set(grades), [grades]);
+  const daysSet = useMemo(() => new Set(days), [days]);
+  const timesSet = useMemo(() => new Set(times), [times]);
+  const majorsSet = useMemo(() => new Set(majors), [majors]);
+
+  // 검색어를 미리 소문자로 변환하여 반복 연산 방지
+  const normalizedQuery = useMemo(() => query.toLowerCase().trim(), [query]);
+
+  // getFilteredLectures 제거하고 직접 useMemo 사용
+  const filteredLectures = useMemo(() => {
+    return lecturesWithParsedSchedule
+      .filter(lecture => {
+        if (!normalizedQuery) return true; // 빈 검색어면 필터링 생략
+        return lecture.titleLower.includes(normalizedQuery) ||
+               lecture.idLower.includes(normalizedQuery);
+      })
+      .filter(lecture => gradesSet.size === 0 || gradesSet.has(lecture.grade))
+      .filter(lecture => majorsSet.size === 0 || majorsSet.has(lecture.major))
       .filter(lecture => !credits || lecture.credits.startsWith(String(credits)))
       .filter(lecture => {
-        if (days.length === 0) {
+        if (daysSet.size === 0) {
           return true;
         }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some(s => days.includes(s.day));
+        return lecture.parsedSchedule.some(s => daysSet.has(s.day));
       })
       .filter(lecture => {
-        if (times.length === 0) {
+        if (timesSet.size === 0) {
           return true;
         }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some(s => s.range.some(time => times.includes(time)));
+        return lecture.parsedSchedule.some(s => s.range.some(time => timesSet.has(time)));
       });
-  }, [lectures, query, credits, grades, days, times, majors])
-
-  const filteredLectures = useMemo(() => getFilteredLectures(), [getFilteredLectures]);
+  }, [lecturesWithParsedSchedule, normalizedQuery, credits, gradesSet, daysSet, timesSet, majorsSet]);
 
   const lastPage = useMemo(() => Math.ceil(filteredLectures.length / PAGE_SIZE), [filteredLectures]);
   const visibleLectures = useMemo(() => filteredLectures.slice(0, page * PAGE_SIZE), [filteredLectures, page]);
 
   const allMajors = useMemo(() => ([...new Set(lectures.map(lecture => lecture.major))]), [lectures]);
 
-  const resetPage = () => {
+  const resetPage = useCallback(() => {
     setPage(1);
     loaderWrapperRef.current?.scrollTo(0, 0);
-  };
+  }, []);
 
-  const addSchedule = (lecture: Lecture) => {
+  const sortedTimes = useMemo(() => [...times].sort((a, b) => a - b), [times]);
+
+  const addSchedule = useCallback((lecture: Lecture & { 
+    parsedSchedule: { day: string; range: number[]; room: string }[]; 
+    titleLower: string; 
+    idLower: string; 
+  }) => {
     if (!searchInfo) return;
 
     const { tableId } = searchInfo;
 
-    const schedules = parseSchedule(lecture.schedule).map(schedule => ({
+    const schedules = lecture.parsedSchedule.map(schedule => ({
       ...schedule,
       lecture
     }));
@@ -185,7 +209,49 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     }));
 
     onClose();
-  };
+  }, [searchInfo, setSchedulesMap, onClose]);
+
+  // onChange 핸들러들 최적화
+  const handleQueryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    resetPage();
+  }, [resetPage]);
+
+  const handleCreditsChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCredits(e.target.value);
+    resetPage();
+  }, [resetPage]);
+
+  const handleGradesChange = useCallback((value: (string | number)[]) => {
+    setGrades(value.map(Number));
+    resetPage();
+  }, [resetPage]);
+
+  const handleDaysChange = useCallback((value: (string | number)[]) => {
+    setDays(value as string[]);
+    resetPage();
+  }, [resetPage]);
+
+  const handleTimesChange = useCallback((values: (string | number)[]) => {
+    setTimes(values.map(Number));
+    resetPage();
+  }, [resetPage]);
+
+  const handleMajorsChange = useCallback((values: (string | number)[]) => {
+    setMajors(values as string[]);
+    resetPage();
+  }, [resetPage]);
+
+  // Tag 제거 핸들러들 최적화
+  const handleRemoveTime = useCallback((timeToRemove: number) => {
+    setTimes(prev => prev.filter(time => time !== timeToRemove));
+    resetPage();
+  }, [resetPage]);
+
+  const handleRemoveMajor = useCallback((majorToRemove: string) => {
+    setMajors(prev => prev.filter(major => major !== majorToRemove));
+    resetPage();
+  }, [resetPage]);
 
   useEffect(() => {
     const start = performance.now();
@@ -242,10 +308,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <Input
                   placeholder="과목명 또는 과목코드"
                   value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    resetPage();
-                  }}
+                  onChange={handleQueryChange}
                 />
               </FormControl>
 
@@ -253,10 +316,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <FormLabel>학점</FormLabel>
                 <Select
                   value={credits}
-                  onChange={(e) => {
-                    setCredits(e.target.value);
-                    resetPage();
-                  }}
+                  onChange={handleCreditsChange}
                 >
                   <option value="">전체</option>
                   <option value="1">1학점</option>
@@ -271,10 +331,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <FormLabel>학년</FormLabel>
                 <CheckboxGroup
                   value={grades}
-                  onChange={(value) => {
-                    setGrades(value.map(Number));
-                    resetPage();
-                  }}
+                  onChange={handleGradesChange}
                 >
                   <HStack spacing={4}>
                     {[1, 2, 3, 4].map(grade => (
@@ -288,10 +345,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <FormLabel>요일</FormLabel>
                 <CheckboxGroup
                   value={days}
-                  onChange={(value) => {
-                    setDays(value as string[]);
-                    resetPage();
-                  }}
+                  onChange={handleDaysChange}
                 >
                   <HStack spacing={4}>
                     {DAY_LABELS.map(day => (
@@ -308,20 +362,15 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <CheckboxGroup
                   colorScheme="green"
                   value={times}
-                  onChange={(values) => {
-                    setTimes(values.map(Number));
-                    resetPage();
-                  }}
+                  onChange={handleTimesChange}
                 >
                   <Wrap spacing={1} mb={2}>
-                    {times.sort((a: number, b: number) => a - b).map((time: number) => (
+                    {sortedTimes.map((time: number) => (
                       <Tag key={time} size="sm" variant="outline" colorScheme="blue">
                         <TagLabel>{time}교시</TagLabel>
                         <TagCloseButton
-                          onClick={() => {
-                            setTimes(times.filter((v: number) => v !== time));
-                            resetPage();
-                          }}/>
+                          onClick={() => handleRemoveTime(time)}
+                        />
                       </Tag>
                     ))}
                   </Wrap>
@@ -343,20 +392,15 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 <CheckboxGroup
                   colorScheme="green"
                   value={majors}
-                  onChange={(values) => {
-                    setMajors(values as string[]);
-                    resetPage();
-                  }}
+                  onChange={handleMajorsChange}
                 >
                   <Wrap spacing={1} mb={2}>
                     {majors.map((major: string) => (
                       <Tag key={major} size="sm" variant="outline" colorScheme="blue">
                         <TagLabel>{major.split("<p>").pop()}</TagLabel>
                         <TagCloseButton
-                          onClick={() => {
-                            setMajors(majors.filter((v: string) => v !== major));
-                            resetPage();
-                          }}/>
+                          onClick={() => handleRemoveMajor(major)}
+                        />
                       </Tag>
                     ))}
                   </Wrap>
