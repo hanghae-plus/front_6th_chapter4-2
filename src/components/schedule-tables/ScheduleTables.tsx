@@ -1,7 +1,7 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import { useState } from "react";
 
-import { useScheduleContext } from "../../contexts";
+import { ScheduleDndProvider, useScheduleContext } from "../../contexts";
 import { SearchDialog } from "../search-dialog";
 import { ScheduleTable } from "./__private__";
 import type { SearchInfo } from "../../types";
@@ -49,18 +49,22 @@ export function ScheduleTables() {
               </ButtonGroup>
             </Flex>
 
-            <ScheduleTable
-              key={`schedule-table-${index}`}
-              schedules={schedules}
-              tableId={tableId}
-              onScheduleTimeClick={(timeInfo) => setSearchInfo({ tableId, ...timeInfo })}
-              onDeleteButtonClick={({ day, time }) =>
-                setSchedulesMap((prev) => ({
-                  ...prev,
-                  [tableId]: prev[tableId].filter((schedule) => schedule.day !== day || !schedule.range.includes(time)),
-                }))
-              }
-            />
+            <ScheduleDndProvider>
+              <ScheduleTable
+                key={`schedule-table-${index}`}
+                schedules={schedules}
+                tableId={tableId}
+                onScheduleTimeClick={(timeInfo) => setSearchInfo({ tableId, ...timeInfo })}
+                onDeleteButtonClick={({ day, time }) =>
+                  setSchedulesMap((prev) => ({
+                    ...prev,
+                    [tableId]: prev[tableId].filter(
+                      (schedule) => schedule.day !== day || !schedule.range.includes(time),
+                    ),
+                  }))
+                }
+              />
+            </ScheduleDndProvider>
           </Stack>
         ))}
       </Flex>
