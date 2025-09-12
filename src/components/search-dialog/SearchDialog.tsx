@@ -1,0 +1,106 @@
+import { memo } from 'react';
+import {
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  VStack,
+} from '@chakra-ui/react';
+import { useScheduleContext } from '../../ScheduleContext';
+import { Lecture, SearchInfo } from '../../types';
+import { parseSchedule } from '../../utils';
+import { useLectureData } from '../../hooks/useLectureData';
+import { useSearchWithPagination } from '../../hooks/useSearchWithPagination';
+import { useAutoCallback } from '../../hooks/useAutoCallback';
+import { SearchForm } from './SearchForm';
+import { SearchResults } from './SearchResults';
+
+interface SearchDialogProps {
+  searchInfo: SearchInfo | null;
+  onClose: () => void;
+}
+
+export const SearchDialog = memo(({ searchInfo, onClose }: SearchDialogProps) => {
+  const { actions } = useScheduleContext();
+  const { lectures, isLoading } = useLectureData();
+
+  // 통합된 검색 + 페이지네이션 훅
+  const {
+    searchOptions,
+    changeSearchOption,
+    handleGradesChange,
+    handleDaysChange,
+    handleTimesChange,
+    handleMajorsChange,
+    filteredLectures,
+    allMajors,
+    visibleLectures,
+    loaderWrapperRef,
+    loaderRef,
+  } = useSearchWithPagination({
+    searchInfo,
+    lectures,
+  });
+
+  // addSchedule 함수 정의
+  const addSchedule = useAutoCallback((lecture: Lecture) => {
+    if (!searchInfo) return;
+
+    const { tableId } = searchInfo;
+
+    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+      ...schedule,
+      lecture,
+    }));
+
+    actions.addSchedules(tableId, schedules);
+    onClose();
+  });
+
+  if (isLoading) {
+    return (
+      <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size='6xl'>
+        <ModalOverlay />
+        <ModalContent maxW='90vw' w='1000px'>
+          <ModalHeader>수업 검색</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <div>Loading...</div>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size='6xl'>
+      <ModalOverlay />
+      <ModalContent maxW='90vw' w='1000px'>
+        <ModalHeader>수업 검색</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <VStack spacing={4} align='stretch'>
+            <SearchForm
+              searchOptions={searchOptions}
+              allMajors={allMajors}
+              changeSearchOption={changeSearchOption}
+              handleGradesChange={handleGradesChange}
+              handleDaysChange={handleDaysChange}
+              handleTimesChange={handleTimesChange}
+              handleMajorsChange={handleMajorsChange}
+            />
+            <SearchResults
+              filteredLectures={filteredLectures}
+              visibleLectures={visibleLectures}
+              addSchedule={addSchedule}
+              loaderWrapperRef={loaderWrapperRef}
+              loaderRef={loaderRef}
+            />
+          </VStack>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+});
