@@ -111,30 +111,57 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
+ 
   const getFilteredLectures = () => {
     const { query = '', credits, grades, days, times, majors } = searchOptions;
-    return lectures
-      .filter(lecture =>
-        lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-        lecture.id.toLowerCase().includes(query.toLowerCase())
-      )
-      .filter(lecture => grades.length === 0 || grades.includes(lecture.grade))
-      .filter(lecture => majors.length === 0 || majors.includes(lecture.major))
-      .filter(lecture => !credits || lecture.credits.startsWith(String(credits)))
-      .filter(lecture => {
-        if (days.length === 0) {
-          return true;
+    const lowerQuery = query.toLowerCase();
+
+    return lectures.filter(lecture => {
+      // 검색어(과목명, 과목코드) 필터
+      if (
+        lowerQuery &&
+        !lecture.title.toLowerCase().includes(lowerQuery) &&
+        !lecture.id.toLowerCase().includes(lowerQuery)
+      ) {
+        return false;
+      }
+
+      // 학년 필터
+      if (grades.length > 0 && !grades.includes(lecture.grade)) {
+        return false;
+      }
+
+      // 전공 필터
+      if (majors.length > 0 && !majors.includes(lecture.major)) {
+        return false;
+      }
+
+      // 학점 필터
+      if (credits && !lecture.credits.startsWith(String(credits))) {
+        return false;
+      }
+
+      // 시간표 파싱은 days나 times 필터가 있을 때만 수행
+      let schedules: { day: string; range: number[] }[] | null = null;
+
+      // 요일 필터
+      if (days.length > 0) {
+        schedules = schedules ?? (lecture.schedule ? parseSchedule(lecture.schedule) : []);
+        if (!schedules.some(s => days.includes(s.day))) {
+          return false;
         }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some(s => days.includes(s.day));
-      })
-      .filter(lecture => {
-        if (times.length === 0) {
-          return true;
+      }
+
+      // 시간 필터
+      if (times.length > 0) {
+        schedules = schedules ?? (lecture.schedule ? parseSchedule(lecture.schedule) : []);
+        if (!schedules.some(s => s.range.some(time => times.includes(time)))) {
+          return false;
         }
-        const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
-        return schedules.some(s => s.range.some(time => times.includes(time)));
-      });
+      }
+
+      return true;
+    });
   }
 
   const filteredLectures = getFilteredLectures();
