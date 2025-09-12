@@ -1,2 +1,2 @@
 export * from "./ScheduleTable";
-export * from "./ScheduleTableWrapper";
+export * from "./ScheduleCard";
