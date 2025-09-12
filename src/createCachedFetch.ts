@@ -1,19 +1,27 @@
 export const createCachedFetch = () => {
-  const cache = new Map<string, unknown>();
+  const promiseCache = new Map<string, Promise<unknown>>();
 
   return async <T>(
     key: string,
     fetchFn: () => Promise<T>,
     callNumber: number
   ): Promise<T> => {
-    if (cache.has(key)) {
+    if (promiseCache.has(key)) {
       console.log(`API Call ${callNumber}`, performance.now());
-      return cache.get(key) as T;
+      return promiseCache.get(key) as Promise<T>;
     }
 
     console.log(`API Call ${callNumber}`, performance.now());
-    const result = await fetchFn();
-    cache.set(key, result);
-    return result;
+    const promise = fetchFn()
+      .then((result) => {
+        return result;
+      })
+      .catch((error) => {
+        promiseCache.delete(key);
+        throw error;
+      });
+
+    promiseCache.set(key, promise as Promise<unknown>);
+    return promise;
   };
 };
