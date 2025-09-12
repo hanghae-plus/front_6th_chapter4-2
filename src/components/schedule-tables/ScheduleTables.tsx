@@ -3,17 +3,13 @@ import { useState } from "react";
 
 import { useScheduleContext } from "../../contexts";
 import { SearchDialog } from "../search-dialog";
-import { ScheduleTable } from "./ScheduleTable";
+import { ScheduleTable } from "./__private__";
+import type { SearchInfo } from "../../types";
 
-export const ScheduleTables = () => {
+export function ScheduleTables() {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
-  const [searchInfo, setSearchInfo] = useState<{
-    tableId: string;
-    day?: string;
-    time?: number;
-  } | null>(null);
 
-  const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
+  const [searchInfo, setSearchInfo] = useState<SearchInfo | null>(null);
 
   const duplicate = (targetId: string) => {
     setSchedulesMap((prev) => ({
@@ -28,6 +24,8 @@ export const ScheduleTables = () => {
       return { ...prev };
     });
   };
+
+  const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
 
   return (
     <>
@@ -50,6 +48,7 @@ export const ScheduleTables = () => {
                 </Button>
               </ButtonGroup>
             </Flex>
+
             <ScheduleTable
               key={`schedule-table-${index}`}
               schedules={schedules}
@@ -65,7 +64,8 @@ export const ScheduleTables = () => {
           </Stack>
         ))}
       </Flex>
+
       <SearchDialog searchInfo={searchInfo} onClose={() => setSearchInfo(null)} />
     </>
   );
-};
+}
