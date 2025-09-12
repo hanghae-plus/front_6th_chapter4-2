@@ -1,9 +1,9 @@
 import axios from 'axios'
 import {Lecture} from '../types.ts'
 
-export const fetchMajors = () => axios.get<Lecture[]>('/schedules-majors.json')
+export const fetchMajors = () => axios.get<Lecture[]>(`${import.meta.env.BASE_URL}schedules-majors.json`)
 
-export const fetchLiberalArts = () => axios.get<Lecture[]>('/schedules-liberal-arts.json')
+export const fetchLiberalArts = () => axios.get<Lecture[]>(`${import.meta.env.BASE_URL}schedules-liberal-arts.json`)
 
 export const fetchAllLectures = (() => {
 	let cache: Promise<Lecture[]> | null = null
