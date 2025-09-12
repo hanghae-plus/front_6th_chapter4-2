@@ -22,11 +22,18 @@ export const ScheduleTableWrapper = memo(({index, tableId, setSearchInfo, disabl
 		[removeScheduleFromTable, tableId]
 	)
 
+	const handleScheduleTimeClick = useCallback(
+		(timeInfo: {day: string; time: number}) => {
+			setSearchInfo({tableId, ...timeInfo})
+		},
+		[setSearchInfo, tableId]
+	)
+
 	return (
 		<Stack width='600px'>
 			<ScheduleTableHeader index={index} tableId={tableId} disabledRemoveButton={disabledRemoveButton} setSearchInfo={setSearchInfo} />
 
-			<ScheduleTable schedules={schedules} tableId={tableId} onScheduleTimeClick={(timeInfo) => setSearchInfo({tableId, ...timeInfo})} onDeleteButtonClick={handleDeleteButtonClick} />
+			<ScheduleTable schedules={schedules} tableId={tableId} onScheduleTimeClick={handleScheduleTimeClick} onDeleteButtonClick={handleDeleteButtonClick} />
 		</Stack>
 	)
 })

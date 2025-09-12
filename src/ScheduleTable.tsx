@@ -28,13 +28,16 @@ const TableOutline = memo(({tableId}: {tableId: string}) => {
 })
 
 const ScheduleTable = memo(({tableId, schedules, onScheduleTimeClick, onDeleteButtonClick}: Props) => {
+	const lectureIds = useMemo(() => {
+		return [...new Set(schedules.map(({lecture}) => lecture.id))]
+	}, [schedules])
+
 	const getColor = useCallback(
 		(lectureId: string): string => {
-			const lectures = [...new Set(schedules.map(({lecture}) => lecture.id))]
 			const colors = ['#fdd', '#ffd', '#dff', '#ddf', '#fdf', '#dfd']
-			return colors[lectures.indexOf(lectureId) % colors.length]
+			return colors[lectureIds.indexOf(lectureId) % colors.length]
 		},
-		[schedules]
+		[lectureIds]
 	)
 
 	// 이벤트 콜백 함수 메모이제이션
@@ -58,7 +61,7 @@ const ScheduleTable = memo(({tableId, schedules, onScheduleTimeClick, onDeleteBu
 			<TableOutline tableId={tableId} />
 			{schedules.map((schedule, index) => (
 				<DraggableSchedule
-					key={`${schedule.lecture.title}-${index}`}
+					key={`${schedule.lecture.id}-${index}`}
 					id={`${tableId}:${index}`}
 					data={schedule}
 					bg={getColor(schedule.lecture.id)}
