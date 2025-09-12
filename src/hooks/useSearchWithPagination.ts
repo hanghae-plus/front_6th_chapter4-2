@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { SEARCH_PAGE_SIZE } from "../constants";
 import { Lecture } from "../types";
 import { parseSchedule } from "../utils";
+import { useAutoCallback } from "./useAutoCallback";
 
 export interface SearchOption {
   query?: string;
@@ -94,12 +95,11 @@ export const useSearchWithPagination = ({
     loaderWrapperRef.current?.scrollTo(0, 0);
   }, []);
 
-  const changeSearchOption = useCallback(
+  const changeSearchOption = useAutoCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
       setSearchOptions((prev) => ({ ...prev, [field]: value }));
       scrollToTop();
-    },
-    [scrollToTop],
+    }
   );
 
   // searchInfo 변경시 검색 옵션 업데이트

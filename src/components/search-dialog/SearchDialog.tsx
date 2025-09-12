@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import {
   Modal,
   ModalBody,
@@ -21,7 +22,7 @@ interface SearchDialogProps {
   onClose: () => void;
 }
 
-export const SearchDialog = ({ searchInfo, onClose }: SearchDialogProps) => {
+export const SearchDialog = memo(({ searchInfo, onClose }: SearchDialogProps) => {
   const { actions } = useScheduleContext();
   const { lectures, isLoading } = useLectureData();
 
@@ -94,4 +95,4 @@ export const SearchDialog = ({ searchInfo, onClose }: SearchDialogProps) => {
       </ModalContent>
     </Modal>
   );
-};
+});
