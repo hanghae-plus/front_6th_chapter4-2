@@ -1,13 +1,13 @@
-import {useScheduleContext} from "../../provider/ScheduleContext.tsx";
 import {memo, useCallback} from "react";
 import {Button, ButtonGroup, Flex, Heading, Stack} from "@chakra-ui/react";
 import ScheduleDndProvider from "../../provider/ScheduleDndProvider.tsx";
 import ScheduleTable from "./ScheduleTable.tsx";
+import {Schedule} from "../../types.ts";
 
 type ScheduleTableWrapperProps = {
     tableId: string;
     index: number;
-    schedules: ReturnType<typeof useScheduleContext>["schedulesMap"][string];
+    schedules: Schedule[];
     disabledRemoveButton: boolean;
     onOpenSearch: (tableId: string, extra?: { day?: string; time?: number }) => void;
     onDuplicate: (tableId: string) => void;

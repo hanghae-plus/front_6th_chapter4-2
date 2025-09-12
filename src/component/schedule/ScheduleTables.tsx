@@ -1,11 +1,12 @@
 import { Flex } from "@chakra-ui/react";
-import { useScheduleContext } from "../../provider/ScheduleContext.tsx";
 import SearchDialog from "../search/SearchDialog.tsx";
 import { useCallback, useState } from "react";
 import ScheduleTableWrapper from "./ScheduleTableWrapper.tsx";
+import { useScheduleState, useScheduleActions } from "../../provider/ScheduleContext.tsx";
 
 export const ScheduleTables = () => {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const schedulesMap = useScheduleState();
+  const { setSchedulesMap, onDeleteScheduleButtonClick } = useScheduleActions();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
@@ -33,11 +34,7 @@ export const ScheduleTables = () => {
   }, []);
 
   const onDeleteBlock = useCallback((tableId: string, day: string, time: number) => {
-      setSchedulesMap(prev => ({
-          ...prev,
-          [tableId]: prev[tableId].filter(schedule => schedule.day !== day || !schedule.range.includes(time))
-      }));
-  }, [setSchedulesMap]);
+      onDeleteScheduleButtonClick(tableId, day, time)}, [onDeleteScheduleButtonClick]);
 
   return (
     <>
