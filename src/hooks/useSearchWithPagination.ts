@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { SEARCH_PAGE_SIZE } from "../constants";
 import { Lecture } from "../types";
 import { parseSchedule } from "../utils";
@@ -37,46 +37,69 @@ export const useSearchWithPagination = ({
   const loaderWrapperRef = useRef<HTMLDivElement | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  // 필터링된 강의 목록 계산
-  const filteredLectures = useMemo(() => {
-    const { query = "", credits, grades, days, times, majors } = searchOptions;
+  // 쿼리 필터링
+  const queryFilteredLectures = useMemo(() => {
+    const { query = "" } = searchOptions;
+    if (!query) return lectures;
+    
+    return lectures.filter(
+      (lecture) =>
+        lecture.title.toLowerCase().includes(query.toLowerCase()) ||
+        lecture.id.toLowerCase().includes(query.toLowerCase()),
+    );
+  }, [lectures, searchOptions.query]);
 
-    return lectures
-      .filter(
-        (lecture) =>
-          lecture.title.toLowerCase().includes(query.toLowerCase()) ||
-          lecture.id.toLowerCase().includes(query.toLowerCase()),
-      )
-      .filter(
-        (lecture) => grades.length === 0 || grades.includes(lecture.grade),
-      )
-      .filter(
-        (lecture) => majors.length === 0 || majors.includes(lecture.major),
-      )
-      .filter(
-        (lecture) => !credits || lecture.credits.startsWith(String(credits)),
-      )
-      .filter((lecture) => {
-        if (days.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) => days.includes(s.day));
-      })
-      .filter((lecture) => {
-        if (times.length === 0) {
-          return true;
-        }
-        const schedules = lecture.schedule
-          ? parseSchedule(lecture.schedule)
-          : [];
-        return schedules.some((s) =>
-          s.range.some((time) => times.includes(time)),
-        );
-      });
-  }, [lectures, searchOptions]);
+  // 학점 필터링
+  const creditsFilteredLectures = useMemo(() => {
+    const { credits } = searchOptions;
+    if (!credits) return queryFilteredLectures;
+    
+    return queryFilteredLectures.filter(
+      (lecture) => lecture.credits.startsWith(String(credits)),
+    );
+  }, [queryFilteredLectures, searchOptions.credits]);
+
+  // 학년 필터링
+  const gradesFilteredLectures = useMemo(() => {
+    const { grades } = searchOptions;
+    if (grades.length === 0) return creditsFilteredLectures;
+    
+    return creditsFilteredLectures.filter(
+      (lecture) => grades.includes(lecture.grade),
+    );
+  }, [creditsFilteredLectures, searchOptions.grades]);
+
+  // 전공 필터링
+  const majorsFilteredLectures = useMemo(() => {
+    const { majors } = searchOptions;
+    if (majors.length === 0) return gradesFilteredLectures;
+    
+    return gradesFilteredLectures.filter(
+      (lecture) => majors.includes(lecture.major),
+    );
+  }, [gradesFilteredLectures, searchOptions.majors]);
+
+  // 요일 필터링
+  const daysFilteredLectures = useMemo(() => {
+    const { days } = searchOptions;
+    if (days.length === 0) return majorsFilteredLectures;
+    
+    return majorsFilteredLectures.filter((lecture) => {
+      const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+      return schedules.some((s) => days.includes(s.day));
+    });
+  }, [majorsFilteredLectures, searchOptions.days]);
+
+  // 시간 필터링 (최종)
+  const filteredLectures = useMemo(() => {
+    const { times } = searchOptions;
+    if (times.length === 0) return daysFilteredLectures;
+    
+    return daysFilteredLectures.filter((lecture) => {
+      const schedules = lecture.schedule ? parseSchedule(lecture.schedule) : [];
+      return schedules.some((s) => s.range.some((time) => times.includes(time)));
+    });
+  }, [daysFilteredLectures, searchOptions.times]);
 
   // 전체 전공 목록
   const allMajors = useMemo(() => {
@@ -91,15 +114,29 @@ export const useSearchWithPagination = ({
     return filteredLectures.slice(0, page * SEARCH_PAGE_SIZE);
   }, [filteredLectures, page]);
 
-  const scrollToTop = useCallback(() => {
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  }, []);
 
   const changeSearchOption = useAutoCallback(
     (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
       setSearchOptions((prev) => ({ ...prev, [field]: value }));
-      scrollToTop();
+      loaderWrapperRef.current?.scrollTo(0, 0);
     }
+  );
+
+  const handleGradesChange = useAutoCallback((value: number[]) =>
+    changeSearchOption("grades", value),
+  );
+
+  const handleDaysChange = useAutoCallback((value: string[]) => 
+    changeSearchOption("days", value)
+  );
+
+  const handleTimesChange = useAutoCallback((value: number[]) =>
+    changeSearchOption("times", value),
+  );
+
+  const handleMajorsChange = useAutoCallback((value: string[]) =>
+    changeSearchOption("majors", value),
   );
 
   // searchInfo 변경시 검색 옵션 업데이트
@@ -206,6 +243,10 @@ export const useSearchWithPagination = ({
   return {
     searchOptions,
     changeSearchOption,
+    handleGradesChange,
+    handleDaysChange, 
+    handleTimesChange,
+    handleMajorsChange,
     filteredLectures,
     allMajors,
     visibleLectures,

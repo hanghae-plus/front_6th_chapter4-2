@@ -30,6 +30,10 @@ export const SearchDialog = memo(({ searchInfo, onClose }: SearchDialogProps) =>
   const {
     searchOptions,
     changeSearchOption,
+    handleGradesChange,
+    handleDaysChange,
+    handleTimesChange,
+    handleMajorsChange,
     filteredLectures,
     allMajors,
     visibleLectures,
@@ -82,6 +86,10 @@ export const SearchDialog = memo(({ searchInfo, onClose }: SearchDialogProps) =>
               searchOptions={searchOptions}
               allMajors={allMajors}
               changeSearchOption={changeSearchOption}
+              handleGradesChange={handleGradesChange}
+              handleDaysChange={handleDaysChange}
+              handleTimesChange={handleTimesChange}
+              handleMajorsChange={handleMajorsChange}
             />
             <SearchResults
               filteredLectures={filteredLectures}

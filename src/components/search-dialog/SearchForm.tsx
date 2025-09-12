@@ -8,7 +8,6 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { SearchOption } from '../../hooks/useSearchWithPagination';
-import { useAutoCallback } from '../../hooks/useAutoCallback';
 import { GradeFilter } from './filters';
 import { DayFilter } from './filters';
 import { TimeFilter } from './filters';
@@ -21,25 +20,22 @@ interface SearchFormProps {
     field: keyof SearchOption,
     value: SearchOption[typeof field]
   ) => void;
+  handleGradesChange: (value: number[]) => void;
+  handleDaysChange: (value: string[]) => void;
+  handleTimesChange: (value: number[]) => void;
+  handleMajorsChange: (value: string[]) => void;
 }
 
 export const SearchForm = memo(
-  ({ searchOptions, allMajors, changeSearchOption }: SearchFormProps) => {
-    const handleGradesChange = useAutoCallback((value: number[]) =>
-      changeSearchOption('grades', value)
-    );
-
-    const handleDaysChange = useAutoCallback((value: string[]) =>
-      changeSearchOption('days', value)
-    );
-
-    const handleTimesChange = useAutoCallback((value: number[]) =>
-      changeSearchOption('times', value)
-    );
-
-    const handleMajorsChange = useAutoCallback((value: string[]) =>
-      changeSearchOption('majors', value)
-    );
+  ({ 
+    searchOptions, 
+    allMajors, 
+    changeSearchOption,
+    handleGradesChange,
+    handleDaysChange,
+    handleTimesChange,
+    handleMajorsChange
+  }: SearchFormProps) => {
 
     return (
       <VStack spacing={4} align='stretch'>
