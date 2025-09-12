@@ -3,6 +3,10 @@ import axios from "axios";
 
 import type { Lecture } from "../types";
 
+const http = axios.create({
+  baseURL: import.meta.env.BASE_URL,
+});
+
 export class LectureService {
   private static instance: LectureService;
 
@@ -61,10 +65,10 @@ export class LectureService {
   }
 
   private fetchMajorLectures() {
-    return axios.get<Lecture[]>("/schedules-majors.json");
+    return http.get<Lecture[]>("/schedules-majors.json");
   }
 
   private fetchLiberalArtsLectures() {
-    return axios.get<Lecture[]>("/schedules-liberal-arts.json");
+    return http.get<Lecture[]>("/schedules-liberal-arts.json");
   }
 }
