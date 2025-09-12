@@ -1,7 +1,7 @@
 import { Flex, Grid, GridItem, Text } from "@chakra-ui/react";
 import { Fragment, memo } from "react";
 
-import { CellSize, DAY_LABELS, 분 } from "../../../constants";
+import { CELL_SIZE, DAY_LABELS, 분 } from "../../../constants";
 import type { TimeInfo } from "../../../types";
 import { fill2, parseHnM } from "../../../utils";
 
@@ -23,8 +23,8 @@ const TIMES = [
 export function ScheduleGrid({ onScheduleTimeClick }: ScheduleGridProps) {
   return (
     <Grid
-      templateColumns={`120px repeat(${DAY_LABELS.length}, ${CellSize.WIDTH}px)`}
-      templateRows={`40px repeat(${TIMES.length}, ${CellSize.HEIGHT}px)`}
+      templateColumns={`120px repeat(${DAY_LABELS.length}, ${CELL_SIZE.WIDTH}px)`}
+      templateRows={`40px repeat(${TIMES.length}, ${CELL_SIZE.HEIGHT}px)`}
       bg="white"
       fontSize="sm"
       textAlign="center"

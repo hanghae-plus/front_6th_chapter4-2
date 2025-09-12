@@ -13,7 +13,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { ComponentProps, MouseEvent } from "react";
 
-import { CellSize, DAY_LABELS } from "../../../constants";
+import { CELL_SIZE, DAY_LABELS } from "../../../constants";
 import type { Schedule } from "../../../types";
 
 type DraggableScheduleProps = ComponentProps<typeof Box> & {
@@ -40,10 +40,10 @@ export function DraggableSchedule({ id, data, bg, onDeleteButtonClick, ...boxPro
       <PopoverTrigger>
         <Box
           position="absolute"
-          left={`${120 + CellSize.WIDTH * leftIndex + 1}px`}
-          top={`${40 + (topIndex * CellSize.HEIGHT + 1)}px`}
-          width={CellSize.WIDTH - 1 + "px"}
-          height={CellSize.HEIGHT * size - 1 + "px"}
+          left={`${120 + CELL_SIZE.WIDTH * leftIndex + 1}px`}
+          top={`${40 + (topIndex * CELL_SIZE.HEIGHT + 1)}px`}
+          width={CELL_SIZE.WIDTH - 1 + "px"}
+          height={CELL_SIZE.HEIGHT * size - 1 + "px"}
           bg={bg}
           p={1}
           boxSizing="border-box"

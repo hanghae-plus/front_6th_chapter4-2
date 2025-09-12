@@ -27,7 +27,7 @@ export const TIME_SLOTS = [
   { id: 24, label: "22:35~23:25" },
 ] as const;
 
-export const CellSize = {
+export const CELL_SIZE = {
   WIDTH: 80,
   HEIGHT: 30,
 };

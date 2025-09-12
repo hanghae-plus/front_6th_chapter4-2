@@ -2,7 +2,7 @@ import type { DragEndEvent, Modifier } from "@dnd-kit/core";
 import { DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { PropsWithChildren } from "react";
 
-import { CellSize, DAY_LABELS } from "../constants";
+import { CELL_SIZE, DAY_LABELS } from "../constants";
 import type { Schedule } from "../types";
 
 interface ScheduleDndProviderProps extends PropsWithChildren {
@@ -27,8 +27,8 @@ function createSnapModifier(): Modifier {
 
     return {
       ...transform,
-      x: Math.min(Math.max(Math.round(transform.x / CellSize.WIDTH) * CellSize.WIDTH, minX), maxX),
-      y: Math.min(Math.max(Math.round(transform.y / CellSize.HEIGHT) * CellSize.HEIGHT, minY), maxY),
+      x: Math.min(Math.max(Math.round(transform.x / CELL_SIZE.WIDTH) * CELL_SIZE.WIDTH, minX), maxX),
+      y: Math.min(Math.max(Math.round(transform.y / CELL_SIZE.HEIGHT) * CELL_SIZE.HEIGHT, minY), maxY),
     };
   };
 }
