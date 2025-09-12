@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState } from "react";
-import type { PropsWithChildren } from "react";
+import type { Dispatch, PropsWithChildren, SetStateAction } from "react";
 
 import { dummyScheduleMap } from "../data";
 import { useAutoCallback } from "../hooks";
@@ -10,7 +10,7 @@ type SchedulesMap = Record<string, Schedule[]>;
 
 interface ScheduleContextType {
   schedulesMap: SchedulesMap;
-  setSchedulesMap: React.Dispatch<React.SetStateAction<SchedulesMap>>;
+  setSchedulesMap: Dispatch<SetStateAction<SchedulesMap>>;
   addSchedule: (tableId: string, lecture: Lecture) => void;
   addSchedules: (tableId: string, schedules: Schedule[]) => void;
   removeSchedule: (tableId: string, day: string, time: number) => void;
@@ -26,6 +26,7 @@ export const useScheduleContext = () => {
   if (context === undefined) {
     throw new Error("useScheduleContext must be used within a ScheduleProvider");
   }
+
   return context;
 };
 
