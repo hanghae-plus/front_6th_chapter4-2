@@ -1,59 +1,34 @@
-import { Stack } from "@chakra-ui/react";
-import ScheduleTableHeader from "./ScheduleTableHeader";
-import ScheduleTable from "../ScheduleTable";
-import { memo, useCallback } from "react";
-import {
-  useSchedulesByTableId,
-  useScheduleStore,
-} from "../store/scheduleStore";
+import {Stack} from '@chakra-ui/react'
+import ScheduleTableHeader from './ScheduleTableHeader'
+import ScheduleTable from '../ScheduleTable'
+import {memo, useCallback} from 'react'
+import {useSchedulesByTableId, useScheduleStore} from '../store/scheduleStore'
 
 interface ScheduleTableWrapperProps {
-  index: number;
-  tableId: string;
-  disabledRemoveButton: boolean;
-  setSearchInfo: (searchInfo: {
-    tableId: string;
-    day?: string;
-    time?: number;
-  }) => void;
+	index: number
+	tableId: string
+	disabledRemoveButton: boolean
+	setSearchInfo: (searchInfo: {tableId: string; day?: string; time?: number}) => void
 }
 
-export const ScheduleTableWrapper = memo(
-  ({
-    index,
-    tableId,
-    setSearchInfo,
-    disabledRemoveButton,
-  }: ScheduleTableWrapperProps) => {
-    const schedules = useSchedulesByTableId(tableId);
-    const removeScheduleFromTable = useScheduleStore(
-      (state) => state.removeScheduleFromTable
-    );
+export const ScheduleTableWrapper = memo(({index, tableId, setSearchInfo, disabledRemoveButton}: ScheduleTableWrapperProps) => {
+	const schedules = useSchedulesByTableId(tableId)
+	const removeScheduleFromTable = useScheduleStore((state) => state.removeScheduleFromTable)
 
-    const handleDeleteButtonClick = useCallback(
-      ({ day, time }: { day: string; time: number }) => {
-        removeScheduleFromTable(tableId, day, time);
-      },
-      [removeScheduleFromTable, tableId]
-    );
+	const handleDeleteButtonClick = useCallback(
+		({day, time}: {day: string; time: number}) => {
+			removeScheduleFromTable(tableId, day, time)
+		},
+		[removeScheduleFromTable, tableId]
+	)
 
-    return (
-      <Stack width="600px">
-        <ScheduleTableHeader
-          index={index}
-          tableId={tableId}
-          disabledRemoveButton={disabledRemoveButton}
-          setSearchInfo={setSearchInfo}
-        />
+	return (
+		<Stack width='600px'>
+			<ScheduleTableHeader index={index} tableId={tableId} disabledRemoveButton={disabledRemoveButton} setSearchInfo={setSearchInfo} />
 
-        <ScheduleTable
-          schedules={schedules}
-          tableId={tableId}
-          onDeleteButtonClick={handleDeleteButtonClick}
-        />
-      </Stack>
-    );
-  }
-);
+			<ScheduleTable schedules={schedules} tableId={tableId} onScheduleTimeClick={(timeInfo) => setSearchInfo({tableId, ...timeInfo})} onDeleteButtonClick={handleDeleteButtonClick} />
+		</Stack>
+	)
+})
 
-export default ScheduleTableWrapper;
+export default ScheduleTableWrapper
