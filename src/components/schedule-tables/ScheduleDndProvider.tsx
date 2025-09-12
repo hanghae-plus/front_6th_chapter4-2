@@ -53,7 +53,6 @@ export const ScheduleDndProvider = ({
   children,
   actions,
 }: ScheduleDndProviderProps) => {
-  // ✅ 수정: useSensors를 최상위에서 직접 호출
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -62,7 +61,6 @@ export const ScheduleDndProvider = ({
     })
   );
 
-  // ✅ 수정: handleDragEnd를 useCallback으로 메모이제이션
   const handleDragEnd = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (event: any) => {
@@ -75,7 +73,6 @@ export const ScheduleDndProvider = ({
       const moveDayIndex = Math.floor(x / CellSize.WIDTH);
       const moveTimeIndex = Math.floor(y / CellSize.HEIGHT);
 
-      // ✅ 새로운 moveSchedule 액션 사용
       actions.moveSchedule(
         dragTableId,
         scheduleIndex,

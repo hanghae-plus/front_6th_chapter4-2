@@ -9,7 +9,7 @@ export type ScheduleAction =
       schedule: Schedule;
     }
   | {
-      type: 'MOVE_SCHEDULE'; // ✅ 새로운 액션 추가
+      type: 'MOVE_SCHEDULE';
       tableId: string;
       scheduleIndex: number;
       moveDayIndex: number;
@@ -36,7 +36,6 @@ export const scheduleReducer = (
       };
     }
 
-    // ✅ 새로운 케이스: 상대적 이동 처리
     case 'MOVE_SCHEDULE': {
       const { tableId, scheduleIndex, moveDayIndex, moveTimeIndex } = action;
 
@@ -76,7 +75,6 @@ export const scheduleReducer = (
         return state;
       }
 
-      // ✅ 해당 테이블만 업데이트
       return {
         ...state,
         [tableId]: state[tableId].map((s, index) =>

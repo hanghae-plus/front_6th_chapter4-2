@@ -30,7 +30,6 @@ export const DraggableSchedule = memo(
       id,
     });
 
-    // ✅ 개선: 자신이 드래그 중인지만 확인 (불필요한 리렌더링 방지)
     const tableId = id.split(':')[0];
     const isThisTableDragging = useScheduleDrag(tableId);
 
@@ -53,7 +52,6 @@ export const DraggableSchedule = memo(
             cursor='pointer'
             ref={setNodeRef}
             transform={CSS.Translate.toString(transform)}
-            // ✅ 드래그 중일 때 시각적 피드백 개선
             opacity={isThisTableDragging ? 0.8 : 1}
             zIndex={isThisTableDragging ? 1000 : 1}
             {...listeners}
